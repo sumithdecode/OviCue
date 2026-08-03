@@ -24,12 +24,14 @@ type SessionInsight = {
 };
 
 const productName = "ovi";
+const demoSpeedPresets = [90, 110, 130, 160, 190];
+const studioSpeedPresets = [105, 130, 155, 190, 230];
 
 const landingDemoScript = `This is a real teleprompter, not a picture of one.
 
 The text is moving at one hundred and thirty words a minute -- about the speed of a teacher explaining something.
 
-Press the arrows to speed up or slow down. The number is real words per minute, not a one to ten slider that means nothing.
+Choose Scroll Speed from one to five. One is calm practice. Five is a fast creator read.
 
 Turn on mirror mode if you shoot through beam-splitter glass. The reflection flips the text, so we flip it first.
 
@@ -835,9 +837,9 @@ export default function Home() {
               <em>Start reading.</em>
             </h1>
             <p className="ovi-lead ovi-reveal delay-2">
-              A teleprompter that runs in your browser. Ten seconds from an
-              empty page to smooth, 60 fps text moving at the speed you actually
-              talk.
+              Add your text, choose Scroll Speed 1 to 5, and let it roll upward
+              smoothly while you speak. Built for creators, teachers, and
+              students who want clean videos without setup drama.
             </p>
             <div className="ovi-cta-row ovi-reveal delay-3">
               <button
@@ -895,22 +897,20 @@ export default function Home() {
               >
                 {demoPlaying ? "Pause" : "Play"}
               </button>
-              <button
-                type="button"
-                className="ovi-key"
-                aria-label="Slower"
-                onClick={() => setDemoWpm((value) => Math.max(60, value - 10))}
-              >
-                -
-              </button>
-              <button
-                type="button"
-                className="ovi-key"
-                aria-label="Faster"
-                onClick={() => setDemoWpm((value) => Math.min(250, value + 10))}
-              >
-                +
-              </button>
+              <div className="ovi-speed-bank" aria-label="Scroll speed">
+                <span>Scroll Speed</span>
+                {demoSpeedPresets.map((preset, index) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    className={Math.abs(demoWpm - preset) < 8 ? "selected" : ""}
+                    aria-pressed={Math.abs(demoWpm - preset) < 8}
+                    onClick={() => setDemoWpm(preset)}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
               <button
                 type="button"
                 className="ovi-key"
@@ -1300,7 +1300,7 @@ export default function Home() {
         <div className="promptr-controls" aria-label="Reading controls">
           <div>
             <span>Scroll speed</span>
-            {[105, 130, 155, 190, 230].map((preset, index) => (
+            {studioSpeedPresets.map((preset, index) => (
               <button
                 key={preset}
                 type="button"
@@ -1474,6 +1474,23 @@ export default function Home() {
             </div>
           </div>
           <div className="button-row">
+            <div className="toolbar-speed-control" aria-label="Scroll speed">
+              <span>Scroll Speed</span>
+              {studioSpeedPresets.map((preset, index) => (
+                <button
+                  key={preset}
+                  type="button"
+                  className={Math.abs(speed - preset) < 13 ? "selected" : ""}
+                  aria-pressed={Math.abs(speed - preset) < 13}
+                  onClick={() => {
+                    setSpeed(preset);
+                    setScrollMode("wpm");
+                  }}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
             <button type="button" onClick={resetPrompt} aria-label="Reset">
               Reset
             </button>
