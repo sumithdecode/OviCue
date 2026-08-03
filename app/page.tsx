@@ -15,11 +15,15 @@ This video is for sharing knowledge, helping people, and becoming better every d
 type ScrollMode = "wpm" | "timed";
 type ScriptLanguage = "english" | "hindi" | "marathi";
 type ExperienceMode = "welcome" | "studio";
+type TextAlign = "left" | "center" | "right";
 type SessionInsight = {
   durationSeconds: number;
   readWords: number;
   wpm: number;
 };
+
+const productName = "VaaniCue";
+const productShortName = "VC";
 
 const languageSamples: Record<ScriptLanguage, string> = {
   english: starterScript,
@@ -79,6 +83,10 @@ export default function Home() {
   const [isRunning, setIsRunning] = useState(false);
   const [speed, setSpeed] = useState(145);
   const [fontSize, setFontSize] = useState(52);
+  const [textAlign, setTextAlign] = useState<TextAlign>("center");
+  const [textWeight, setTextWeight] = useState(800);
+  const [textItalic, setTextItalic] = useState(false);
+  const [textUnderline, setTextUnderline] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [scrollMode, setScrollMode] = useState<ScrollMode>("wpm");
   const [targetMinutes, setTargetMinutes] = useState(2);
@@ -136,6 +144,10 @@ export default function Home() {
           script?: string;
           speed?: number;
           fontSize?: number;
+          textAlign?: TextAlign;
+          textWeight?: number;
+          textItalic?: boolean;
+          textUnderline?: boolean;
           scrollMode?: ScrollMode;
           targetMinutes?: number;
           mirrorHorizontal?: boolean;
@@ -148,6 +160,10 @@ export default function Home() {
         if (parsed.script) setScript(parsed.script);
         if (parsed.speed) setSpeed(parsed.speed < 40 ? 120 : parsed.speed);
         if (parsed.fontSize) setFontSize(parsed.fontSize);
+        if (parsed.textAlign) setTextAlign(parsed.textAlign);
+        if (parsed.textWeight) setTextWeight(parsed.textWeight);
+        if (typeof parsed.textItalic === "boolean") setTextItalic(parsed.textItalic);
+        if (typeof parsed.textUnderline === "boolean") setTextUnderline(parsed.textUnderline);
         if (parsed.scrollMode) setScrollMode(parsed.scrollMode);
         if (parsed.targetMinutes) setTargetMinutes(parsed.targetMinutes);
         if (typeof parsed.mirrorHorizontal === "boolean") {
@@ -179,6 +195,10 @@ export default function Home() {
         script,
         speed,
         fontSize,
+        textAlign,
+        textWeight,
+        textItalic,
+        textUnderline,
         scrollMode,
         targetMinutes,
         scriptLanguage,
@@ -201,6 +221,10 @@ export default function Home() {
     scrollMode,
     speed,
     targetMinutes,
+    textAlign,
+    textItalic,
+    textUnderline,
+    textWeight,
     textPosition,
   ]);
 
@@ -231,17 +255,18 @@ export default function Home() {
       const totalScrollable = Math.max(1, list.scrollHeight - list.clientHeight);
       const averageWordsPerLine = Math.max(3, wordCount / Math.max(1, lines.length));
       const wpmPixelsPerSecond = Math.max(
-        56,
-        ((fontSize * 2.4) / averageWordsPerLine) * (speed / 60),
+        72,
+        ((fontSize * 3.1) / averageWordsPerLine) * (speed / 60),
       );
       const pixelsPerSecond =
         scrollMode === "timed"
           ? Math.max(48, totalScrollable / estimatedSeconds)
           : wpmPixelsPerSecond;
-      list.scrollTop = Math.min(
+      const nextScrollTop = Math.min(
         totalScrollable,
         list.scrollTop + pixelsPerSecond * deltaSeconds,
       );
+      list.scrollTop = nextScrollTop;
 
       const center =
         list.getBoundingClientRect().top +
@@ -261,7 +286,7 @@ export default function Home() {
         current === closestIndex ? current : closestIndex,
       );
 
-      if (list.scrollTop >= totalScrollable - 1) {
+      if (nextScrollTop >= totalScrollable - 1) {
         finishSession();
         setIsRunning(false);
         return;
@@ -341,7 +366,7 @@ export default function Home() {
           } else {
             startPrompt();
           }
-          return !value;
+          return value;
         });
       }
 
@@ -529,20 +554,20 @@ export default function Home() {
   if (experienceMode === "welcome") {
     return (
       <main className="welcome-shell">
-        <section className="welcome-hero" aria-label="LumoCue welcome">
+        <section className="welcome-hero" aria-label={`${productName} welcome`}>
           <nav className="welcome-nav">
             <div>
-              <span className="mark">LC</span>
-              <strong>LumoCue</strong>
+              <span className="mark">{productShortName}</span>
+              <strong>{productName}</strong>
             </div>
             <a href="/signin-with-chatgpt?return_to=%2F">Sign in</a>
           </nav>
 
           <div className="hero-copy">
-            <p className="eyebrow">Teleprompter for Indian creators</p>
-            <h1>Speak like yourself. Let the script follow your pace.</h1>
+            <p className="eyebrow">भारत का creator teleprompter</p>
+            <h1>Your words, your awaaz, your perfect take.</h1>
             <p>
-              A polished browser teleprompter for teachers, students, coaches,
+              A polished browser studio for teachers, students, coaches,
               founders, and creators recording in English, Hindi, and Marathi.
             </p>
             <div className="hero-actions">
@@ -551,7 +576,7 @@ export default function Home() {
                 className="primary-button"
                 onClick={() => setExperienceMode("studio")}
               >
-                Enter studio
+                Open prompter
               </button>
               <a href="/signin-with-chatgpt?return_to=%2F">Continue with sign in</a>
             </div>
@@ -564,9 +589,9 @@ export default function Home() {
               <span />
             </div>
             <div className="preview-stage">
-              <p>Calibrate once.</p>
-              <p className="active">Read naturally with eye contact.</p>
-              <p>Record your clearest take.</p>
+              <p>नमस्ते creators.</p>
+              <p className="active">Read smoothly at your natural pace.</p>
+              <p>Record a confident educational video.</p>
             </div>
           </div>
         </section>
@@ -574,7 +599,7 @@ export default function Home() {
         <section className="welcome-features" aria-label="Feature preview">
           <div>
             <strong>Pace calibration</strong>
-            <span>Read a short passage, then LumoCue suggests your roll speed.</span>
+            <span>Read a short passage, then {productName} suggests your roll speed.</span>
           </div>
           <div>
             <strong>India-first scripts</strong>
@@ -582,7 +607,7 @@ export default function Home() {
           </div>
           <div>
             <strong>Studio controls</strong>
-            <span>Camera preview, recording, mirror mode, timed scroll, and fullscreen.</span>
+            <span>Camera preview, recording, mirror mode, formatting, timed scroll, and fullscreen.</span>
           </div>
         </section>
       </main>
@@ -595,14 +620,14 @@ export default function Home() {
         <div className="brand-row">
           <div>
             <p className="eyebrow">India-first creator prompter</p>
-            <h1>LumoCue</h1>
+            <h1>{productName}</h1>
           </div>
           <div className="status-pill">{lines.length} lines</div>
         </div>
 
         <div className="creator-intro">
           <p>Read naturally, keep eye contact, and record clean videos in English, Hindi, or Marathi. Everything runs in your browser for now.</p>
-          <div className="intro-tags" aria-label="LumoCue highlights">
+          <div className="intro-tags" aria-label={`${productName} highlights`}>
             <span>Smooth auto-roll</span>
             <span>हिन्दी</span>
             <span>मराठी</span>
@@ -746,6 +771,78 @@ export default function Home() {
           >
             Timed
           </button>
+        </div>
+
+        <div className="promptr-controls" aria-label="Reading controls">
+          <div>
+            <span>Scroll speed</span>
+            {[105, 130, 155, 190, 230].map((preset, index) => (
+              <button
+                key={preset}
+                type="button"
+                className={Math.abs(speed - preset) < 13 ? "selected" : ""}
+                onClick={() => {
+                  setSpeed(preset);
+                  setScrollMode("wpm");
+                }}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+          <div>
+            <span>Text size</span>
+            {[40, 52, 68].map((size, index) => (
+              <button
+                key={size}
+                type="button"
+                className={Math.abs(fontSize - size) < 7 ? "selected" : ""}
+                onClick={() => setFontSize(size)}
+              >
+                {["S", "M", "L"][index]}
+              </button>
+            ))}
+          </div>
+          <div>
+            <span>Align</span>
+            {(["left", "center", "right"] as TextAlign[]).map((align) => (
+              <button
+                key={align}
+                type="button"
+                className={textAlign === align ? "selected" : ""}
+                onClick={() => setTextAlign(align)}
+              >
+                {align.slice(0, 1).toUpperCase()}
+              </button>
+            ))}
+          </div>
+          <div>
+            <span>Style</span>
+            <button
+              type="button"
+              className={textWeight > 800 ? "selected" : ""}
+              onClick={() => setTextWeight((value) => (value > 800 ? 800 : 950))}
+              aria-label="Bold text"
+            >
+              B
+            </button>
+            <button
+              type="button"
+              className={textItalic ? "selected" : ""}
+              onClick={() => setTextItalic((value) => !value)}
+              aria-label="Italic text"
+            >
+              I
+            </button>
+            <button
+              type="button"
+              className={textUnderline ? "selected" : ""}
+              onClick={() => setTextUnderline((value) => !value)}
+              aria-label="Underline text"
+            >
+              U
+            </button>
+          </div>
         </div>
 
         <div className="control-stack">
@@ -913,8 +1010,12 @@ export default function Home() {
               className="line-list"
               style={{
                 fontSize,
+                fontStyle: textItalic ? "italic" : "normal",
+                fontWeight: textWeight,
                 paddingTop: `${textPosition}vh`,
                 paddingBottom: `${100 - textPosition}vh`,
+                textAlign,
+                textDecoration: textUnderline ? "underline" : "none",
               }}
             >
               {lines.map((line, index) => (
@@ -954,7 +1055,7 @@ export default function Home() {
             Next line
           </button>
           {recordedUrl ? (
-            <a href={recordedUrl} download="promptflow-recording.webm">
+            <a href={recordedUrl} download="vaanicue-recording.webm">
               Download video
             </a>
           ) : (
@@ -976,7 +1077,7 @@ export default function Home() {
                     280,
                     Math.max(80, lastInsight.wpm),
                   )} wpm.`
-                : "After you pause or finish, LumoCue estimates your pace and suggests a better roll speed."}
+                : `After you pause or finish, ${productName} estimates your pace and suggests a better roll speed.`}
             </span>
           </div>
           <button
