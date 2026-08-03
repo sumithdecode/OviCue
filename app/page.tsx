@@ -1,6 +1,13 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type MouseEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type TrackingProps = Record<string, boolean | number | string>;
 
@@ -12,15 +19,15 @@ declare global {
   }
 }
 
-const starterScript = `Today I am practicing clear English communication.
+const starterScript = `Hi, my name is ______, and today I am testing Ovi, a simple teleprompter for people who create videos, teach online, or practice speaking clearly.
 
-My goal is to speak clearly, breathe naturally, and sound confident.
+Ovi helps me paste a script, choose a reading speed, and keep my words moving smoothly while I look near the camera.
 
-I will teach one useful idea at a time.
+I can use it for English practice, classroom videos, reels, presentations, tutorials, or any moment where I do not want to forget what I planned to say.
 
-If I make a mistake, I will pause, smile, and continue.
+The best part is that my script stays on this device. I can rehearse, adjust the speed, turn on mirror mode for a real teleprompter rig, and record when I am ready.
 
-This video is for sharing knowledge, helping people, and becoming better every day.`;
+If this feels useful in the first minute, then Ovi is probably for me. It is made for creators, teachers, students, and anyone who wants to speak with more confidence on camera.`;
 
 type ScrollMode = "wpm" | "timed";
 type ScriptLanguage = "english" | "hindi" | "marathi";
@@ -36,9 +43,8 @@ type SessionInsight = {
 const productName = "ovi";
 const demoSpeedPresets = [90, 110, 130, 150, 170];
 const studioSpeedPresets = [90, 110, 130, 150, 170];
-const feedbackFormBaseUrl = "https://tally.so/r/YOURFORM";
-const koFiUrl = "https://ko-fi.com/YOURPAGE";
-const upiUrl = "upi://pay?pa=YOURUPI@upi&pn=Ovi&cu=INR";
+const feedbackFormBaseUrl = "";
+const upiQrPath = "/upi-qr.jpeg";
 
 const landingDemoScript = `This is a real teleprompter, not a picture of one.
 
@@ -271,6 +277,7 @@ export default function Home() {
   const demoWordCount = useMemo(() => countWords(demoText), [demoText]);
   const demoDuration = Math.max(1, Math.round((demoWordCount / demoWpm) * 60));
   const feedbackUrl = useMemo(() => {
+    if (!feedbackFormBaseUrl) return "#feedback";
     if (typeof navigator === "undefined") return feedbackFormBaseUrl;
     const query = new URLSearchParams({ ua: navigator.userAgent });
     return `${feedbackFormBaseUrl}?${query.toString()}`;
@@ -659,10 +666,11 @@ export default function Home() {
           if (value) {
             finishSession();
             setCountdown(0);
+            return false;
           } else {
             startPrompt();
+            return true;
           }
-          return value;
         });
       }
 
@@ -960,6 +968,12 @@ export default function Home() {
 
   function handleFeedbackClick() {
     trackEvent("feedback_clicked");
+  }
+
+  function openFeedback(event: MouseEvent<HTMLAnchorElement>) {
+    handleFeedbackClick();
+    if (!feedbackFormBaseUrl) return;
+    event.currentTarget.href = feedbackUrl;
   }
 
   if (experienceMode === "welcome") {
@@ -1301,16 +1315,66 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="ovi-section no-top" id="sample">
+          <div className="ovi-wrap ovi-sample-script">
+            <CueDivider label="Sample script" />
+            <h2>Try a one-minute creator intro.</h2>
+            <p>
+              This is loaded in the studio by default, so a new visitor can test
+              Ovi before writing anything.
+            </p>
+            <blockquote>{starterScript}</blockquote>
+            <button
+              type="button"
+              className="ovi-btn ovi-btn-dark"
+              onClick={() => {
+                setScript(starterScript);
+                resetPrompt();
+                setExperienceMode("studio");
+              }}
+            >
+              Open this sample
+            </button>
+          </div>
+        </section>
+
+        <section className="ovi-section no-top" id="feedback">
+          <div className="ovi-wrap ovi-feedback-block">
+            <CueDivider label="Feedback" />
+            <h2>Found a bug, or want something added?</h2>
+            <p>
+              Tell me what broke, what device you used, and what you expected to
+              happen. The form will open here once the feedback link is
+              connected.
+            </p>
+            {feedbackFormBaseUrl ? (
+              <a
+                className="ovi-btn ovi-btn-dark"
+                href={feedbackUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={openFeedback}
+              >
+                Send feedback
+              </a>
+            ) : (
+              <span className="feedback-pending">
+                Feedback form setup pending
+              </span>
+            )}
+          </div>
+        </section>
+
         <section className="ovi-tip-strip" aria-label="Support Ovi">
           <div className="ovi-wrap">
-            <p>
-              Ovi is free and stays free. If it saved you a reshoot, you can
-              buy me a coffee.
-            </p>
-            <a href={koFiUrl} target="_blank" rel="noreferrer">
-              Buy me a coffee
-            </a>
-            <a href={upiUrl}>Pay with UPI</a>
+            <div>
+              <p>
+                Ovi is free and stays free. If it saved you a reshoot, you can
+                support it with UPI.
+              </p>
+              <span>Scan the QR with PhonePe, GPay, Paytm, or any UPI app.</span>
+            </div>
+            <img src={upiQrPath} alt="UPI QR code for supporting Ovi" />
           </div>
         </section>
 
@@ -1322,12 +1386,11 @@ export default function Home() {
             <a
               className="ovi-feedback-line"
               href={feedbackUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={handleFeedbackClick}
+              onClick={openFeedback}
             >
-              Found a bug, or want something added? Tell me -- it goes straight
-              to one person.
+              {feedbackFormBaseUrl
+                ? "Found a bug, or want something added? Tell me -- it goes straight to one person."
+                : "Found a bug, or want something added? Feedback form setup is next."}
             </a>
           </div>
         </footer>
@@ -1694,15 +1757,6 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <a
-              className="toolbar-feedback"
-              href={feedbackUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={handleFeedbackClick}
-            >
-              Report a problem
-            </a>
             <button type="button" onClick={resetPrompt} aria-label="Reset">
               Reset
             </button>
