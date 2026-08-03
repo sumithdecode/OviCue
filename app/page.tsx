@@ -87,12 +87,18 @@ type StaticPageMode =
   | "help"
   | "changelog"
   | "not-found";
-type ExperienceMode = "welcome" | "studio" | StaticPageMode;
+type ExperienceMode = "welcome" | "studio" | "speech-speed-test" | StaticPageMode;
 type TextAlign = "left" | "center" | "right";
 type MediaConsentIntent = "microphone" | "camera" | "recording";
+type SpeechTestKind = "conversational" | "presentation" | "news";
 type SessionInsight = {
   durationSeconds: number;
   readWords: number;
+  wpm: number;
+};
+type SpeechTestResult = {
+  kind: SpeechTestKind;
+  seconds: number;
   wpm: number;
 };
 
@@ -114,6 +120,96 @@ Speed two is calm practice. Speed four is a fast creator read. The number beside
 Turn on mirror mode if you shoot through beam-splitter glass. The reflection flips the text, so we flip it first.
 
 Click the text to edit it. Paste your own script and read it right here, before you sign up for anything. Because you never have to.`;
+
+const speechSpeedPassages: Record<
+  SpeechTestKind,
+  { label: string; wordCount: number; text: string }
+> = {
+  conversational: {
+    label: "Conversational",
+    wordCount: 181,
+    text: `The strange thing about talking to a camera is that nobody teaches you how.
+
+You learn to write in school. You learn to read out loud. Nobody ever sits you down and explains what to do with your hands, or where to look, or how fast to go when there is no one in front of you nodding along.
+
+So most people do the same two things. They speak far too quickly, because silence feels longer than it is. And they look slightly away from the lens, because looking straight into a piece of glass feels unnatural.
+
+Both are fixable, and neither takes talent.
+
+Speed is fixable with practice and a number. Once you know how fast you actually talk, you can decide whether to stay there or move.
+
+Eye contact is fixable with position. Whatever you are reading from needs to sit as close to the lens as you can get it.
+
+That is most of it. The rest is just doing it more than once.`,
+  },
+  presentation: {
+    label: "Presentation",
+    wordCount: 178,
+    text: `Every good talk does the same three things, in the same order.
+
+First it tells you why you should care. Not what the talk is about, but what changes for you if you listen. People decide within the first minute whether to stay with you, and they decide on that alone.
+
+Second it gives you one idea, not five. The talks people remember carry a single thought and turn it over from different sides. The talks people forget carry a list.
+
+Third it tells you what to do next. Even if the answer is only to think about something differently, the ending should point somewhere.
+
+Almost everything else is decoration. Better slides do not save a talk with no argument. A confident voice does not save one with no ending.
+
+The good news is that all three of these are decided before you open your mouth. They are written, not performed. Which means the hardest part of speaking well happens quietly, at a desk, on a day when nobody is watching.`,
+  },
+  news: {
+    label: "News read",
+    wordCount: 176,
+    text: `A short update on the weather across the region this morning.
+
+Rain is expected to continue through most of the day in the western districts, easing by late afternoon. Travellers heading out early should allow extra time, as visibility on the main roads is likely to stay poor until the middle of the morning.
+
+Temperatures will remain a few degrees below normal for this time of year, with a steady wind from the south. Coastal areas can expect stronger gusts through the evening, and small boats have been advised to stay close to shore.
+
+Conditions are expected to improve by tomorrow, with clearer skies returning across most of the region by the middle of the week. Farmers in the eastern belt will welcome the break, following a wetter than usual month.
+
+That is the outlook for now. We will bring you an update at the top of the next hour, along with the traffic report and the day's main headlines.`,
+  },
+};
+
+const speechSpeedBands = [
+  {
+    range: "Under 100",
+    label: "Deliberate",
+    description:
+      "Careful and formal. Good for complex material or a room learning the language.",
+  },
+  {
+    range: "100-125",
+    label: "Teaching",
+    description:
+      "A steady explaining pace. Easy to follow, easy to take notes from.",
+  },
+  {
+    range: "125-150",
+    label: "Conversational",
+    description:
+      "How most people talk to someone they know. The default for good reason.",
+  },
+  {
+    range: "150-175",
+    label: "Creator and news",
+    description:
+      "Energy without strain. Where most YouTube and broadcast reads sit.",
+  },
+  {
+    range: "175-200",
+    label: "Fast",
+    description:
+      "Works if your audience knows the subject. Tiring over long stretches.",
+  },
+  {
+    range: "Over 200",
+    label: "Very fast",
+    description:
+      "Commentary pace. Most listeners lose the thread within a few minutes.",
+  },
+];
 
 const languageSamples: Record<ScriptLanguage, string> = {
   english: starterScript,
@@ -191,6 +287,7 @@ function isLegacyDefaultScript(text: string) {
 const routeModes: Record<string, ExperienceMode> = {
   "/": "welcome",
   "/prompt": "studio",
+  "/tools/speech-speed-test": "speech-speed-test",
   "/about": "about",
   "/contact": "contact",
   "/privacy": "privacy",
@@ -203,6 +300,7 @@ const routeModes: Record<string, ExperienceMode> = {
 function modeToPath(mode: ExperienceMode) {
   if (mode === "welcome") return "/";
   if (mode === "studio") return "/prompt";
+  if (mode === "speech-speed-test") return "/tools/speech-speed-test";
   if (mode === "not-found") return "/404";
   return `/${mode}`;
 }
@@ -248,6 +346,15 @@ function countWords(text: string) {
 function trackEvent(eventName: string, eventData?: TrackingProps) {
   if (typeof window === "undefined") return;
   window.umami?.track(eventName, eventData);
+}
+
+function speechSpeedBandFor(wpm: number) {
+  if (wpm < 100) return speechSpeedBands[0];
+  if (wpm < 125) return speechSpeedBands[1];
+  if (wpm < 150) return speechSpeedBands[2];
+  if (wpm < 175) return speechSpeedBands[3];
+  if (wpm < 200) return speechSpeedBands[4];
+  return speechSpeedBands[5];
 }
 
 function CueDivider({ label }: { label: string }) {
@@ -660,6 +767,16 @@ export default function Home() {
   const [demoPlaying, setDemoPlaying] = useState(false);
   const [demoMirror, setDemoMirror] = useState(false);
   const [demoEditing, setDemoEditing] = useState(false);
+  const [speechTestKind, setSpeechTestKind] =
+    useState<SpeechTestKind>("conversational");
+  const [isSpeechTestRunning, setIsSpeechTestRunning] = useState(false);
+  const [speechTestElapsed, setSpeechTestElapsed] = useState(0);
+  const [speechTestResult, setSpeechTestResult] =
+    useState<SpeechTestResult | null>(null);
+  const [speechTestError, setSpeechTestError] = useState("");
+  const [speechTestAutoStop, setSpeechTestAutoStop] = useState(false);
+  const [speechTestAutoStopAvailable, setSpeechTestAutoStopAvailable] =
+    useState(false);
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lineListRef = useRef<HTMLDivElement | null>(null);
   const rollContentRef = useRef<HTMLDivElement | null>(null);
@@ -670,6 +787,7 @@ export default function Home() {
   const streamRef = useRef<MediaStream | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const speechTestRecognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const animationRef = useRef<number | null>(null);
@@ -690,6 +808,9 @@ export default function Home() {
   const voiceMatchStartRef = useRef<number | null>(null);
   const spokenWordsRef = useRef(0);
   const stopVoiceMatchRef = useRef(false);
+  const speechTestStartedAtRef = useRef<number | null>(null);
+  const speechTestMicStreamRef = useRef<MediaStream | null>(null);
+  const stopSpeechTestRecognitionRef = useRef(false);
 
   function goTo(mode: ExperienceMode) {
     setExperienceMode(mode);
@@ -754,6 +875,33 @@ export default function Home() {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => undefined);
     }
+  }, []);
+
+  useEffect(() => {
+    if (experienceMode === "speech-speed-test") {
+      document.title =
+        "Speech Speed Test - How Many Words Per Minute Do You Speak?";
+      const description =
+        "Free speech speed test. Read a short passage out loud and find your words per minute. No microphone, no signup, works in any browser.";
+      let meta = document.querySelector<HTMLMetaElement>(
+        'meta[name="description"]',
+      );
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.name = "description";
+        document.head.appendChild(meta);
+      }
+      meta.content = description;
+    } else {
+      document.title = "OviCue - Free Online Teleprompter for Indian Creators";
+    }
+  }, [experienceMode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition =
+      window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    setSpeechTestAutoStopAvailable(Boolean(SpeechRecognition));
   }, []);
 
   useEffect(() => {
@@ -827,6 +975,27 @@ export default function Home() {
     }
     setIsLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (experienceMode !== "studio") return;
+    const params = new URLSearchParams(window.location.search);
+    const wpmParam = params.get("wpm");
+    if (!wpmParam) return;
+    const parsed = Number(wpmParam);
+    if (!Number.isFinite(parsed)) return;
+    const queryWpm = Math.min(
+      maxCustomWpm,
+      Math.max(minCustomWpm, Math.round(parsed)),
+    );
+    setSpeed(queryWpm);
+    setCustomSpeedValue(String(queryWpm));
+    setScrollMode("wpm");
+    setCalibrationInsight({
+      durationSeconds: 0,
+      readWords: 0,
+      wpm: queryWpm,
+    });
+  }, [experienceMode]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -1122,10 +1291,25 @@ export default function Home() {
     return () => {
       stopVoiceMatchRef.current = true;
       recognitionRef.current?.abort();
+      speechTestRecognitionRef.current?.abort();
       streamRef.current?.getTracks().forEach((track) => track.stop());
       micStreamRef.current?.getTracks().forEach((track) => track.stop());
+      speechTestMicStreamRef.current?.getTracks().forEach((track) =>
+        track.stop(),
+      );
     };
   }, []);
+
+  useEffect(() => {
+    if (!isSpeechTestRunning || speechTestStartedAtRef.current === null) return;
+    const timer = window.setInterval(() => {
+      if (speechTestStartedAtRef.current === null) return;
+      setSpeechTestElapsed(
+        (performance.now() - speechTestStartedAtRef.current) / 1000,
+      );
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [isSpeechTestRunning]);
 
   useEffect(() => {
     return () => {
@@ -1410,6 +1594,150 @@ export default function Home() {
     releaseCameraStream();
   }
 
+  function stopSpeechSpeedAutoStop() {
+    stopSpeechTestRecognitionRef.current = true;
+    speechTestRecognitionRef.current?.stop();
+    speechTestRecognitionRef.current = null;
+    speechTestMicStreamRef.current?.getTracks().forEach((track) =>
+      track.stop(),
+    );
+    speechTestMicStreamRef.current = null;
+  }
+
+  async function startSpeechSpeedAutoStop() {
+    const SpeechRecognition =
+      window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return false;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+      speechTestMicStreamRef.current = stream;
+      stopSpeechTestRecognitionRef.current = false;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-IN";
+      recognition.onresult = (event) => {
+        const spokenWords = countWords(extractSpeechText(event.results));
+        const targetWords = speechSpeedPassages[speechTestKind].wordCount * 0.9;
+        if (spokenWords >= targetWords) {
+          finishSpeechSpeedTest();
+        }
+      };
+      recognition.onend = () => {
+        if (stopSpeechTestRecognitionRef.current) return;
+        try {
+          recognition.start();
+        } catch {
+          stopSpeechSpeedAutoStop();
+        }
+      };
+      speechTestRecognitionRef.current = recognition;
+      recognition.start();
+      return true;
+    } catch {
+      setSpeechTestError(
+        "Microphone auto-stop could not start. Untick it and run the manual test.",
+      );
+      setSpeechTestAutoStop(false);
+      stopSpeechSpeedAutoStop();
+      return false;
+    }
+  }
+
+  async function startSpeechSpeedTest() {
+    setSpeechTestResult(null);
+    setSpeechTestError("");
+    setSpeechTestElapsed(0);
+
+    if (speechTestAutoStop) {
+      const started = await startSpeechSpeedAutoStop();
+      if (!started) return;
+    }
+
+    speechTestStartedAtRef.current = performance.now();
+    setIsSpeechTestRunning(true);
+    trackEvent("speech_speed_test_started", {
+      passage: speechTestKind,
+      autoStop: speechTestAutoStop,
+    });
+  }
+
+  function finishSpeechSpeedTest() {
+    if (speechTestStartedAtRef.current === null) return;
+    const seconds = (performance.now() - speechTestStartedAtRef.current) / 1000;
+    const passage = speechSpeedPassages[speechTestKind];
+    const measuredWpm = Math.round(((passage.wordCount / seconds) * 60) / 5) * 5;
+
+    speechTestStartedAtRef.current = null;
+    setIsSpeechTestRunning(false);
+    setSpeechTestElapsed(seconds);
+    stopSpeechSpeedAutoStop();
+
+    if (seconds < 25 || measuredWpm > 260 || measuredWpm < 55) {
+      setSpeechTestResult(null);
+      setSpeechTestError("That did not look like a full read - try again.");
+      trackEvent("speech_speed_test_rejected", {
+        seconds: Math.round(seconds),
+        wpm: measuredWpm,
+      });
+      return;
+    }
+
+    setSpeechTestResult({
+      kind: speechTestKind,
+      seconds,
+      wpm: measuredWpm,
+    });
+    trackEvent("speech_speed_test_completed", {
+      passage: speechTestKind,
+      seconds: Math.round(seconds),
+      wpm: measuredWpm,
+    });
+  }
+
+  function resetSpeechSpeedTest() {
+    speechTestStartedAtRef.current = null;
+    setIsSpeechTestRunning(false);
+    setSpeechTestElapsed(0);
+    setSpeechTestError("");
+    setSpeechTestResult(null);
+    stopSpeechSpeedAutoStop();
+  }
+
+  function openPrompterWithWpm(wpm: number) {
+    const personalWpm = Math.min(
+      maxCustomWpm,
+      Math.max(minCustomWpm, Math.round(wpm)),
+    );
+    setSpeed(personalWpm);
+    setCustomSpeedValue(String(personalWpm));
+    setScrollMode("wpm");
+    setCalibrationInsight({
+      durationSeconds: 0,
+      readWords: 0,
+      wpm: personalWpm,
+    });
+    setExperienceMode("studio");
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", `/prompt?wpm=${personalWpm}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  async function copySpeechSpeedResult() {
+    if (!speechTestResult) return;
+    const band = speechSpeedBandFor(speechTestResult.wpm);
+    const text = `My speech speed is ${speechTestResult.wpm} words per minute - ${band.label}. Tested with OviCue.`;
+    await navigator.clipboard?.writeText(text);
+    trackEvent("speech_speed_result_copied", {
+      wpm: speechTestResult.wpm,
+    });
+  }
+
   async function acceptMediaConsent() {
     const intent = mediaConsentIntent;
     setMediaConsentIntent(null);
@@ -1624,6 +1952,280 @@ export default function Home() {
     handleFeedbackClick();
     if (!feedbackFormBaseUrl) return;
     event.currentTarget.href = feedbackUrl;
+  }
+
+  if (experienceMode === "speech-speed-test") {
+    const activePassage = speechSpeedPassages[speechTestKind];
+    const resultBand = speechTestResult
+      ? speechSpeedBandFor(speechTestResult.wpm)
+      : null;
+    const resultWpm = speechTestResult?.wpm ?? speed;
+    const faqJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Do I need a microphone?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "No. The test measures time, not sound. Nothing is recorded and nothing is sent anywhere.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Does it work on a phone?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes, in any browser.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Why does my number change each time?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Speaking speed moves with mood, time of day, and how familiar the words are. Run it three times and take the middle number.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can I test in Hindi or Marathi?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes, but word counts work differently across languages, so treat the number as a guide within one language rather than a comparison between them.",
+          },
+        },
+      ],
+    };
+
+    return (
+      <main className="ovi-page">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+        <nav className="ovi-nav">
+          <div className="ovi-wrap">
+            <button
+              type="button"
+              className="ovi-brand ovi-brand-button"
+              onClick={() => goTo("welcome")}
+              aria-label="Open OviCue front page"
+            >
+              <i /> {productName}
+            </button>
+            <div className="ovi-navlinks">
+              <button type="button" onClick={() => goTo("studio")}>Prompter</button>
+              <button type="button" onClick={() => goTo("help")}>Help</button>
+              <button type="button" onClick={() => goTo("about")}>About</button>
+            </div>
+            <button
+              type="button"
+              className="ovi-btn ovi-btn-dark ovi-btn-sm"
+              onClick={() => openPrompterWithWpm(resultWpm)}
+            >
+              Open prompter
+            </button>
+          </div>
+        </nav>
+
+        <section className="ovi-section speech-tool-hero">
+          <div className="ovi-wrap">
+            <span className="ovi-pill ovi-mono">Free tool · no signup · no mic needed</span>
+            <h1>Speech Speed Test</h1>
+            <p className="ovi-lead">
+              Find out how many words a minute you speak. Read a short passage
+              out loud, press Done, and turn that number into your personal
+              OviCue prompter pace.
+            </p>
+
+            <div className="speech-test-panel">
+              <div className="speech-test-top">
+                <div className="speech-test-tabs" aria-label="Passage type">
+                  {(Object.keys(speechSpeedPassages) as SpeechTestKind[]).map(
+                    (kind) => (
+                      <button
+                        key={kind}
+                        type="button"
+                        disabled={isSpeechTestRunning}
+                        className={speechTestKind === kind ? "selected" : ""}
+                        onClick={() => {
+                          resetSpeechSpeedTest();
+                          setSpeechTestKind(kind);
+                        }}
+                      >
+                        {speechSpeedPassages[kind].label}
+                      </button>
+                    ),
+                  )}
+                </div>
+                <strong>{formatTime(speechTestElapsed)}</strong>
+              </div>
+
+              <p className="speech-test-instruction">
+                {isSpeechTestRunning
+                  ? "Read out loud at your normal speaking voice."
+                  : "Pick the kind of speaking you want to measure."}
+              </p>
+
+              <div className="speech-test-passage" aria-label="Speech test passage">
+                {activePassage.text.split(/\n+/).map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+
+              {speechTestError && (
+                <div className="speech-test-error">{speechTestError}</div>
+              )}
+
+              {speechTestResult && resultBand && (
+                <div className="speech-test-result">
+                  <span className="ovi-mono">Your speech speed</span>
+                  <strong>{speechTestResult.wpm} words per minute</strong>
+                  <p>
+                    {resultBand.label}. {resultBand.description}
+                  </p>
+                </div>
+              )}
+
+              <div className="speech-test-actions">
+                {!isSpeechTestRunning && !speechTestResult && (
+                  <button
+                    type="button"
+                    className="ovi-btn ovi-btn-dark"
+                    onClick={startSpeechSpeedTest}
+                  >
+                    Start the test
+                  </button>
+                )}
+                {isSpeechTestRunning && (
+                  <button
+                    type="button"
+                    className="ovi-btn ovi-btn-dark"
+                    onClick={finishSpeechSpeedTest}
+                  >
+                    Done
+                  </button>
+                )}
+                {speechTestResult && (
+                  <>
+                    <button
+                      type="button"
+                      className="ovi-btn ovi-btn-dark"
+                      onClick={() => openPrompterWithWpm(speechTestResult.wpm)}
+                    >
+                      Use this speed in the prompter
+                    </button>
+                    <button
+                      type="button"
+                      className="ovi-btn ovi-btn-ghost"
+                      onClick={resetSpeechSpeedTest}
+                    >
+                      Test again
+                    </button>
+                    <button
+                      type="button"
+                      className="ovi-btn ovi-btn-ghost"
+                      onClick={copySpeechSpeedResult}
+                    >
+                      Copy my result
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {speechTestAutoStopAvailable && !isSpeechTestRunning && !speechTestResult && (
+                <label className="speech-auto-stop">
+                  <input
+                    type="checkbox"
+                    checked={speechTestAutoStop}
+                    onChange={(event) =>
+                      setSpeechTestAutoStop(event.target.checked)
+                    }
+                  />
+                  <span>
+                    Stop the timer automatically when I finish. Uses your
+                    microphone; nothing is recorded or sent.
+                  </span>
+                </label>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="ovi-section no-top">
+          <div className="ovi-wrap speech-content">
+            <CueDivider label="What your number means" />
+            <div className="speech-band-table">
+              {speechSpeedBands.map((band) => (
+                <div key={band.range}>
+                  <strong>{band.range}</strong>
+                  <span>{band.label}</span>
+                  <p>{band.description}</p>
+                </div>
+              ))}
+            </div>
+            <p className="ovi-muted">
+              These bands are a guide, not a rule. Language, subject, and how
+              well your listener knows you all move them.
+            </p>
+
+            <h2>Why reading aloud is not quite the same as speaking</h2>
+            <p>
+              Reading a passage measures your reading-aloud speed. Speaking off
+              the top of your head is usually 10 to 20 words a minute slower,
+              because you are choosing words as you go. If you are setting a
+              teleprompter, the reading number is the one you want. If you are
+              timing a talk you will improvise, take about 15 off.
+            </p>
+
+            <h2>Is there a right speed?</h2>
+            <p>
+              There is no single correct number, but there is a comfortable
+              range for listeners. Around 140 to 160 words a minute is where
+              most people follow easily when the subject is familiar. Slower
+              helps when the material is new, technical, or in a language your
+              listener is still learning.
+            </p>
+
+            <h2>How to change your speaking speed</h2>
+            <p>
+              To slow down, shorten your sentences before you speak them. To
+              speed up, cut filler at the start of sentences. To hold a pace on
+              camera, use a teleprompter set to your measured number.
+            </p>
+            <button
+              type="button"
+              className="ovi-btn ovi-btn-dark"
+              onClick={() => openPrompterWithWpm(resultWpm)}
+            >
+              Open the prompter at {resultWpm} wpm
+            </button>
+
+            <div className="ovi-faq speech-faq">
+              <CueDivider label="Questions" />
+              <details open>
+                <summary>Do I need a microphone?</summary>
+                <p>No. The test measures time, not sound. Nothing is recorded and nothing is sent anywhere.</p>
+              </details>
+              <details>
+                <summary>Does it work on a phone?</summary>
+                <p>Yes, in any browser.</p>
+              </details>
+              <details>
+                <summary>Why does my number change each time?</summary>
+                <p>Speaking speed moves with mood, time of day, and how familiar the words are. Run it three times and take the middle number.</p>
+              </details>
+              <details>
+                <summary>Can I test in Hindi or Marathi?</summary>
+                <p>Yes, pick the language above the passage in future versions. Word counts work differently across languages, so treat the number as a guide within one language rather than a comparison between them.</p>
+              </details>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   if (
@@ -1896,6 +2498,43 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="ovi-section no-top" id="speech-speed-test">
+          <div className="ovi-wrap speech-signpost">
+            <div>
+              <CueDivider label="Free tool" />
+              <h2>How fast do you actually speak?</h2>
+              <p className="ovi-lead">
+                Most people guess wrong by twenty or thirty words a minute.
+                Read a short passage out loud, press Done, and find out. It
+                takes about ninety seconds, needs no microphone, and works in
+                any browser.
+              </p>
+              <div className="ovi-cta-row">
+                <button
+                  type="button"
+                  className="ovi-btn ovi-btn-dark"
+                  onClick={() => goTo("speech-speed-test")}
+                >
+                  Take the speech speed test
+                </button>
+                <button
+                  type="button"
+                  className="ovi-btn ovi-btn-ghost"
+                  onClick={() => goTo("studio")}
+                >
+                  Skip it, just let me read
+                </button>
+              </div>
+            </div>
+            <div className="speech-preview-card">
+              <span className="ovi-mono">Your pace</span>
+              <strong>142</strong>
+              <p>words per minute</p>
+              <b>A fast creator read</b>
+            </div>
+          </div>
+        </section>
+
         <section className="ovi-section no-top" id="pricing">
           <div className="ovi-wrap">
             <CueDivider label="Pricing" />
@@ -2033,8 +2672,8 @@ export default function Home() {
             </div>
             <div>
               <strong>Tools</strong>
-              <a href="#how">Script timer</a>
-              <a href="#features">Pace test</a>
+              <button type="button" onClick={() => goTo("speech-speed-test")}>Speech speed test</button>
+              <button type="button" onClick={() => goTo("studio")}>Script timer</button>
             </div>
             <div>
               <strong>Company</strong>
