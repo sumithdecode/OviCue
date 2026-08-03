@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  type MouseEvent,
+  type FormEvent,
   type ReactNode,
   useEffect,
   useMemo,
@@ -107,6 +107,7 @@ type SpeechTestResult = {
   seconds: number;
   wpm: number;
 };
+type FeedbackType = "bug" | "feature" | "hardware" | "other";
 type AudienceKey =
   | "creator"
   | "teacher"
@@ -122,7 +123,6 @@ const demoSpeedPresets = [90, 110, 130, 150, 170];
 const studioSpeedPresets = [90, 110, 130, 150, 170];
 const minCustomWpm = 30;
 const maxCustomWpm = 1400;
-const feedbackFormBaseUrl = "";
 const upiQrPath = "/upi-qr.jpeg";
 const lastUpdated = "August 3, 2026";
 
@@ -624,36 +624,37 @@ function StaticPage({
     about: (
       <>
         <span className="ovi-mono">About OviCue</span>
-        <h1>One person, one problem, one page.</h1>
+        <h1>Built in Pune for creators everywhere.</h1>
         <p className="ovi-lead">
           OviCue was built because too many teleprompters ask for an account,
-          watermark the result, or charge for simple mirror mode. This one is
-          for creators, teachers, students, and speakers who need to paste a
-          script and read clearly.
+          watermark the result, or hide simple recording tools behind paid
+          walls. This one is for creators, teachers, students, and speakers who
+          need to paste a script and read clearly.
         </p>
-        <InfoCard title="Why it stays free">
+        <InfoCard title="Zero setup. Zero drama.">
           <p>
-            The core prompter is a public tool: paste, rehearse, pace-test,
-            full screen, mirror, camera preview, and local recording. Paid
-            features can come later for syncing scripts across devices.
+            Open the site, paste your words, choose a pace, and start reading.
+            The core prompter stays free because clean speaking practice should
+            not require a forced account.
           </p>
         </InfoCard>
-        <InfoCard title="Where your scripts live">
+        <InfoCard title="Local-first architecture">
           <p>
             In this version, scripts stay in your browser on your device. OviCue
-            does not upload your script text to a database.
+            does not upload your script text to a database or use it for
+            advertising.
           </p>
         </InfoCard>
-        <InfoCard title="What it is not">
+        <InfoCard title="Hardware friendly">
           <p>
-            It is not a social app, not an ad network, and not a place that
-            reads your script for data. It is a focused reading surface.
+            Horizontal and vertical mirror modes support beam-splitter glass,
+            phone rigs, laptop recording, and simple everyday rehearsal.
           </p>
         </InfoCard>
-        <InfoCard title="Who is behind it">
+        <InfoCard title="Built for creators">
           <p>
-            Built from Pune for Indian creators first, with English interface
-            support and Hindi and Marathi reading samples.
+            OviCue combines smooth scrolling, pace testing, camera preview, and
+            clean browser recording without watermarks.
           </p>
         </InfoCard>
       </>
@@ -673,8 +674,8 @@ function StaticPage({
           <InfoCard title="Something is missing">
             <p>Suggest the feature that would save you time while recording.</p>
           </InfoCard>
-          <InfoCard title="Anything else">
-            <p>Use the feedback button on the home page until the form is connected.</p>
+        <InfoCard title="Anything else">
+            <p>Use the feedback form on the home page. It is local-only until a real inbox is connected.</p>
           </InfoCard>
         </div>
         <p className="ovi-muted">
@@ -688,42 +689,46 @@ function StaticPage({
         <span className="ovi-mono">Last updated {lastUpdated}</span>
         <h1>Privacy policy.</h1>
         <p className="ovi-lead">
-          OviCue is designed so the teleprompter can run smoothly without a
-          database. The important rule: your script text stays on your device in
-          this version.
+          OviCue is engineered as a local-first web application. Your scripts,
+          speech practice, and browser recordings belong entirely to you.
         </p>
-        <InfoCard title="Scripts">
+        <InfoCard title="The zero-data core promise">
           <p>
-            Scripts are stored in your browser local storage so they are still
-            there when you return on the same device. We do not receive or read
-            the script text.
+            Your script text, teleprompter speed settings, and custom
+            configurations stay inside your web browser. OviCue does not need a
+            database to run the core prompter.
           </p>
         </InfoCard>
-        <InfoCard title="Camera and microphone">
+        <InfoCard title="Local storage and retention">
           <p>
-            Microphone access is requested for pace testing. Camera access is
-            requested only for camera preview or recording. Browser recording
-            happens on your device and downloads from your browser.
+            Scripts and user settings can be saved in browser storage such as
+            localStorage or IndexedDB. Clearing browser data can remove them.
+            We do not operate a server that ingests or stores your script
+            contents in this version.
           </p>
         </InfoCard>
-        <InfoCard title="Analytics">
+        <InfoCard title="Hardware and sensor permissions">
           <p>
-            OviCue may use privacy-friendly anonymous analytics to understand
-            visits, button clicks, and errors. It does not track your script
-            content.
+            Prompting itself never needs permission. Microphone access is used
+            only for optional voice-based pace features or recording. Camera
+            access is used only for preview or recording. Audio and video are
+            processed locally by your browser and are not uploaded by OviCue.
           </p>
         </InfoCard>
-        <InfoCard title="Payments and accounts">
+        <InfoCard title="Analytics and external services">
           <p>
-            Payments and login are not active yet. When added, they will use
-            third-party services with their own policies.
+            OviCue may collect minimal anonymous telemetry such as page views,
+            feature clicks, and browser errors to improve reliability. Script
+            text, personal identity, and sensitive information are not included.
+            Voluntary UPI support is handled by the UPI app you choose; OviCue
+            does not process bank details.
           </p>
         </InfoCard>
-        <InfoCard title="Rights">
+        <InfoCard title="Contact">
           <p>
-            If you are in India, the Digital Personal Data Protection Act, 2023
-            may apply. If you are in the EU or UK, GDPR-style rights may apply.
-            A real support email will be added before accounts or payments go live.
+            Questions about privacy can be sent through the feedback section.
+            Please do not include private scripts or sensitive personal data in
+            feedback.
           </p>
         </InfoCard>
       </>
@@ -738,21 +743,31 @@ function StaticPage({
         </p>
         <InfoCard title="Your content">
           <p>
-            You own the scripts you write or paste. You are responsible for
-            having rights to use that content.
+            You retain full ownership of scripts and recordings created through
+            OviCue. You are responsible for having the rights to use the
+            content you paste, display, speak, or record.
+          </p>
+        </InfoCard>
+        <InfoCard title="License and acceptable use">
+          <p>
+            OviCue grants you a non-exclusive, revocable license to use the web
+            app for personal, educational, and commercial speaking or video
+            production. Do not misuse the service or attempt to interfere with
+            its operation.
+          </p>
+        </InfoCard>
+        <InfoCard title="Voluntary support">
+          <p>
+            UPI contributions are optional support for hosting and development.
+            They do not create ownership, equity, guaranteed custom work, or a
+            refundable purchase.
           </p>
         </InfoCard>
         <InfoCard title="No guarantees">
           <p>
-            OviCue should help you rehearse and record, but you should test it
-            before important live work. Browser permissions, recording, and
-            fullscreen behavior can vary by device.
-          </p>
-        </InfoCard>
-        <InfoCard title="Payments later">
-          <p>
-            Paid plans are not active now. Any future paid plan will show its
-            price, renewal terms, and cancellation rules before purchase.
+            The service is provided as-is and as-available. Test it before
+            important live work because browser permissions, recording, and
+            fullscreen behavior vary by device.
           </p>
         </InfoCard>
         <InfoCard title="Governing law">
@@ -793,16 +808,19 @@ function StaticPage({
         <h1>Small guides for better videos.</h1>
         <div className="ovi-info-grid">
           <InfoCard title="Hardware rig">
-            <p>Use mirror mode when reading through teleprompter glass.</p>
+            <p>Place your tablet or laptop face-up under teleprompter glass, then turn on Mirror Horizontal so the reflection reads normally.</p>
           </InfoCard>
           <InfoCard title="Phone setup">
             <p>Keep the prompter close to the camera lens so your eyes stay natural.</p>
           </InfoCard>
           <InfoCard title="Scroll speed">
-            <p>Start at speed 2 or 3, or use Find my pace to set your spoken WPM.</p>
+            <p>Most speaking sits around 120 to 150 WPM. Teaching often feels better near 120 to 130 WPM; fast creator reads can go higher.</p>
           </InfoCard>
           <InfoCard title="Mirror mode">
             <p>Horizontal flip is for glass. Vertical flip helps with some mounted rigs.</p>
+          </InfoCard>
+          <InfoCard title="Permissions">
+            <p>Prompting needs no permission. Camera and microphone prompts appear only when you use preview, recording, or optional voice tools.</p>
           </InfoCard>
           <InfoCard title="Keyboard">
             <p>Space starts or pauses. Arrow keys move line by line when practicing.</p>
@@ -958,6 +976,10 @@ export default function Home() {
     useState(false);
   const [proEmail, setProEmail] = useState("");
   const [proWaitlistMessage, setProWaitlistMessage] = useState("");
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>("bug");
+  const [feedbackDevice, setFeedbackDevice] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackNotice, setFeedbackNotice] = useState("");
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lineListRef = useRef<HTMLDivElement | null>(null);
   const rollContentRef = useRef<HTMLDivElement | null>(null);
@@ -1007,12 +1029,6 @@ export default function Home() {
   const demoLines = useMemo(() => splitLines(demoText), [demoText]);
   const demoWordCount = useMemo(() => countWords(demoText), [demoText]);
   const demoDuration = Math.max(1, Math.round((demoWordCount / demoWpm) * 60));
-  const feedbackUrl = useMemo(() => {
-    if (!feedbackFormBaseUrl) return "#feedback";
-    if (typeof navigator === "undefined") return feedbackFormBaseUrl;
-    const query = new URLSearchParams({ ua: navigator.userAgent });
-    return `${feedbackFormBaseUrl}?${query.toString()}`;
-  }, []);
   const wordCount = useMemo(
     () => countWords(script),
     [script],
@@ -2220,10 +2236,54 @@ export default function Home() {
     trackEvent("feedback_clicked");
   }
 
-  function openFeedback(event: MouseEvent<HTMLAnchorElement>) {
+  function showFeedbackSection() {
     handleFeedbackClick();
-    if (!feedbackFormBaseUrl) return;
-    event.currentTarget.href = feedbackUrl;
+    setExperienceMode("welcome");
+    if (typeof window === "undefined") return;
+    if (window.location.pathname !== "/") {
+      window.history.pushState(null, "", "/");
+    }
+    window.setTimeout(() => {
+      document.getElementById("feedback")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  }
+
+  function saveFeedback(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const message = feedbackMessage.trim();
+    if (!message) {
+      setFeedbackNotice("Add a short message first.");
+      return;
+    }
+    const entry = {
+      type: feedbackType,
+      device: feedbackDevice.trim(),
+      message,
+      createdAt: new Date().toISOString(),
+      page: typeof window === "undefined" ? "/" : window.location.pathname,
+      userAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
+    };
+    let existing: Array<typeof entry> = [];
+    try {
+      const saved = window.localStorage.getItem("ovicue.feedback");
+      existing = saved ? (JSON.parse(saved) as Array<typeof entry>) : [];
+    } catch {
+      existing = [];
+    }
+    window.localStorage.setItem(
+      "ovicue.feedback",
+      JSON.stringify([entry, ...existing].slice(0, 25)),
+    );
+    setFeedbackMessage("");
+    setFeedbackDevice("");
+    setFeedbackType("bug");
+    setFeedbackNotice(
+      "Saved on this device. A real feedback inbox can be connected next.",
+    );
+    trackEvent("feedback_saved_locally", { type: entry.type });
   }
 
   function chooseAudience(audience: AudienceKey) {
@@ -3064,29 +3124,57 @@ export default function Home() {
           </div>
         </section>
 
-        {feedbackFormBaseUrl && (
         <section className="ovi-section no-top" id="feedback">
           <div className="ovi-wrap ovi-feedback-block">
             <h2>Found a bug, or want something added?</h2>
             <p>
-              Tell me what broke, what device you used, and what you expected to
-              happen. The form will open here once the feedback link is
-              connected.
+              Tell me what broke, what device you used, and what would make
+              OviCue better. This version saves feedback locally until a real
+              inbox is connected.
             </p>
-            <a
-              className="ovi-btn ovi-btn-dark"
-              href={feedbackUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={openFeedback}
-            >
-              Send feedback
-            </a>
+            <form className="ovi-feedback-form" onSubmit={saveFeedback}>
+              <label>
+                <span>Feedback category</span>
+                <select
+                  value={feedbackType}
+                  onChange={(event) =>
+                    setFeedbackType(event.target.value as FeedbackType)
+                  }
+                >
+                  <option value="bug">Report a bug</option>
+                  <option value="feature">Request a feature</option>
+                  <option value="hardware">Prompter hardware issue</option>
+                  <option value="other">General feedback</option>
+                </select>
+              </label>
+              <label>
+                <span>Device and browser, optional</span>
+                <input
+                  type="text"
+                  value={feedbackDevice}
+                  onChange={(event) => setFeedbackDevice(event.target.value)}
+                  placeholder="MacBook Air / Safari, Android / Chrome"
+                />
+              </label>
+              <label>
+                <span>Your message</span>
+                <textarea
+                  required
+                  rows={4}
+                  value={feedbackMessage}
+                  onChange={(event) => setFeedbackMessage(event.target.value)}
+                  placeholder="What happened? What did you expect? What should we improve?"
+                />
+              </label>
+              <button type="submit" className="ovi-btn ovi-btn-dark">
+                Save feedback
+              </button>
+            </form>
+            {feedbackNotice && <p className="feedback-notice">{feedbackNotice}</p>}
           </div>
         </section>
-        )}
 
-        <section className="ovi-tip-strip" aria-label="Support OviCue">
+        <section className="ovi-tip-strip" id="support" aria-label="Support OviCue">
           <div className="ovi-wrap">
             <div>
               <p>
@@ -3114,30 +3202,34 @@ export default function Home() {
             <div>
               <strong>Product</strong>
               <button type="button" onClick={() => goTo("studio")}>Prompter</button>
-              <button type="button" onClick={() => goTo("help")}>Guides</button>
+              <button type="button" onClick={showFrontSpeedTest}>Speech speed test</button>
+              <a href="#features">Features</a>
+              <a href="#pricing">Pricing</a>
+            </div>
+            <div>
+              <strong>Support</strong>
+              <button type="button" onClick={() => goTo("help")}>Help center</button>
+              <button type="button" onClick={() => goTo("about")}>About OviCue</button>
+              <button type="button" onClick={showFeedbackSection}>Report a bug</button>
               <button type="button" onClick={() => goTo("changelog")}>Changelog</button>
             </div>
             <div>
-              <strong>Tools</strong>
+              <strong>Legal</strong>
+              <button type="button" onClick={() => goTo("privacy")}>Privacy policy</button>
+              <button type="button" onClick={() => goTo("terms")}>Terms of service</button>
+              <button type="button" onClick={() => goTo("accessibility")}>Accessibility</button>
             </div>
             <div>
               <strong>Company</strong>
-              <button type="button" onClick={() => goTo("about")}>About</button>
-              <button type="button" onClick={() => goTo("privacy")}>Privacy</button>
-              <button type="button" onClick={() => goTo("terms")}>Terms</button>
-              <button type="button" onClick={() => goTo("accessibility")}>Accessibility</button>
               <button type="button" onClick={() => goTo("contact")}>Contact</button>
+              <a href="#support">Support via UPI</a>
             </div>
             <div className="ovi-footer-bottom">
+              <span>© {new Date().getFullYear()} OviCue</span>
               <span>Built in Pune</span>
               <span>No cookies</span>
               <span>No ads</span>
               <span>Your scripts never leave your device</span>
-              {feedbackFormBaseUrl && (
-                <a href={feedbackUrl} onClick={openFeedback}>
-                  Report a problem
-                </a>
-              )}
             </div>
           </div>
         </footer>
@@ -3176,9 +3268,9 @@ export default function Home() {
           <button type="button" onClick={() => setAccountPanelOpen(true)}>
             <span>Profile</span>
           </button>
-          <a href="#feedback" onClick={openFeedback}>
+          <button type="button" onClick={showFeedbackSection}>
             <span>Feedback</span>
-          </a>
+          </button>
           <button type="button" onClick={() => goTo("help")}>
             <span>Help guides</span>
           </button>
