@@ -13,6 +13,11 @@ If I make a mistake, I will pause, smile, and continue.
 This video is for sharing knowledge, helping people, and becoming better every day.`;
 
 type ScrollMode = "wpm" | "timed";
+type SessionInsight = {
+  durationSeconds: number;
+  readWords: number;
+  wpm: number;
+};
 
 function splitLines(text: string) {
   return text
@@ -25,6 +30,10 @@ function formatTime(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = Math.max(0, Math.floor(totalSeconds % 60));
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+function countWords(text: string) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
 export default function Home() {
@@ -44,18 +53,30 @@ export default function Home() {
   const [cameraError, setCameraError] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recordedUrl, setRecordedUrl] = useState("");
+  const [lastInsight, setLastInsight] = useState<SessionInsight | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
+  const lineListRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
+  const animationRef = useRef<number | null>(null);
+  const lastFrameRef = useRef<number | null>(null);
+  const sessionStartRef = useRef<number | null>(null);
 
   const lines = useMemo(() => splitLines(script), [script]);
   const wordCount = useMemo(
-    () => script.trim().split(/\s+/).filter(Boolean).length,
+    () => countWords(script),
     [script],
+  );
+  const wordsRead = useMemo(
+    () =>
+      lines
+        .slice(0, Math.min(activeLine + 1, lines.length))
+        .reduce((total, line) => total + countWords(line), 0),
+    [activeLine, lines],
   );
   const wpmSeconds = Math.max(10, Math.round((wordCount / speed) * 60));
   const timedSeconds = Math.max(15, Math.round(targetMinutes * 60));
@@ -128,32 +149,68 @@ export default function Home() {
   ]);
 
   useEffect(() => {
+    if (isRunning || !lineRefs.current[activeLine]) return;
     lineRefs.current[activeLine]?.scrollIntoView({
       block: "center",
       behavior: "smooth",
     });
-  }, [activeLine]);
+  }, [activeLine, isRunning]);
 
   useEffect(() => {
-    if (!isRunning || countdown > 0 || lines.length === 0) return;
-    const currentWords = Math.max(
-      4,
-      lines[activeLine]?.split(/\s+/).filter(Boolean).length ?? 6,
-    );
-    const wpmDelay = Math.max(900, (currentWords / speed) * 60000);
-    const timedDelay = Math.max(900, (targetMinutes * 60000) / lines.length);
-    const delay = scrollMode === "timed" ? timedDelay : wpmDelay;
-    const timer = window.setTimeout(() => {
-      setActiveLine((line) => {
-        if (line >= lines.length - 1) {
-          setIsRunning(false);
-          return line;
+    if (!isRunning || countdown > 0 || lines.length === 0) {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+      lastFrameRef.current = null;
+      return;
+    }
+
+    function tick(now: number) {
+      const list = lineListRef.current;
+      if (!list) return;
+
+      if (lastFrameRef.current === null) lastFrameRef.current = now;
+      const deltaSeconds = Math.min(0.08, (now - lastFrameRef.current) / 1000);
+      lastFrameRef.current = now;
+
+      const totalScrollable = Math.max(1, list.scrollHeight - list.clientHeight);
+      const pixelsPerSecond = totalScrollable / estimatedSeconds;
+      list.scrollTop = Math.min(
+        totalScrollable,
+        list.scrollTop + pixelsPerSecond * deltaSeconds,
+      );
+
+      const center = list.getBoundingClientRect().top + list.clientHeight / 2;
+      let closestIndex = 0;
+      let closestDistance = Number.POSITIVE_INFINITY;
+      lineRefs.current.forEach((line, index) => {
+        if (!line) return;
+        const rect = line.getBoundingClientRect();
+        const distance = Math.abs(rect.top + rect.height / 2 - center);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
         }
-        return line + 1;
       });
-    }, delay);
-    return () => window.clearTimeout(timer);
-  }, [activeLine, countdown, isRunning, lines, scrollMode, speed, targetMinutes]);
+      setActiveLine((current) =>
+        current === closestIndex ? current : closestIndex,
+      );
+
+      if (list.scrollTop >= totalScrollable - 1) {
+        finishSession();
+        setIsRunning(false);
+        return;
+      }
+
+      animationRef.current = requestAnimationFrame(tick);
+    }
+
+    animationRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+      lastFrameRef.current = null;
+    };
+  }, [countdown, estimatedSeconds, isRunning, lines.length]);
 
   useEffect(() => {
     if (!isRunning || countdown <= 0) return;
@@ -189,7 +246,15 @@ export default function Home() {
 
       if (event.code === "Space") {
         event.preventDefault();
-        setIsRunning((value) => !value);
+        setIsRunning((value) => {
+          if (value) {
+            finishSession();
+            setCountdown(0);
+          } else {
+            startPrompt();
+          }
+          return !value;
+        });
       }
 
       if (event.key === "ArrowRight" || event.key === "ArrowDown") {
@@ -213,14 +278,39 @@ export default function Home() {
 
   function startPrompt() {
     if (lines.length === 0) return;
+    if (activeLine >= lines.length - 1) {
+      setActiveLine(0);
+      if (lineListRef.current) lineListRef.current.scrollTop = 0;
+    } else if (activeLine === 0 && lineListRef.current) {
+      lineListRef.current.scrollTop = 0;
+    }
+    sessionStartRef.current = performance.now() + 3000;
     setCountdown(3);
     setIsRunning(true);
   }
 
   function resetPrompt() {
+    finishSession();
     setIsRunning(false);
     setCountdown(0);
     setActiveLine(0);
+    if (lineListRef.current) lineListRef.current.scrollTop = 0;
+  }
+
+  function finishSession() {
+    if (sessionStartRef.current === null) return;
+    const durationSeconds = Math.max(
+      1,
+      (performance.now() - sessionStartRef.current) / 1000,
+    );
+    const readWords = Math.max(1, wordsRead);
+    const measuredWpm = Math.max(1, Math.round((readWords / durationSeconds) * 60));
+    setLastInsight({
+      durationSeconds: Math.round(durationSeconds),
+      readWords,
+      wpm: measuredWpm,
+    });
+    sessionStartRef.current = null;
   }
 
   function goFullscreen() {
@@ -305,17 +395,38 @@ export default function Home() {
         <div className="brand-row">
           <div>
             <p className="eyebrow">Public creator studio</p>
-            <h1>PromptFlow</h1>
+            <h1>Sumit Decode</h1>
           </div>
           <div className="status-pill">{lines.length} lines</div>
         </div>
 
         <div className="creator-intro">
-          <p>Write, rehearse, record, and teach with a bright teleprompter built for creators who want their ideas to feel easy on camera.</p>
+          <p>Decode your ideas into confident videos with a warm teleprompter for teachers, students, creators, and graders.</p>
           <div className="intro-tags" aria-label="PromptFlow highlights">
             <span>Camera ready</span>
-            <span>No signup</span>
-            <span>Daily practice</span>
+            <span>Sign in ready</span>
+            <span>Premium path</span>
+          </div>
+        </div>
+
+        <div className="account-panel">
+          <div>
+            <strong>Start free</strong>
+            <span>Use 15 practice runs to test your scripts. Upgrade when you want unlimited creator sessions.</span>
+          </div>
+          <a href="/signin-with-chatgpt?return_to=%2F">Sign in</a>
+        </div>
+
+        <div className="pricing-panel" aria-label="Plans">
+          <div>
+            <small>Free</small>
+            <strong>15 runs</strong>
+            <span>Practice, import text, and record short sessions.</span>
+          </div>
+          <div className="premium-plan">
+            <small>Premium</small>
+            <strong>₹99/year</strong>
+            <span>Unlimited prompting, longer scripts, and future saved history.</span>
           </div>
         </div>
 
@@ -359,8 +470,8 @@ export default function Home() {
         </div>
 
         <div className="creator-note">
-          <strong>Creator rhythm</strong>
-          <span>Paste an idea, start the prompt, look near the lens, and let each line carry you into the next.</span>
+          <strong>Auto-roll rhythm</strong>
+          <span>Press Start once. The script now moves upward continuously at the pace or target time you choose.</span>
         </div>
 
         <div className="segmented-control" aria-label="Scroll mode">
@@ -495,6 +606,7 @@ export default function Home() {
               className="primary-button"
               onClick={() => {
                 if (isRunning) {
+                  finishSession();
                   setIsRunning(false);
                   setCountdown(0);
                 } else {
@@ -540,6 +652,7 @@ export default function Home() {
             <div className="empty-state">Paste a script to begin.</div>
           ) : (
             <div
+              ref={lineListRef}
               className="line-list"
               style={{
                 fontSize,
@@ -590,6 +703,36 @@ export default function Home() {
           ) : (
             <span>Space starts or pauses. Arrow keys move line by line.</span>
           )}
+        </div>
+
+        <div className="insight-panel" aria-label="Reading speed insight">
+          <div>
+            <small>Reading insight</small>
+            <strong>
+              {lastInsight ? `${lastInsight.wpm} wpm` : "Start a session"}
+            </strong>
+            <span>
+              {lastInsight
+                ? `${lastInsight.readWords} words in ${formatTime(
+                    lastInsight.durationSeconds,
+                  )}. Suggested roll speed is ${Math.min(
+                    32,
+                    Math.max(8, lastInsight.wpm),
+                  )} wpm.`
+                : "After you pause or finish, Sumit Decode estimates your pace and suggests a better roll speed."}
+            </span>
+          </div>
+          <button
+            type="button"
+            disabled={!lastInsight}
+            onClick={() => {
+              if (!lastInsight) return;
+              setSpeed(Math.min(32, Math.max(8, lastInsight.wpm)));
+              setScrollMode("wpm");
+            }}
+          >
+            Use suggested pace
+          </button>
         </div>
       </section>
     </main>
