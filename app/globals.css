@@ -1077,6 +1077,27 @@ input[type="checkbox"] {
     0 28px 80px rgba(31, 53, 45, 0.16);
 }
 
+.prompt-stage.credits-running::before,
+.prompt-stage.credits-running::after {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 4;
+  height: 110px;
+  pointer-events: none;
+  content: "";
+}
+
+.prompt-stage.credits-running::before {
+  top: 0;
+  background: linear-gradient(rgba(239, 249, 189, 0.96), transparent);
+}
+
+.prompt-stage.credits-running::after {
+  bottom: 0;
+  background: linear-gradient(transparent, rgba(239, 249, 189, 0.96));
+}
+
 .prompt-stage:fullscreen {
   border-radius: 0;
 }
@@ -1200,6 +1221,11 @@ input[type="checkbox"] {
     transform 180ms ease;
 }
 
+.line-list.rolling p {
+  opacity: 0.78;
+  transition: none;
+}
+
 .line-list p.active {
   color: #0e2d22;
   opacity: 1;
@@ -1207,9 +1233,22 @@ input[type="checkbox"] {
   transform: scale(1.035);
 }
 
+.line-list.rolling p.active {
+  color: inherit;
+  opacity: 0.92;
+  text-shadow: none;
+  transform: none;
+}
+
 .line-list p.past {
   color: rgba(22, 49, 38, 0.34);
   opacity: 0.24;
+}
+
+.line-list.rolling p.past,
+.line-list.rolling p.future {
+  color: inherit;
+  opacity: 0.78;
 }
 
 .line-list p.future {

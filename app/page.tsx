@@ -438,18 +438,15 @@ export default function Home() {
       if (!list) return;
 
       if (lastFrameRef.current === null) lastFrameRef.current = now;
-      const deltaSeconds = Math.min(0.08, (now - lastFrameRef.current) / 1000);
+      const deltaSeconds = Math.min(0.05, (now - lastFrameRef.current) / 1000);
       lastFrameRef.current = now;
 
       const totalScrollable = Math.max(1, list.scrollHeight - list.clientHeight);
-      const averageWordsPerLine = Math.max(3, wordCount / Math.max(1, lines.length));
-      const wpmPixelsPerSecond = Math.max(
-        72,
-        ((fontSize * 3.1) / averageWordsPerLine) * (speed / 60),
-      );
+      const pixelsPerWord = totalScrollable / Math.max(1, wordCount);
+      const wpmPixelsPerSecond = Math.max(34, (speed / 60) * pixelsPerWord);
       const pixelsPerSecond =
         scrollMode === "timed"
-          ? Math.max(48, totalScrollable / estimatedSeconds)
+          ? Math.max(30, totalScrollable / estimatedSeconds)
           : wpmPixelsPerSecond;
       const nextScrollTop = Math.min(
         totalScrollable,
@@ -1261,7 +1258,7 @@ export default function Home() {
 
         <div className="creator-note">
           <strong>Auto-roll rhythm</strong>
-          <span>Press Start once. The script now moves upward continuously at the pace or target time you choose.</span>
+          <span>Press Start once. The whole script now moves upward like movie credits at the pace or target time you choose.</span>
         </div>
 
         <div className="segmented-control" aria-label="Scroll mode">
@@ -1489,6 +1486,7 @@ export default function Home() {
           ref={stageRef}
           className={[
             "prompt-stage",
+            isRunning && countdown === 0 ? "credits-running" : "",
             mirrorHorizontal ? "mirror-x" : "",
             mirrorVertical ? "mirror-y" : "",
             cameraEnabled ? "has-camera" : "",
@@ -1519,7 +1517,7 @@ export default function Home() {
           ) : (
             <div
               ref={lineListRef}
-              className="line-list"
+              className={isRunning && countdown === 0 ? "line-list rolling" : "line-list"}
               style={{
                 fontSize,
                 fontStyle: textItalic ? "italic" : "normal",
