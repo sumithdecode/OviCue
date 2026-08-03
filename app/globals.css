@@ -549,7 +549,7 @@ button:disabled {
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  grid-template-columns: minmax(174px, 210px) minmax(280px, 350px) minmax(0, 1fr);
   gap: 14px;
   width: 100%;
   max-width: 100vw;
@@ -562,6 +562,114 @@ button:disabled {
 .editor-panel,
 .prompt-panel {
   min-width: 0;
+}
+
+.workspace-sidebar {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-height: calc(100dvh - 24px);
+  border: 1px solid rgba(15, 138, 97, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 245, 0.62);
+  padding: 14px;
+  overflow: hidden;
+}
+
+.workspace-brand,
+.workspace-nav button,
+.workspace-nav a,
+.signin-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--charcoal);
+  text-decoration: none;
+}
+
+.workspace-brand {
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 4px;
+  font-family: "Bricolage Grotesque", Inter, Arial, system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.workspace-brand i {
+  width: 18px;
+  height: 24px;
+  border-right: 3px solid var(--accent-strong);
+  border-left: 3px solid var(--accent-strong);
+  background:
+    linear-gradient(90deg, transparent 35%, var(--accent-strong) 35% 50%, transparent 50%),
+    linear-gradient(180deg, transparent 14%, var(--accent-strong) 14% 28%, transparent 28% 44%, var(--accent-strong) 44% 58%, transparent 58%);
+}
+
+.workspace-brand strong {
+  border-radius: 999px;
+  background: rgba(220, 236, 107, 0.58);
+  color: var(--accent-strong);
+  padding: 4px 8px;
+  font-family: "Instrument Sans", Inter, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.workspace-nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+}
+
+.workspace-nav button,
+.workspace-nav a {
+  justify-content: space-between;
+  min-height: 42px;
+  border-radius: 12px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.workspace-nav button.selected,
+.workspace-nav button:hover,
+.workspace-nav a:hover {
+  background: rgba(245, 216, 92, 0.24);
+}
+
+.workspace-nav small {
+  color: var(--ink-soft);
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.workspace-bottom {
+  display: grid;
+  gap: 10px;
+  margin-top: auto;
+  border-top: 1px solid rgba(15, 138, 97, 0.16);
+  padding-top: 14px;
+}
+
+.signin-button {
+  justify-content: center;
+  min-height: 42px;
+  border: 1px solid rgba(15, 138, 97, 0.22);
+  border-radius: 999px;
+  background: var(--accent-strong);
+  color: #fffff5;
+}
+
+.workspace-bottom p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .editor-panel {
@@ -592,6 +700,21 @@ button:disabled {
 .prompt-toolbar {
   justify-content: space-between;
   gap: 16px;
+}
+
+.brand-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.icon-button {
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 0 12px;
+  font-size: 13px;
 }
 
 .prompt-toolbar > div:first-child {
@@ -1413,6 +1536,85 @@ input[type="checkbox"] {
   box-shadow: 0 26px 80px rgba(19, 42, 34, 0.24);
 }
 
+.account-card {
+  width: min(620px, 100%);
+  border: 1px solid rgba(15, 138, 97, 0.22);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 250, 0.98), rgba(231, 248, 179, 0.94)),
+    var(--panel);
+  padding: 24px;
+  box-shadow: 0 26px 80px rgba(19, 42, 34, 0.24);
+}
+
+.account-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-card-header button {
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 0 12px;
+}
+
+.account-card h2 {
+  margin: 14px 0 10px;
+  color: var(--charcoal);
+  font-family: "Bricolage Grotesque", Inter, Arial, system-ui, sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3.1rem);
+  line-height: 0.98;
+}
+
+.account-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.signin-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.signin-options button {
+  min-height: 52px;
+  border-color: rgba(15, 138, 97, 0.22);
+  background: rgba(255, 255, 245, 0.76);
+}
+
+.account-roadmap {
+  margin-top: 20px;
+  border: 1px solid rgba(15, 138, 97, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 245, 0.56);
+  padding: 14px;
+}
+
+.account-roadmap span {
+  color: var(--accent-strong);
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.account-roadmap ul {
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+.account-roadmap li {
+  color: var(--ink-soft);
+  font-weight: 760;
+  line-height: 1.45;
+}
+
 .permission-card h2 {
   margin: 8px 0 10px;
   color: var(--charcoal);
@@ -1449,6 +1651,16 @@ input[type="checkbox"] {
     grid-template-columns: 1fr;
   }
 
+  .app-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .workspace-sidebar {
+    display: none;
+  }
+
   .welcome-hero {
     min-height: auto;
   }
@@ -1458,7 +1670,9 @@ input[type="checkbox"] {
   }
 
   .prompt-panel {
+    height: auto;
     min-height: 78vh;
+    overflow: visible;
   }
 }
 
@@ -1510,6 +1724,10 @@ input[type="checkbox"] {
   .toolbar-speed-control {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .signin-options {
+    grid-template-columns: 1fr;
   }
 
   .control-stack label {

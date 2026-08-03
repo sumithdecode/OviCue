@@ -233,6 +233,7 @@ export default function Home() {
   const [permissionIntent, setPermissionIntent] =
     useState<PermissionIntent | null>(null);
   const [permissionPrimed, setPermissionPrimed] = useState(false);
+  const [accountPanelOpen, setAccountPanelOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedUrl, setRecordedUrl] = useState("");
   const [lastInsight, setLastInsight] = useState<SessionInsight | null>(null);
@@ -1400,13 +1401,67 @@ export default function Home() {
 
   return (
     <main className="app-shell">
+      <aside className="workspace-sidebar" aria-label="Ovi workspace">
+        <button
+          type="button"
+          className="workspace-brand"
+          onClick={() => setExperienceMode("welcome")}
+          aria-label="Open Ovi landing page"
+        >
+          <i />
+          <span>{productName}</span>
+          <strong>Free</strong>
+        </button>
+        <nav className="workspace-nav" aria-label="Workspace sections">
+          <button type="button" className="selected">
+            <span>Prompt studio</span>
+          </button>
+          <button type="button" onClick={() => setAccountPanelOpen(true)}>
+            <span>My scripts</span>
+            <small>soon</small>
+          </button>
+          <button type="button" onClick={() => setAccountPanelOpen(true)}>
+            <span>Pace insights</span>
+            <small>local</small>
+          </button>
+          <button type="button" onClick={() => setAccountPanelOpen(true)}>
+            <span>Profile</span>
+          </button>
+          <a href="#feedback" onClick={openFeedback}>
+            <span>Feedback</span>
+          </a>
+        </nav>
+        <div className="workspace-bottom">
+          <button
+            type="button"
+            className="signin-button"
+            onClick={() => setAccountPanelOpen(true)}
+          >
+            Sign in
+          </button>
+          <p>
+            Local mode today. Sign in is staged for saved scripts, history, and
+            paid plans later.
+          </p>
+        </div>
+      </aside>
       <section className="editor-panel" aria-label="Script editor">
         <div className="brand-row">
           <div>
             <p className="eyebrow">India-first creator prompter</p>
             <h1>{productName}</h1>
           </div>
-          <div className="status-pill">{lines.length} lines</div>
+          <div className="brand-actions">
+            <button
+              type="button"
+              className="icon-button"
+              onClick={() => setAccountPanelOpen(true)}
+              aria-label="Account and sign in options"
+            >
+              Sign in
+            </button>
+            <div className="status-pill">{lines.length} lines</div>
+          </div>
         </div>
 
         <div className="creator-intro">
@@ -1958,6 +2013,41 @@ export default function Home() {
               >
                 Allow and continue
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {accountPanelOpen && (
+        <div className="permission-overlay" role="dialog" aria-modal="true">
+          <div className="account-card">
+            <div className="account-card-header">
+              <span className="permission-mark">Account preview</span>
+              <button
+                type="button"
+                onClick={() => setAccountPanelOpen(false)}
+                aria-label="Close account options"
+              >
+                Close
+              </button>
+            </div>
+            <h2>Sign in options are ready for the next phase.</h2>
+            <p>
+              Ovi still works without login. Later, signing in can save scripts,
+              sync devices, keep pace history, and unlock paid plans.
+            </p>
+            <div className="signin-options" aria-label="Future sign in options">
+              <button type="button">Continue with Google</button>
+              <button type="button">Continue with email</button>
+              <button type="button">Continue with phone</button>
+            </div>
+            <div className="account-roadmap">
+              <span>Planned after database setup</span>
+              <ul>
+                <li>Saved scripts across phone and laptop</li>
+                <li>Reading history and pace reports</li>
+                <li>Feedback inbox and issue tracking</li>
+                <li>Optional premium plan access</li>
+              </ul>
             </div>
           </div>
         </div>
