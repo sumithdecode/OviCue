@@ -2159,6 +2159,36 @@ input[type="checkbox"] {
   width: min(1000px, 100%);
 }
 
+.front-tool-switch {
+  display: flex;
+  width: fit-content;
+  gap: 8px;
+  margin: 0 auto 14px;
+  border: 1px solid var(--ovi-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 245, 0.72);
+  padding: 6px;
+}
+
+.front-tool-switch button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  padding: 0 16px;
+  font-weight: 900;
+}
+
+.front-tool-switch button.selected {
+  background: var(--accent);
+  color: #fffff5;
+}
+
+.front-speech-test {
+  margin-top: 0;
+}
+
 .ovi-glass {
   overflow: hidden;
   border-radius: 20px;

@@ -89,6 +89,7 @@ type StaticPageMode =
   | "not-found";
 type ExperienceMode = "welcome" | "studio" | "speech-speed-test" | StaticPageMode;
 type TextAlign = "left" | "center" | "right";
+type FrontTool = "prompter-demo" | "speed-test";
 type MediaConsentIntent =
   | "microphone"
   | "camera"
@@ -774,6 +775,7 @@ export default function Home() {
   const [demoPlaying, setDemoPlaying] = useState(false);
   const [demoMirror, setDemoMirror] = useState(false);
   const [demoEditing, setDemoEditing] = useState(false);
+  const [frontTool, setFrontTool] = useState<FrontTool>("prompter-demo");
   const [speechTestKind, setSpeechTestKind] =
     useState<SpeechTestKind>("conversational");
   const [isSpeechTestRunning, setIsSpeechTestRunning] = useState(false);
@@ -1992,6 +1994,21 @@ export default function Home() {
     event.currentTarget.href = feedbackUrl;
   }
 
+  function showFrontSpeedTest() {
+    setExperienceMode("welcome");
+    setFrontTool("speed-test");
+    if (typeof window === "undefined") return;
+    if (window.location.pathname !== "/") {
+      window.history.pushState(null, "", "/");
+    }
+    window.setTimeout(() => {
+      document.getElementById("rig")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  }
+
   if (experienceMode === "speech-speed-test") {
     const activePassage = speechSpeedPassages[speechTestKind];
     const resultBand = speechTestResult
@@ -2267,6 +2284,11 @@ export default function Home() {
   }
 
   if (experienceMode === "welcome") {
+    const frontActivePassage = speechSpeedPassages[speechTestKind];
+    const frontResultBand = speechTestResult
+      ? speechSpeedBandFor(speechTestResult.wpm)
+      : null;
+
     return (
       <main className="ovi-page">
         <nav className="ovi-nav">
@@ -2276,7 +2298,7 @@ export default function Home() {
             </a>
             <div className="ovi-navlinks">
               <a href="#how">How it works</a>
-              <button type="button" onClick={() => goTo("speech-speed-test")}>Speed test</button>
+              <button type="button" onClick={showFrontSpeedTest}>Speed test</button>
               <a href="#features">Features</a>
               <a href="#free">What&apos;s free</a>
               <button type="button" onClick={() => goTo("about")}>About</button>
@@ -2318,7 +2340,7 @@ export default function Home() {
               <button
                 type="button"
                 className="ovi-btn ovi-btn-ghost"
-                onClick={() => goTo("speech-speed-test")}
+                onClick={showFrontSpeedTest}
               >
                 Do the speed test
               </button>
@@ -2332,104 +2354,228 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="ovi-wrap ovi-rig" id="rig" aria-label="Live teleprompter preview">
-          <div className="ovi-glass ovi-reveal delay-5">
-            <div className={demoPlaying ? "ovi-stage dim" : "ovi-stage"}>
-              <div
-                ref={demoTrackRef}
-                className="ovi-track"
-                contentEditable={demoEditing}
-                suppressContentEditableWarning
-                tabIndex={0}
-                onClick={() => {
-                  setDemoPlaying(false);
-                  setDemoEditing(true);
-                  demoOffsetRef.current = 0;
-                }}
-                onBlur={(event) => {
-                  setDemoEditing(false);
-                  setDemoText(event.currentTarget.innerText);
-                }}
-                onInput={(event) => {
-                  setDemoText(event.currentTarget.innerText);
-                  trackTextEditedOnce();
-                }}
-              >
-                {demoLines.map((line, index) => (
-                  <p key={`${line}-${index}`}>{line}</p>
-                ))}
-              </div>
-              <div className="ovi-cueline" />
-              <div className="ovi-fade-top" />
-              <div className="ovi-fade-bottom" />
-            </div>
-            <div className="ovi-deck">
-              <button
-                type="button"
-                className="ovi-key play"
-                onClick={() => setDemoPlaying((value) => !value)}
-              >
-                {demoPlaying ? "Pause" : "Play"}
-              </button>
-              <div className="ovi-speed-bank" aria-label="Scroll speed">
-                <span>Scroll Speed</span>
-                {demoSpeedPresets.map((preset, index) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    className={Math.abs(demoWpm - preset) < 8 ? "selected" : ""}
-                    aria-pressed={Math.abs(demoWpm - preset) < 8}
+        <section
+          className="ovi-wrap ovi-rig"
+          id="rig"
+          aria-label={frontTool === "speed-test" ? "Speech speed test" : "Live teleprompter preview"}
+        >
+          <div className="front-tool-switch" aria-label="Choose OviCue tool">
+            <button
+              type="button"
+              className={frontTool === "prompter-demo" ? "selected" : ""}
+              onClick={() => setFrontTool("prompter-demo")}
+            >
+              Prompter preview
+            </button>
+            <button
+              type="button"
+              className={frontTool === "speed-test" ? "selected" : ""}
+              onClick={() => setFrontTool("speed-test")}
+            >
+              Speed test
+            </button>
+          </div>
+
+          {frontTool === "prompter-demo" ? (
+            <>
+              <div className="ovi-glass ovi-reveal delay-5">
+                <div className={demoPlaying ? "ovi-stage dim" : "ovi-stage"}>
+                  <div
+                    ref={demoTrackRef}
+                    className="ovi-track"
+                    contentEditable={demoEditing}
+                    suppressContentEditableWarning
+                    tabIndex={0}
                     onClick={() => {
-                      setDemoWpm(preset);
-                      trackEvent("speed_changed", {
-                        speed: index + 1,
-                        wpm: preset,
-                      });
+                      setDemoPlaying(false);
+                      setDemoEditing(true);
+                      demoOffsetRef.current = 0;
+                    }}
+                    onBlur={(event) => {
+                      setDemoEditing(false);
+                      setDemoText(event.currentTarget.innerText);
+                    }}
+                    onInput={(event) => {
+                      setDemoText(event.currentTarget.innerText);
+                      trackTextEditedOnce();
                     }}
                   >
-                    {index + 1}
+                    {demoLines.map((line, index) => (
+                      <p key={`${line}-${index}`}>{line}</p>
+                    ))}
+                  </div>
+                  <div className="ovi-cueline" />
+                  <div className="ovi-fade-top" />
+                  <div className="ovi-fade-bottom" />
+                </div>
+                <div className="ovi-deck">
+                  <button
+                    type="button"
+                    className="ovi-key play"
+                    onClick={() => setDemoPlaying((value) => !value)}
+                  >
+                    {demoPlaying ? "Pause" : "Play"}
                   </button>
+                  <div className="ovi-speed-bank" aria-label="Scroll speed">
+                    <span>Scroll Speed</span>
+                    {demoSpeedPresets.map((preset, index) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        className={Math.abs(demoWpm - preset) < 8 ? "selected" : ""}
+                        aria-pressed={Math.abs(demoWpm - preset) < 8}
+                        onClick={() => {
+                          setDemoWpm(preset);
+                          trackEvent("speed_changed", {
+                            speed: index + 1,
+                            wpm: preset,
+                          });
+                        }}
+                      >
+                        {index + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="ovi-key"
+                    aria-pressed={demoMirror}
+                    aria-label="Mirror mode"
+                    onClick={() =>
+                      setDemoMirror((value) => {
+                        if (!value) trackEvent("mirror_toggled");
+                        return !value;
+                      })
+                    }
+                  >
+                    ⇋
+                  </button>
+                  <button
+                    type="button"
+                    className="ovi-key"
+                    aria-label="Back to start"
+                    onClick={() => {
+                      demoOffsetRef.current = 0;
+                      if (demoTrackRef.current) {
+                        demoTrackRef.current.style.transform = `translate3d(-50%, 0, 0) scaleX(${
+                          demoMirror ? -1 : 1
+                        })`;
+                      }
+                    }}
+                  >
+                    ↺
+                  </button>
+                  <div className="ovi-spacer" />
+                  <div className="ovi-readout">
+                    <b>{demoWpm}</b> wpm <span>·</span> <span>{demoWordCount}</span>{" "}
+                    words <span>·</span> <span>{formatTime(demoDuration)}</span>
+                  </div>
+                </div>
+              </div>
+              <p className="ovi-mono ovi-shortcut">
+                Space = play · ↑ ↓ = speed · click the text to edit
+              </p>
+            </>
+          ) : (
+            <div className="speech-test-panel front-speech-test">
+              <div className="speech-test-top">
+                <div className="speech-test-tabs" aria-label="Passage type">
+                  {(Object.keys(speechSpeedPassages) as SpeechTestKind[]).map(
+                    (kind) => (
+                      <button
+                        key={kind}
+                        type="button"
+                        disabled={isSpeechTestRunning}
+                        className={speechTestKind === kind ? "selected" : ""}
+                        onClick={() => {
+                          resetSpeechSpeedTest();
+                          setSpeechTestKind(kind);
+                        }}
+                      >
+                        {speechSpeedPassages[kind].label}
+                      </button>
+                    ),
+                  )}
+                </div>
+                <strong>{formatTime(speechTestElapsed)}</strong>
+              </div>
+              <p className="speech-test-instruction">
+                {isSpeechTestRunning
+                  ? "Read out loud at your normal speaking voice."
+                  : "Pick a passage, press Start, read it aloud, then press Done."}
+              </p>
+              <div className="speech-test-passage" aria-label="Speech test passage">
+                {frontActivePassage.text.split(/\n+/).map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
                 ))}
               </div>
-              <button
-                type="button"
-                className="ovi-key"
-                aria-pressed={demoMirror}
-                aria-label="Mirror mode"
-                onClick={() =>
-                  setDemoMirror((value) => {
-                    if (!value) trackEvent("mirror_toggled");
-                    return !value;
-                  })
-                }
-              >
-                ⇋
-              </button>
-              <button
-                type="button"
-                className="ovi-key"
-                aria-label="Back to start"
-                onClick={() => {
-                  demoOffsetRef.current = 0;
-                  if (demoTrackRef.current) {
-                    demoTrackRef.current.style.transform = `translate3d(-50%, 0, 0) scaleX(${
-                      demoMirror ? -1 : 1
-                    })`;
-                  }
-                }}
-              >
-                ↺
-              </button>
-              <div className="ovi-spacer" />
-              <div className="ovi-readout">
-                <b>{demoWpm}</b> wpm <span>·</span> <span>{demoWordCount}</span>{" "}
-                words <span>·</span> <span>{formatTime(demoDuration)}</span>
+              {speechTestError && (
+                <div className="speech-test-error">{speechTestError}</div>
+              )}
+              {speechTestResult && frontResultBand && (
+                <div className="speech-test-result">
+                  <span className="ovi-mono">Your speech speed</span>
+                  <strong>{speechTestResult.wpm} words per minute</strong>
+                  <p>
+                    {frontResultBand.label}. {frontResultBand.description}
+                  </p>
+                </div>
+              )}
+              <div className="speech-test-actions">
+                {!isSpeechTestRunning && !speechTestResult && (
+                  <button
+                    type="button"
+                    className="ovi-btn ovi-btn-dark"
+                    onClick={() => startSpeechSpeedTest()}
+                  >
+                    Start the test
+                  </button>
+                )}
+                {isSpeechTestRunning && (
+                  <button
+                    type="button"
+                    className="ovi-btn ovi-btn-dark"
+                    onClick={finishSpeechSpeedTest}
+                  >
+                    Done
+                  </button>
+                )}
+                {speechTestResult && (
+                  <>
+                    <button
+                      type="button"
+                      className="ovi-btn ovi-btn-dark"
+                      onClick={() => openPrompterWithWpm(speechTestResult.wpm)}
+                    >
+                      Start prompting at {speechTestResult.wpm} wpm
+                    </button>
+                    <button
+                      type="button"
+                      className="ovi-btn ovi-btn-ghost"
+                      onClick={resetSpeechSpeedTest}
+                    >
+                      Test again
+                    </button>
+                  </>
+                )}
               </div>
+              {speechTestAutoStopAvailable && !isSpeechTestRunning && !speechTestResult && (
+                <label className="speech-auto-stop">
+                  <input
+                    type="checkbox"
+                    checked={speechTestAutoStop}
+                    onChange={(event) =>
+                      setSpeechTestAutoStop(event.target.checked)
+                    }
+                  />
+                  <span>
+                    Stop the timer automatically when I finish. Uses your
+                    microphone; nothing is recorded or sent.
+                  </span>
+                </label>
+              )}
             </div>
-          </div>
-          <p className="ovi-mono ovi-shortcut">
-            Space = play · ↑ ↓ = speed · click the text to edit
-          </p>
+          )}
         </section>
 
         <section className="ovi-section" id="how">
@@ -2551,7 +2697,7 @@ export default function Home() {
                 <button
                   type="button"
                   className="ovi-btn ovi-btn-dark"
-                  onClick={() => goTo("speech-speed-test")}
+                  onClick={showFrontSpeedTest}
                 >
                   Take the speech speed test
                 </button>
