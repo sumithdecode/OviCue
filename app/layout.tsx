@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PromptFlow Teleprompter",
+  title: "PromptFlow - Free Online Teleprompter for Creators",
   description:
-    "A simple teleprompter for daily English practice and educational video recording.",
+    "A bright online teleprompter for creators, teachers, and speakers to paste scripts, practice, record, and publish better videos.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

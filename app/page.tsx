@@ -4,13 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const starterScript = `Today I am practicing clear English communication.
 
-My goal is to speak slowly, breathe naturally, and sound confident.
+My goal is to speak clearly, breathe naturally, and sound confident.
 
-I will explain one idea at a time.
+I will teach one useful idea at a time.
 
 If I make a mistake, I will pause, smile, and continue.
 
-This video is for learning, teaching, and becoming better every day.`;
+This video is for sharing knowledge, helping people, and becoming better every day.`;
 
 type ScrollMode = "wpm" | "timed";
 
@@ -304,15 +304,24 @@ export default function Home() {
       <section className="editor-panel" aria-label="Script editor">
         <div className="brand-row">
           <div>
-            <p className="eyebrow">Daily video studio</p>
+            <p className="eyebrow">Public creator studio</p>
             <h1>PromptFlow</h1>
           </div>
           <div className="status-pill">{lines.length} lines</div>
         </div>
 
+        <div className="creator-intro">
+          <p>Write, rehearse, record, and teach with a bright teleprompter built for creators who want their ideas to feel easy on camera.</p>
+          <div className="intro-tags" aria-label="PromptFlow highlights">
+            <span>Camera ready</span>
+            <span>No signup</span>
+            <span>Daily practice</span>
+          </div>
+        </div>
+
         <div className="script-actions">
           <label className="script-label" htmlFor="script">
-            Paste your script
+            Your video script
           </label>
           <label className="import-button">
             Import .txt
@@ -331,7 +340,7 @@ export default function Home() {
             resetPrompt();
           }}
           spellCheck
-          placeholder="Paste the words you want to practice..."
+          placeholder="Paste the words you want to teach, present, or practice..."
         />
 
         <div className="stats-grid" aria-label="Script statistics">
@@ -347,6 +356,11 @@ export default function Home() {
             <span>{progress}%</span>
             <small>progress</small>
           </div>
+        </div>
+
+        <div className="creator-note">
+          <strong>Creator rhythm</strong>
+          <span>Paste an idea, start the prompt, look near the lens, and let each line carry you into the next.</span>
         </div>
 
         <div className="segmented-control" aria-label="Scroll mode">
