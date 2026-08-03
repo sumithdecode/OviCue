@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 const starterScript = `Today I am practicing clear English communication.
 
@@ -23,8 +23,17 @@ type SessionInsight = {
   wpm: number;
 };
 
-const productName = "OviCue";
-const productShortName = "OC";
+const productName = "ovi";
+
+const landingDemoScript = `This is a real teleprompter, not a picture of one.
+
+The text is moving at one hundred and thirty words a minute -- about the speed of a teacher explaining something.
+
+Press the arrows to speed up or slow down. The number is real words per minute, not a one to ten slider that means nothing.
+
+Turn on mirror mode if you shoot through beam-splitter glass. The reflection flips the text, so we flip it first.
+
+Click the text to edit it. Paste your own script and read it right here, before you sign up for anything. Because you never have to.`;
 
 const languageSamples: Record<ScriptLanguage, string> = {
   english: starterScript,
@@ -76,6 +85,80 @@ function countWords(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
+function CueDivider({ label }: { label: string }) {
+  return (
+    <div className="ovi-cue">
+      <i />
+      <span />
+      <strong className="ovi-mono">{label}</strong>
+      <span />
+      <i />
+    </div>
+  );
+}
+
+function FeatureRow({
+  title,
+  copy,
+  reverse = false,
+  visual,
+}: {
+  title: string;
+  copy: string;
+  reverse?: boolean;
+  visual: ReactNode;
+}) {
+  return (
+    <div className={reverse ? "ovi-split reverse" : "ovi-split"}>
+      <div>
+        <h2>{title}</h2>
+        <p className="ovi-lead">{copy}</p>
+      </div>
+      {visual}
+    </div>
+  );
+}
+
+function PlanCard({
+  label,
+  price,
+  suffix,
+  items,
+  action,
+  hot = false,
+  onClick,
+}: {
+  label: string;
+  price: string;
+  suffix: string;
+  items: string[];
+  action: string;
+  hot?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <div className={hot ? "ovi-plan hot" : "ovi-plan"}>
+      <span className="ovi-mono">{label}</span>
+      <div className="ovi-price">
+        {price}
+        {suffix && <small>{suffix}</small>}
+      </div>
+      <ul>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        className={hot ? "ovi-btn ovi-btn-dark" : "ovi-btn ovi-btn-ghost"}
+        onClick={onClick}
+      >
+        {action}
+      </button>
+    </div>
+  );
+}
+
 export default function Home() {
   const [experienceMode, setExperienceMode] =
     useState<ExperienceMode>("welcome");
@@ -110,19 +193,33 @@ export default function Home() {
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationRemaining, setCalibrationRemaining] = useState(30);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [demoText, setDemoText] = useState(landingDemoScript);
+  const [demoWpm, setDemoWpm] = useState(130);
+  const [demoPlaying, setDemoPlaying] = useState(false);
+  const [demoMirror, setDemoMirror] = useState(false);
+  const [demoEditing, setDemoEditing] = useState(false);
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lineListRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const demoTrackRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const animationRef = useRef<number | null>(null);
+  const demoAnimationRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
+  const demoLastFrameRef = useRef<number | null>(null);
+  const demoOffsetRef = useRef(0);
+  const demoPlayingRef = useRef(false);
+  const demoEditingRef = useRef(false);
   const sessionStartRef = useRef<number | null>(null);
   const calibrationStartRef = useRef<number | null>(null);
 
   const lines = useMemo(() => splitLines(script), [script]);
+  const demoLines = useMemo(() => splitLines(demoText), [demoText]);
+  const demoWordCount = useMemo(() => countWords(demoText), [demoText]);
+  const demoDuration = Math.max(1, Math.round((demoWordCount / demoWpm) * 60));
   const wordCount = useMemo(
     () => countWords(script),
     [script],
@@ -241,6 +338,94 @@ export default function Home() {
   }, [activeLine, isRunning]);
 
   useEffect(() => {
+    demoPlayingRef.current = demoPlaying;
+    demoEditingRef.current = demoEditing;
+  }, [demoEditing, demoPlaying]);
+
+  useEffect(() => {
+    if (experienceMode !== "welcome") return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduceMotion) return;
+    const timer = window.setTimeout(() => setDemoPlaying(true), 1400);
+    return () => window.clearTimeout(timer);
+  }, [experienceMode]);
+
+  useEffect(() => {
+    if (experienceMode !== "welcome") return;
+
+    function tick(now: number) {
+      const track = demoTrackRef.current;
+      if (!track) return;
+      if (demoLastFrameRef.current === null) demoLastFrameRef.current = now;
+      const deltaSeconds = Math.min(
+        (now - demoLastFrameRef.current) / 1000,
+        0.05,
+      );
+      demoLastFrameRef.current = now;
+
+      const words = Math.max(1, countWords(track.innerText));
+      const trackHeight = Math.max(
+        1,
+        track.scrollHeight - track.offsetHeight * 0.6,
+      );
+      const pixelsPerSecond = (demoWpm / 60) * (trackHeight / words);
+
+      if (demoPlayingRef.current && !demoEditingRef.current) {
+        demoOffsetRef.current += pixelsPerSecond * deltaSeconds;
+        if (demoOffsetRef.current > track.scrollHeight - 60) {
+          demoOffsetRef.current = 0;
+        }
+      }
+
+      track.style.transform = `translate3d(-50%, ${-demoOffsetRef.current}px, 0) scaleX(${
+        demoMirror ? -1 : 1
+      })`;
+      demoAnimationRef.current = requestAnimationFrame(tick);
+    }
+
+    demoAnimationRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (demoAnimationRef.current) cancelAnimationFrame(demoAnimationRef.current);
+      demoAnimationRef.current = null;
+      demoLastFrameRef.current = null;
+    };
+  }, [demoMirror, demoWpm, experienceMode]);
+
+  useEffect(() => {
+    function handleDemoKeys(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (
+        experienceMode !== "welcome" ||
+        demoEditingRef.current ||
+        target?.tagName === "TEXTAREA" ||
+        target?.tagName === "INPUT"
+      ) {
+        return;
+      }
+
+      if (event.code === "Space") {
+        event.preventDefault();
+        setDemoPlaying((value) => !value);
+      }
+
+      if (event.code === "ArrowUp") {
+        event.preventDefault();
+        setDemoWpm((value) => Math.min(250, value + 10));
+      }
+
+      if (event.code === "ArrowDown") {
+        event.preventDefault();
+        setDemoWpm((value) => Math.max(60, value - 10));
+      }
+    }
+
+    window.addEventListener("keydown", handleDemoKeys);
+    return () => window.removeEventListener("keydown", handleDemoKeys);
+  }, [experienceMode]);
+
+  useEffect(() => {
     if (!isRunning || countdown > 0 || lines.length === 0) {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
@@ -356,6 +541,7 @@ export default function Home() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (experienceMode !== "studio") return;
       const target = event.target as HTMLElement | null;
       if (target?.tagName === "TEXTAREA" || target?.tagName === "INPUT") {
         return;
@@ -391,7 +577,7 @@ export default function Home() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lines.length]);
+  }, [experienceMode, lines.length]);
 
   function startPrompt() {
     if (lines.length === 0) return;
@@ -601,200 +787,337 @@ export default function Home() {
 
   if (experienceMode === "welcome") {
     return (
-      <main className="welcome-shell">
-        <section className="welcome-hero" aria-label={`${productName} welcome`}>
-          <nav className="welcome-nav">
-            <div>
-              <span className="mark">{productShortName}</span>
-              <strong>{productName}</strong>
+      <main className="ovi-page">
+        <nav className="ovi-nav">
+          <div className="ovi-wrap">
+            <a className="ovi-brand" href="#top" aria-label="ovi home">
+              <i /> {productName}
+            </a>
+            <div className="ovi-navlinks">
+              <a href="#how">How it works</a>
+              <a href="#features">Features</a>
+              <a href="#free">What&apos;s free</a>
+              <a href="#pricing">Pricing</a>
             </div>
-            <a href="/signin-with-chatgpt?return_to=%2F">Sign in</a>
-          </nav>
+            <button
+              type="button"
+              className="ovi-btn ovi-btn-dark ovi-btn-sm"
+              onClick={() => setExperienceMode("studio")}
+            >
+              Start prompting
+            </button>
+          </div>
+        </nav>
 
-          <div className="hero-copy">
-            <p className="eyebrow">Free India-first teleprompter</p>
-            <h1>Paste your script. Start reading.</h1>
-            <p>
-              A calm browser studio for teachers, students, coaches, founders,
-              and creators. Scripts stay on your device, and camera or mic
-              access is asked only when you choose to test or record.
+        <header className="ovi-hero" id="top">
+          <div className="ovi-wrap">
+            <span className="ovi-pill ovi-mono ovi-reveal">
+              Free · <b>no signup</b> · works offline
+            </span>
+            <h1 className="ovi-reveal delay-1">
+              Paste your script.
+              <em>Start reading.</em>
+            </h1>
+            <p className="ovi-lead ovi-reveal delay-2">
+              A teleprompter that runs in your browser. Ten seconds from an
+              empty page to smooth, 60 fps text moving at the speed you actually
+              talk.
             </p>
-            <div className="hero-actions">
+            <div className="ovi-cta-row ovi-reveal delay-3">
               <button
                 type="button"
-                className="primary-button"
+                className="ovi-btn ovi-btn-dark"
                 onClick={() => setExperienceMode("studio")}
               >
-                Open prompter
+                Start prompting -- it&apos;s free
               </button>
-              <a href="#how-it-works">See how it works</a>
+              <a className="ovi-btn ovi-btn-ghost" href="#how">
+                See how it works
+              </a>
             </div>
-            <div className="hero-note" aria-label="Trust notes">
-              <span>Phone, laptop, tablet</span>
-              <span>Scripts stay local</span>
-              <span>No watermark</span>
+            <div className="ovi-hero-note ovi-reveal delay-4">
+              <span className="ovi-chip ovi-mono">Phone, laptop, tablet</span>
+              <span className="ovi-chip ovi-mono">Scripts stay on your device</span>
+              <span className="ovi-chip ovi-mono">No watermark</span>
             </div>
           </div>
+        </header>
 
-          <div className="hero-preview" aria-label="Product preview">
-            <div className="preview-topbar">
-              <span />
-              <span />
-              <span />
+        <section className="ovi-wrap ovi-rig" id="rig" aria-label="Live teleprompter preview">
+          <div className="ovi-glass ovi-reveal delay-5">
+            <div className={demoPlaying ? "ovi-stage dim" : "ovi-stage"}>
+              <div
+                ref={demoTrackRef}
+                className="ovi-track"
+                contentEditable={demoEditing}
+                suppressContentEditableWarning
+                tabIndex={0}
+                onClick={() => {
+                  setDemoPlaying(false);
+                  setDemoEditing(true);
+                  demoOffsetRef.current = 0;
+                }}
+                onBlur={(event) => {
+                  setDemoEditing(false);
+                  setDemoText(event.currentTarget.innerText);
+                }}
+                onInput={(event) => setDemoText(event.currentTarget.innerText)}
+              >
+                {demoLines.map((line, index) => (
+                  <p key={`${line}-${index}`}>{line}</p>
+                ))}
+              </div>
+              <div className="ovi-cueline" />
+              <div className="ovi-fade-top" />
+              <div className="ovi-fade-bottom" />
             </div>
-            <div className="preview-stage">
-              <p>This is a real teleprompter.</p>
-              <p className="active">Read smoothly at your natural pace.</p>
-              <p>Camera and mic are your choice.</p>
+            <div className="ovi-deck">
+              <button
+                type="button"
+                className="ovi-key play"
+                onClick={() => setDemoPlaying((value) => !value)}
+              >
+                {demoPlaying ? "Pause" : "Play"}
+              </button>
+              <button
+                type="button"
+                className="ovi-key"
+                aria-label="Slower"
+                onClick={() => setDemoWpm((value) => Math.max(60, value - 10))}
+              >
+                -
+              </button>
+              <button
+                type="button"
+                className="ovi-key"
+                aria-label="Faster"
+                onClick={() => setDemoWpm((value) => Math.min(250, value + 10))}
+              >
+                +
+              </button>
+              <button
+                type="button"
+                className="ovi-key"
+                aria-pressed={demoMirror}
+                aria-label="Mirror mode"
+                onClick={() => setDemoMirror((value) => !value)}
+              >
+                ⇋
+              </button>
+              <button
+                type="button"
+                className="ovi-key"
+                aria-label="Back to start"
+                onClick={() => {
+                  demoOffsetRef.current = 0;
+                  if (demoTrackRef.current) {
+                    demoTrackRef.current.style.transform = `translate3d(-50%, 0, 0) scaleX(${
+                      demoMirror ? -1 : 1
+                    })`;
+                  }
+                }}
+              >
+                ↺
+              </button>
+              <div className="ovi-spacer" />
+              <div className="ovi-readout">
+                <b>{demoWpm}</b> wpm <span>·</span> <span>{demoWordCount}</span>{" "}
+                words <span>·</span> <span>{formatTime(demoDuration)}</span>
+              </div>
+            </div>
+          </div>
+          <p className="ovi-mono ovi-shortcut">
+            Space = play · ↑ ↓ = speed · click the text to edit
+          </p>
+        </section>
+
+        <section className="ovi-section" id="how">
+          <div className="ovi-wrap">
+            <CueDivider label="How it works" />
+            <h2>Three steps. No account in any of them.</h2>
+            <div className="ovi-grid">
+              <div className="ovi-card">
+                <span className="ovi-mono">Step one</span>
+                <h3>Paste the script</h3>
+                <p>
+                  Type it, paste it, or drop in a text file. Word count and read
+                  time appear as you write, so a 60-second reel script is 60
+                  seconds before you record it.
+                </p>
+              </div>
+              <div className="ovi-card">
+                <span className="ovi-mono">Step two</span>
+                <h3>Set your speed</h3>
+                <p>
+                  Pick a real number. 150 for news, 130 for teaching, 90 if you
+                  want room to breathe. Size, line height and width move with it.
+                </p>
+              </div>
+              <div className="ovi-card">
+                <span className="ovi-mono">Step three</span>
+                <h3>Read</h3>
+                <p>
+                  Full screen, black background, cue line at 38% so your eyes
+                  stay near the lens. Space bar pauses.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="welcome-features" aria-label="Feature preview">
-          <div>
-            <strong>Pace calibration</strong>
-            <span>Read a short passage, then {productName} suggests your roll speed.</span>
-          </div>
-          <div>
-            <strong>India-first scripts</strong>
-            <span>English, हिन्दी, and मराठी samples are ready without a database.</span>
-          </div>
-          <div>
-            <strong>Studio controls</strong>
-            <span>Camera preview, recording, mirror mode, formatting, timed scroll, and fullscreen.</span>
-          </div>
-        </section>
-
-        <section className="landing-section" id="how-it-works">
-          <div className="cue-line">
-            <i />
-            <span />
-            <strong>How it works</strong>
-            <span />
-            <i />
-          </div>
-          <h2>Three steps before a clean take.</h2>
-          <div className="landing-grid">
-            <div>
-              <small>Step one</small>
-              <strong>Paste the script</strong>
-              <p>Type, paste, or import a text file. Word count and read time update as you write.</p>
-            </div>
-            <div>
-              <small>Step two</small>
-              <strong>Test your pace</strong>
-              <p>Read a short passage. OviCue asks for mic and camera access only when you start that test.</p>
-            </div>
-            <div>
-              <small>Step three</small>
-              <strong>Read and record</strong>
-              <p>Use fullscreen, mirror mode, cue line, camera preview, and download your browser video.</p>
-            </div>
+        <section className="ovi-section no-top" id="features">
+          <div className="ovi-wrap">
+            <CueDivider label="Built for the way people actually shoot" />
+            <FeatureRow
+              title="Mirror mode, both ways"
+              copy="Beam-splitter glass flips your text left to right. Ceiling rigs flip it top to bottom too. Both toggles are here, and both are free."
+              visual={<div className="ovi-mini flip">Read me in the glass<div className="ovi-cueline" /></div>}
+            />
+            <FeatureRow
+              reverse
+              title="Camera and mic feel respectful"
+              copy="Before pace testing, camera preview, or recording, ovi shows a personal space message. Then the browser asks for access. Your script stays on this device."
+              visual={<div className="ovi-mini call"><span>Camera + mic only when you allow.</span></div>}
+            />
+            <FeatureRow
+              title="It learns your pace"
+              copy="Read a short passage for 30 seconds. The studio estimates your words per minute and lets you apply that speed to the real teleprompter."
+              visual={<div className="ovi-mini tracking"><span>and that is why we changed the process</span><span>which took about six weeks in total</span><b>▸ TRACKING · 142 WPM</b></div>}
+            />
           </div>
         </section>
 
-        <section className="landing-section">
-          <div className="cue-line">
-            <i />
-            <span />
-            <strong>Built for Indian creators</strong>
-            <span />
-            <i />
-          </div>
-          <div className="feature-split">
-            <div>
-              <h2>English interface. Indian context.</h2>
-              <p>
-                OviCue keeps the product simple in English, while supporting
-                practice scripts in English, Hindi, and Marathi for Indian
-                teachers, students, tutors, and content creators.
-              </p>
-            </div>
-            <div className="mini-stage">Read me in the glass</div>
-          </div>
-          <div className="feature-split reverse">
-            <div>
-              <h2>Privacy feels visible.</h2>
-              <p>
-                Before pace testing or recording, visitors see a clear personal
-                space prompt. The browser then asks for camera and mic access.
-                Nothing is uploaded in this version.
-              </p>
-            </div>
-            <div className="mini-stage permission-mini">
-              <span>Personal space</span>
-              <strong>Camera + mic only when you allow.</strong>
+        <section className="ovi-section no-top" id="free">
+          <div className="ovi-wrap">
+            <div className="ovi-free">
+              <h2>Free means free. Here is the whole list.</h2>
+              <ul>
+                <li>Scripts of any length</li>
+                <li>Unlimited prompting time</li>
+                <li>Mirror horizontal and vertical</li>
+                <li>Every font and size</li>
+                <li>Camera preview behind the text</li>
+                <li>Full screen reading mode</li>
+                <li>English, Hindi, and Marathi samples</li>
+                <li>30-second pace calibration</li>
+                <li>Browser recording download</li>
+                <li>No watermark on anything</li>
+                <li>No database for this version</li>
+                <li>No account, ever, if you don&apos;t want one</li>
+              </ul>
+              <p>Nothing on that list will move behind a paywall later.</p>
             </div>
           </div>
         </section>
 
-        <section className="free-panel">
-          <h2>Free means useful from day one.</h2>
-          <ul>
-            <li>Scripts of any length</li>
-            <li>Unlimited prompting time</li>
-            <li>English, Hindi, and Marathi samples</li>
-            <li>Camera preview behind text</li>
-            <li>Mirror horizontal and vertical</li>
-            <li>Fullscreen reading mode</li>
-            <li>30-second pace calibration</li>
-            <li>Browser recording download</li>
-            <li>No watermark</li>
-            <li>No database required right now</li>
-          </ul>
-        </section>
-
-        <section className="landing-section">
-          <div className="cue-line">
-            <i />
-            <span />
-            <strong>Who reads with it</strong>
-            <span />
-            <i />
-          </div>
-          <div className="audience-strip">
-            {[
-              "Teachers",
-              "Online tutors",
-              "Students",
-              "YouTubers",
-              "Reels and Shorts creators",
-              "Corporate trainers",
-              "Founders",
-              "Keynote speakers",
-              "Coaches",
-              "People practicing English",
-            ].map((item) => (
-              <span key={item}>{item}</span>
-            ))}
+        <section className="ovi-section no-top">
+          <div className="ovi-wrap">
+            <CueDivider label="Who reads with it" />
+            <div className="ovi-strip">
+              {[
+                "News desks",
+                "YouTubers",
+                "Reels and Shorts",
+                "Teachers",
+                "Online tutors",
+                "Corporate trainers",
+                "Keynote speakers",
+                "Podcasters",
+                "Doctors and lawyers",
+                "Students rehearsing",
+                "Speakers who need it slower",
+                "People practicing English",
+              ].map((item) => (
+                <span className="ovi-chip" key={item}>{item}</span>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="landing-section faq-section">
-          <div className="cue-line">
-            <i />
-            <span />
-            <strong>Questions</strong>
-            <span />
-            <i />
+        <section className="ovi-section no-top" id="pricing">
+          <div className="ovi-wrap">
+            <CueDivider label="Pricing" />
+            <h2>Pay only when you want it on every device.</h2>
+            <div className="ovi-plans">
+              <PlanCard
+                label="Free"
+                price="₹0"
+                suffix=" forever"
+                items={["Everything in the list above", "Saved in this browser", "Five-minute recordings", "No signup"]}
+                action="Start prompting"
+                onClick={() => setExperienceMode("studio")}
+              />
+              <PlanCard
+                hot
+                label="Pro"
+                price="Coming soon"
+                suffix=""
+                items={["Voice tracking", "Sync across your devices", "Recordings of any length", "Share scripts by link", "Phone as a remote control"]}
+                action="Join later"
+                onClick={() => setExperienceMode("studio")}
+              />
+              <PlanCard
+                label="Team"
+                price="Coming soon"
+                suffix=""
+                items={["Everything in Pro", "Shared script library", "Roles and brand presets", "Team seats"]}
+                action="Talk later"
+                onClick={() => setExperienceMode("studio")}
+              />
+            </div>
           </div>
-          <details open>
-            <summary>Do I need to sign up?</summary>
-            <p>No. For now, you can open the site, paste, test, and read. Sign-in can be added later for saved cloud scripts.</p>
-          </details>
-          <details>
-            <summary>Where do my scripts go?</summary>
-            <p>They stay in this browser on this device. This version does not use a database for scripts or recordings.</p>
-          </details>
-          <details>
-            <summary>Why does it ask for camera and mic?</summary>
-            <p>Only for pace testing, camera preview, and recording. You can deny it and still use the basic prompter.</p>
-          </details>
-          <details>
-            <summary>Does it work for Indian languages?</summary>
-            <p>Yes. The app includes English, Hindi, and Marathi samples, while keeping the interface clean and English-first.</p>
-          </details>
         </section>
+
+        <section className="ovi-section no-top">
+          <div className="ovi-wrap ovi-faq">
+            <CueDivider label="Questions" />
+            <details open>
+              <summary>Do I need to sign up?</summary>
+              <p>No. Open the page, paste, read. An account can come later only so a script written on your laptop shows up on your phone.</p>
+            </details>
+            <details>
+              <summary>Where do my scripts go?</summary>
+              <p>Into your browser&apos;s own storage on this device. Nothing is uploaded in this version. You can import and keep working locally.</p>
+            </details>
+            <details>
+              <summary>Will my recording have a watermark?</summary>
+              <p>No. The browser recording is downloaded directly from your device.</p>
+            </details>
+            <details>
+              <summary>Does it work on a phone?</summary>
+              <p>Yes, including the front camera and one-handed controls. The layout is built to work down to small screens.</p>
+            </details>
+            <details>
+              <summary>Can I use it with a hardware teleprompter?</summary>
+              <p>Yes. Turn on mirror mode, go full screen, and put the tablet or laptop under the glass. Vertical flip is still in the studio.</p>
+            </details>
+            <details>
+              <summary>What about other languages?</summary>
+              <p>English, Hindi, and Marathi samples are included. The interface stays English-first for Indian creators.</p>
+            </details>
+          </div>
+        </section>
+
+        <section className="ovi-section no-top">
+          <div className="ovi-wrap ovi-closing">
+            <h2>Your script is already written. Go read it.</h2>
+            <button
+              type="button"
+              className="ovi-btn ovi-btn-dark"
+              onClick={() => setExperienceMode("studio")}
+            >
+              Start prompting -- it&apos;s free
+            </button>
+          </div>
+        </section>
+
+        <footer className="ovi-footer">
+          <div className="ovi-wrap ovi-foot">
+            <a className="ovi-brand" href="#top"><i /> {productName}</a>
+            <span className="ovi-mono">Made for people who talk to a camera</span>
+            <span className="ovi-mono">Privacy · Terms · Contact</span>
+          </div>
+        </footer>
       </main>
     );
   }
@@ -1244,7 +1567,7 @@ export default function Home() {
             Next line
           </button>
           {recordedUrl ? (
-            <a href={recordedUrl} download="ovicue-recording.webm">
+            <a href={recordedUrl} download="ovi-recording.webm">
               Download video
             </a>
           ) : (
@@ -1288,7 +1611,7 @@ export default function Home() {
             <span className="permission-mark">Personal space</span>
             <h2>Allow camera and microphone?</h2>
             <p>
-              OviCue uses access only for this browser session:
+              ovi uses access only for this browser session:
               {permissionIntent === "calibration"
                 ? " to see your reading setup and prepare the 30-second pace test."
                 : permissionIntent === "recording"
