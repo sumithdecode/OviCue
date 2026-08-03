@@ -1106,18 +1106,6 @@ input[type="checkbox"] {
   background: var(--stage-soft);
 }
 
-.prompt-stage.mirror-x .line-list {
-  transform: scaleX(-1);
-}
-
-.prompt-stage.mirror-y .line-list {
-  transform: scaleY(-1);
-}
-
-.prompt-stage.mirror-x.mirror-y .line-list {
-  transform: scale(-1);
-}
-
 .camera-video {
   position: absolute;
   inset: 0;
@@ -1195,15 +1183,20 @@ input[type="checkbox"] {
   position: relative;
   z-index: 3;
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   scroll-padding-block: 42%;
-  padding-right: clamp(20px, 7vw, 90px);
-  padding-left: clamp(20px, 7vw, 90px);
   color: #244432;
   line-height: 1.28;
   scrollbar-width: none;
   scroll-behavior: auto;
-  will-change: scroll-position;
+}
+
+.roll-content {
+  padding-right: clamp(20px, 7vw, 90px);
+  padding-left: clamp(20px, 7vw, 90px);
+  transform: translate3d(0, 0, 0);
+  transform-origin: center top;
+  will-change: transform;
 }
 
 .line-list::-webkit-scrollbar {

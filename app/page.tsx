@@ -200,6 +200,7 @@ export default function Home() {
   const [demoEditing, setDemoEditing] = useState(false);
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lineListRef = useRef<HTMLDivElement | null>(null);
+  const rollContentRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const demoTrackRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -211,6 +212,7 @@ export default function Home() {
   const lastFrameRef = useRef<number | null>(null);
   const demoLastFrameRef = useRef<number | null>(null);
   const demoOffsetRef = useRef(0);
+  const rollOffsetRef = useRef(0);
   const demoPlayingRef = useRef(false);
   const demoEditingRef = useRef(false);
   const sessionStartRef = useRef<number | null>(null);
@@ -435,24 +437,31 @@ export default function Home() {
 
     function tick(now: number) {
       const list = lineListRef.current;
-      if (!list) return;
+      const content = rollContentRef.current;
+      if (!list || !content) return;
 
       if (lastFrameRef.current === null) lastFrameRef.current = now;
       const deltaSeconds = Math.min(0.05, (now - lastFrameRef.current) / 1000);
       lastFrameRef.current = now;
 
-      const totalScrollable = Math.max(1, list.scrollHeight - list.clientHeight);
+      const totalScrollable = Math.max(
+        1,
+        content.scrollHeight - list.clientHeight,
+      );
       const pixelsPerWord = totalScrollable / Math.max(1, wordCount);
       const wpmPixelsPerSecond = Math.max(34, (speed / 60) * pixelsPerWord);
       const pixelsPerSecond =
         scrollMode === "timed"
           ? Math.max(30, totalScrollable / estimatedSeconds)
           : wpmPixelsPerSecond;
-      const nextScrollTop = Math.min(
+      const nextOffset = Math.min(
         totalScrollable,
-        list.scrollTop + pixelsPerSecond * deltaSeconds,
+        rollOffsetRef.current + pixelsPerSecond * deltaSeconds,
       );
-      list.scrollTop = nextScrollTop;
+      rollOffsetRef.current = nextOffset;
+      content.style.transform = `translate3d(0, ${-nextOffset}px, 0) scale(${
+        mirrorHorizontal ? -1 : 1
+      }, ${mirrorVertical ? -1 : 1})`;
 
       const center =
         list.getBoundingClientRect().top +
@@ -472,7 +481,7 @@ export default function Home() {
         current === closestIndex ? current : closestIndex,
       );
 
-      if (nextScrollTop >= totalScrollable - 1) {
+      if (nextOffset >= totalScrollable - 1) {
         finishSession();
         setIsRunning(false);
         return;
@@ -493,6 +502,8 @@ export default function Home() {
     fontSize,
     isRunning,
     lines.length,
+    mirrorHorizontal,
+    mirrorVertical,
     scrollMode,
     speed,
     textPosition,
@@ -581,11 +592,19 @@ export default function Home() {
     if (activeLine >= lines.length - 1) {
       setActiveLine(0);
       if (lineListRef.current) lineListRef.current.scrollTop = 0;
+      if (rollContentRef.current) {
+        rollOffsetRef.current = 0;
+        rollContentRef.current.style.transform = "";
+      }
     } else if (activeLine === 0 && lineListRef.current) {
       lineListRef.current.scrollTop = 0;
+      if (rollContentRef.current) {
+        rollOffsetRef.current = 0;
+        rollContentRef.current.style.transform = "";
+      }
     }
-    sessionStartRef.current = performance.now() + 3000;
-    setCountdown(3);
+    sessionStartRef.current = performance.now();
+    setCountdown(0);
     setIsRunning(true);
   }
 
@@ -595,6 +614,8 @@ export default function Home() {
     setCountdown(0);
     setActiveLine(0);
     if (lineListRef.current) lineListRef.current.scrollTop = 0;
+    rollOffsetRef.current = 0;
+    if (rollContentRef.current) rollContentRef.current.style.transform = "";
   }
 
   function moveByLine(direction: 1 | -1) {
@@ -1520,31 +1541,38 @@ export default function Home() {
               className={isRunning && countdown === 0 ? "line-list rolling" : "line-list"}
               style={{
                 fontSize,
-                fontStyle: textItalic ? "italic" : "normal",
-                fontWeight: textWeight,
-                paddingTop: `${textPosition}vh`,
-                paddingBottom: `${100 - textPosition}vh`,
                 textAlign,
-                textDecoration: textUnderline ? "underline" : "none",
               }}
             >
-              {lines.map((line, index) => (
-                <p
-                  key={`${line}-${index}`}
-                  ref={(element) => {
-                    lineRefs.current[index] = element;
-                  }}
-                  className={[
-                    index === activeLine ? "active" : "",
-                    dimPast && index < activeLine ? "past" : "",
-                    index > activeLine ? "future" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  {line}
-                </p>
-              ))}
+              <div
+                ref={rollContentRef}
+                className="roll-content"
+                style={{
+                  fontStyle: textItalic ? "italic" : "normal",
+                  fontWeight: textWeight,
+                  paddingTop: `${textPosition}vh`,
+                  paddingBottom: `${100 - textPosition}vh`,
+                  textDecoration: textUnderline ? "underline" : "none",
+                }}
+              >
+                {lines.map((line, index) => (
+                  <p
+                    key={`${line}-${index}`}
+                    ref={(element) => {
+                      lineRefs.current[index] = element;
+                    }}
+                    className={[
+                      index === activeLine ? "active" : "",
+                      dimPast && index < activeLine ? "past" : "",
+                      index > activeLine ? "future" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {line}
+                  </p>
+                ))}
+              </div>
             </div>
           )}
         </div>
