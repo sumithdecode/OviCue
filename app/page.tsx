@@ -13,10 +13,35 @@ If I make a mistake, I will pause, smile, and continue.
 This video is for sharing knowledge, helping people, and becoming better every day.`;
 
 type ScrollMode = "wpm" | "timed";
+type ScriptLanguage = "english" | "hindi" | "marathi";
 type SessionInsight = {
   durationSeconds: number;
   readWords: number;
   wpm: number;
+};
+
+const languageSamples: Record<ScriptLanguage, string> = {
+  english: starterScript,
+  hindi: `नमस्ते, आज मैं स्पष्ट और आत्मविश्वास से बोलने का अभ्यास कर रहा हूं।
+
+मेरा लक्ष्य है कि मैं धीरे बोलूं, स्वाभाविक रूप से सांस लूं, और हर विचार को आसान भाषा में समझाऊं।
+
+अगर मुझसे गलती होती है, तो मैं रुकूंगा, मुस्कुराऊंगा, और फिर आगे बढ़ूंगा।
+
+यह वीडियो सीखने, सिखाने, और लोगों की मदद करने के लिए है।`,
+  marathi: `नमस्कार, आज मी स्पष्ट आणि आत्मविश्वासाने बोलण्याचा सराव करत आहे.
+
+माझा उद्देश आहे की मी शांतपणे बोलेन, नैसर्गिक श्वास घेईन, आणि प्रत्येक विचार सोप्या भाषेत समजावून सांगेन.
+
+जर माझ्याकडून चूक झाली, तर मी थांबेन, हसेन, आणि पुन्हा पुढे बोलेन.
+
+हा व्हिडिओ शिकण्यासाठी, शिकवण्यासाठी, आणि लोकांना मदत करण्यासाठी आहे.`,
+};
+
+const languageLabels: Record<ScriptLanguage, string> = {
+  english: "English",
+  hindi: "हिन्दी",
+  marathi: "मराठी",
 };
 
 function splitLines(text: string) {
@@ -40,7 +65,7 @@ export default function Home() {
   const [script, setScript] = useState(starterScript);
   const [activeLine, setActiveLine] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [speed, setSpeed] = useState(14);
+  const [speed, setSpeed] = useState(120);
   const [fontSize, setFontSize] = useState(52);
   const [countdown, setCountdown] = useState(0);
   const [scrollMode, setScrollMode] = useState<ScrollMode>("wpm");
@@ -49,6 +74,8 @@ export default function Home() {
   const [mirrorVertical, setMirrorVertical] = useState(false);
   const [dimPast, setDimPast] = useState(true);
   const [textPosition, setTextPosition] = useState(48);
+  const [scriptLanguage, setScriptLanguage] =
+    useState<ScriptLanguage>("english");
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -98,9 +125,10 @@ export default function Home() {
           mirrorVertical?: boolean;
           dimPast?: boolean;
           textPosition?: number;
+          scriptLanguage?: ScriptLanguage;
         };
         if (parsed.script) setScript(parsed.script);
-        if (parsed.speed) setSpeed(parsed.speed);
+        if (parsed.speed) setSpeed(parsed.speed < 40 ? 120 : parsed.speed);
         if (parsed.fontSize) setFontSize(parsed.fontSize);
         if (parsed.scrollMode) setScrollMode(parsed.scrollMode);
         if (parsed.targetMinutes) setTargetMinutes(parsed.targetMinutes);
@@ -112,6 +140,7 @@ export default function Home() {
         }
         if (typeof parsed.dimPast === "boolean") setDimPast(parsed.dimPast);
         if (parsed.textPosition) setTextPosition(parsed.textPosition);
+        if (parsed.scriptLanguage) setScriptLanguage(parsed.scriptLanguage);
       } catch {
         window.localStorage.removeItem("daily-prompter-state");
       }
@@ -129,6 +158,7 @@ export default function Home() {
         fontSize,
         scrollMode,
         targetMinutes,
+        scriptLanguage,
         mirrorHorizontal,
         mirrorVertical,
         dimPast,
@@ -142,6 +172,7 @@ export default function Home() {
     mirrorHorizontal,
     mirrorVertical,
     script,
+    scriptLanguage,
     scrollMode,
     speed,
     targetMinutes,
@@ -179,7 +210,9 @@ export default function Home() {
         list.scrollTop + pixelsPerSecond * deltaSeconds,
       );
 
-      const center = list.getBoundingClientRect().top + list.clientHeight / 2;
+      const center =
+        list.getBoundingClientRect().top +
+        list.clientHeight * (textPosition / 100);
       let closestIndex = 0;
       let closestDistance = Number.POSITIVE_INFINITY;
       lineRefs.current.forEach((line, index) => {
@@ -210,7 +243,7 @@ export default function Home() {
       animationRef.current = null;
       lastFrameRef.current = null;
     };
-  }, [countdown, estimatedSeconds, isRunning, lines.length]);
+  }, [countdown, estimatedSeconds, isRunning, lines.length, textPosition]);
 
   useEffect(() => {
     if (!isRunning || countdown <= 0) return;
@@ -259,12 +292,12 @@ export default function Home() {
 
       if (event.key === "ArrowRight" || event.key === "ArrowDown") {
         event.preventDefault();
-        setActiveLine((line) => Math.min(lines.length - 1, line + 1));
+        moveByLine(1);
       }
 
       if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
         event.preventDefault();
-        setActiveLine((line) => Math.max(0, line - 1));
+        moveByLine(-1);
       }
 
       if (event.key.toLowerCase() === "r") {
@@ -295,6 +328,18 @@ export default function Home() {
     setCountdown(0);
     setActiveLine(0);
     if (lineListRef.current) lineListRef.current.scrollTop = 0;
+  }
+
+  function moveByLine(direction: 1 | -1) {
+    if (lines.length === 0) return;
+    setActiveLine((line) => {
+      const nextLine = Math.min(lines.length - 1, Math.max(0, line + direction));
+      lineRefs.current[nextLine]?.scrollIntoView({
+        block: "center",
+        behavior: "smooth",
+      });
+      return nextLine;
+    });
   }
 
   function finishSession() {
@@ -389,6 +434,12 @@ export default function Home() {
     resetPrompt();
   }
 
+  function useLanguageSample(language: ScriptLanguage) {
+    setScriptLanguage(language);
+    setScript(languageSamples[language]);
+    resetPrompt();
+  }
+
   return (
     <main className="app-shell">
       <section className="editor-panel" aria-label="Script editor">
@@ -401,9 +452,11 @@ export default function Home() {
         </div>
 
         <div className="creator-intro">
-          <p>Decode your ideas into confident videos with a warm teleprompter for teachers, students, creators, and graders.</p>
+          <p>Decode your ideas into confident videos with a warm teleprompter for Indian teachers, students, creators, and graders.</p>
           <div className="intro-tags" aria-label="PromptFlow highlights">
             <span>Camera ready</span>
+            <span>हिन्दी</span>
+            <span>मराठी</span>
             <span>Sign in ready</span>
             <span>Premium path</span>
           </div>
@@ -443,6 +496,23 @@ export default function Home() {
             />
           </label>
         </div>
+
+        <div className="language-panel" aria-label="Script language">
+          <span>Script language</span>
+          <div className="language-buttons">
+            {(Object.keys(languageLabels) as ScriptLanguage[]).map((language) => (
+              <button
+                key={language}
+                type="button"
+                className={scriptLanguage === language ? "selected" : ""}
+                onClick={() => useLanguageSample(language)}
+              >
+                {languageLabels[language]}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <textarea
           id="script"
           value={script}
@@ -451,6 +521,13 @@ export default function Home() {
             resetPrompt();
           }}
           spellCheck
+          lang={
+            scriptLanguage === "hindi"
+              ? "hi"
+              : scriptLanguage === "marathi"
+                ? "mr"
+                : "en"
+          }
           placeholder="Paste the words you want to teach, present, or practice..."
         />
 
@@ -496,8 +573,8 @@ export default function Home() {
             <span>Speaking pace</span>
             <input
               type="range"
-              min="8"
-              max="32"
+              min="60"
+              max="220"
               value={speed}
               onChange={(event) => setSpeed(Number(event.target.value))}
             />
@@ -716,8 +793,8 @@ export default function Home() {
                 ? `${lastInsight.readWords} words in ${formatTime(
                     lastInsight.durationSeconds,
                   )}. Suggested roll speed is ${Math.min(
-                    32,
-                    Math.max(8, lastInsight.wpm),
+                    220,
+                    Math.max(60, lastInsight.wpm),
                   )} wpm.`
                 : "After you pause or finish, Sumit Decode estimates your pace and suggests a better roll speed."}
             </span>
@@ -727,7 +804,7 @@ export default function Home() {
             disabled={!lastInsight}
             onClick={() => {
               if (!lastInsight) return;
-              setSpeed(Math.min(32, Math.max(8, lastInsight.wpm)));
+              setSpeed(Math.min(220, Math.max(60, lastInsight.wpm)));
               setScrollMode("wpm");
             }}
           >

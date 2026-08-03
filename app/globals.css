@@ -39,7 +39,8 @@ body {
     radial-gradient(circle at 88% 10%, rgba(214, 233, 90, 0.46), transparent 24%),
     var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, "Noto Sans Devanagari", "Kohinoor Devanagari",
+    "Mangal", Helvetica, sans-serif;
 }
 
 body::before {
@@ -269,6 +270,40 @@ h1 {
 .script-label {
   color: var(--ink-soft);
   font-weight: 800;
+}
+
+.language-panel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(31, 143, 102, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 245, 0.62);
+  padding: 10px;
+}
+
+.language-panel > span {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.language-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.language-buttons button {
+  min-height: 38px;
+  border-color: rgba(31, 143, 102, 0.16);
+  background: #fffff5;
+}
+
+.language-buttons button.selected {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent), #77b73f);
+  color: #fffff5;
 }
 
 .import-button {
@@ -597,6 +632,7 @@ input[type="checkbox"] {
   line-height: 1.28;
   text-align: center;
   scrollbar-width: none;
+  scroll-behavior: auto;
 }
 
 .line-list::-webkit-scrollbar {
@@ -717,6 +753,7 @@ input[type="checkbox"] {
   .button-row,
   .script-actions,
   .account-panel,
+  .language-buttons,
   .pricing-panel,
   .insight-panel,
   .toggle-grid,
