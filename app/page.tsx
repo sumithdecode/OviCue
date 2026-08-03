@@ -21,17 +21,31 @@ declare global {
 
 const starterScript = `Every creator knows this moment.
 
-The idea is clear in your mind, the camera is ready, but the words start jumping. You look down, you lose eye contact, you record again, and a simple video suddenly takes one full hour.
+The idea is clear in your head. The camera is ready.
 
-OviCue changes that moment.
+Then the words start jumping.
 
-Paste your script, choose your reading speed, or run the personal pace test so the prompter learns how you naturally speak. Then your words move upward smoothly, like movie credits, while your eyes stay close to the camera.
+You look down. You lose the eye contact. You record it again.
 
-Use it for lessons, reels, YouTube videos, speeches, sales explainers, English practice, or any video where confidence matters.
+And a two-minute video quietly takes an hour.
 
-Your script stays on your device. You can mirror the text, use camera preview, record in the browser, and practice in English, Hindi, or Marathi.
+This fixes that moment.
 
-If you want videos that feel prepared, natural, and professional without complicated setup, OviCue is built for you.`;
+Paste your script. Pick a speed, or press Find my pace and let it learn how you actually talk.
+
+Then the words come up towards you, steady, like film credits, while your eyes stay next to the lens.
+
+Use it for lessons. For reels. For a speech you cannot afford to fumble.
+
+For practising English out loud, at a speed that does not run away from you.
+
+Your script never leaves this device. Mirror it for teleprompter glass, put the camera behind it, record straight from the browser.
+
+No account. No watermark. No limit on how long you read.
+
+If you want your videos to sound prepared instead of rehearsed, this was built for you.
+
+Now delete all of this, and paste your own.`;
 
 type ScrollMode = "wpm" | "timed";
 type ScriptLanguage = "english" | "hindi" | "marathi";
@@ -74,20 +88,60 @@ Click the text to edit it. Paste your own script and read it right here, before 
 
 const languageSamples: Record<ScriptLanguage, string> = {
   english: starterScript,
-  hindi: `नमस्ते, आज मैं स्पष्ट और आत्मविश्वास से बोलने का अभ्यास कर रहा हूं।
+  hindi: `हर क्रिएटर इस पल को जानता है।
 
-मेरा लक्ष्य है कि मैं धीरे बोलूं, स्वाभाविक रूप से सांस लूं, और हर विचार को आसान भाषा में समझाऊं।
+आइडिया आपके दिमाग में साफ होता है। कैमरा तैयार होता है।
 
-अगर मुझसे गलती होती है, तो मैं रुकूंगा, मुस्कुराऊंगा, और फिर आगे बढ़ूंगा।
+फिर शब्द इधर-उधर होने लगते हैं।
 
-यह वीडियो सीखने, सिखाने, और लोगों की मदद करने के लिए है।`,
-  marathi: `नमस्कार, आज मी स्पष्ट आणि आत्मविश्वासाने बोलण्याचा सराव करत आहे.
+आप नीचे देखते हैं। आंखों का संपर्क टूट जाता है। आप फिर से रिकॉर्ड करते हैं।
 
-माझा उद्देश आहे की मी शांतपणे बोलेन, नैसर्गिक श्वास घेईन, आणि प्रत्येक विचार सोप्या भाषेत समजावून सांगेन.
+और दो मिनट का वीडियो चुपचाप एक घंटा ले लेता है।
 
-जर माझ्याकडून चूक झाली, तर मी थांबेन, हसेन, आणि पुन्हा पुढे बोलेन.
+OviCue उसी पल को ठीक करता है।
 
-हा व्हिडिओ शिकण्यासाठी, शिकवण्यासाठी, आणि लोकांना मदत करण्यासाठी आहे.`,
+अपना script paste करें। Speed चुनें, या Find my pace दबाएं और OviCue को आपकी असली बोलने की गति सीखने दें।
+
+फिर शब्द आपकी तरफ ऊपर आते हैं, film credits की तरह steady, और आपकी आंखें camera के पास रहती हैं।
+
+इसे lessons के लिए इस्तेमाल करें। Reels के लिए। किसी speech के लिए जहां गलती नहीं चाहिए।
+
+English practice के लिए भी, ऐसी speed पर जो आपसे आगे न भागे।
+
+आपका script इसी device पर रहता है। Teleprompter glass के लिए mirror करें, camera पीछे लगाएं, और browser से record करें।
+
+No account. No watermark. जितना चाहें उतना पढ़ें।
+
+अगर आप चाहते हैं कि आपके videos rehearsed नहीं, prepared लगें, तो OviCue आपके लिए बना है।
+
+अब यह delete करें, और अपना script paste करें।`,
+  marathi: `प्रत्येक creator ला हा क्षण माहिती असतो.
+
+Idea डोक्यात स्पष्ट असतो. Camera तयार असतो.
+
+मग शब्द इकडे-तिकडे होऊ लागतात.
+
+तुम्ही खाली पाहता. Eye contact तुटतो. तुम्ही पुन्हा record करता.
+
+आणि दोन मिनिटांचा video शांतपणे एक तास घेतो.
+
+OviCue तो क्षण ठीक करतो.
+
+तुमचा script paste करा. Speed निवडा, किंवा Find my pace दाबा आणि OviCue ला तुमची खरी बोलण्याची गती शिकू द्या.
+
+मग शब्द film credits सारखे steady वर येतात, आणि तुमचे डोळे lens जवळ राहतात.
+
+Lessons साठी वापरा. Reels साठी. अशा speech साठी जिथे चूक परवडत नाही.
+
+English practice साठीही, अशा speed वर जी तुमच्यापेक्षा पुढे पळत नाही.
+
+तुमचा script या device वरच राहतो. Teleprompter glass साठी mirror करा, camera मागे ठेवा, आणि browser मधून record करा.
+
+No account. No watermark. कितीही वेळ वाचा.
+
+तुमचे videos rehearsed नाही, prepared वाटावेत असे वाटत असेल, तर OviCue तुमच्यासाठी बनले आहे.
+
+आता हे delete करा, आणि तुमचा script paste करा.`,
 };
 
 const languageLabels: Record<ScriptLanguage, string> = {
@@ -95,6 +149,15 @@ const languageLabels: Record<ScriptLanguage, string> = {
   hindi: "हिन्दी",
   marathi: "मराठी",
 };
+
+function isLegacyDefaultScript(text: string) {
+  return (
+    text.includes("OviCue changes that moment.") ||
+    text.includes("Hi, my name is ______") ||
+    text.includes("आज मैं स्पष्ट और आत्मविश्वास से बोलने का अभ्यास") ||
+    text.includes("आज मी स्पष्ट आणि आत्मविश्वासाने बोलण्याचा सराव")
+  );
+}
 
 const routeModes: Record<string, ExperienceMode> = {
   "/": "welcome",
@@ -669,9 +732,16 @@ export default function Home() {
           scriptLanguage?: ScriptLanguage;
           calibrationInsight?: SessionInsight;
         };
-        // Restoring local draft state once on mount is intentional for the offline prompter.
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (parsed.script) setScript(parsed.script);
+        if (parsed.script) {
+          const savedLanguage = parsed.scriptLanguage ?? "english";
+          // Restoring local draft state once on mount is intentional for the offline prompter.
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setScript(
+            isLegacyDefaultScript(parsed.script)
+              ? languageSamples[savedLanguage]
+              : parsed.script,
+          );
+        }
         if (parsed.speed) {
           const savedSpeed = Math.min(
             maxCustomWpm,
@@ -1328,6 +1398,8 @@ export default function Home() {
     setSpeed(measuredWpm);
     setCustomSpeedValue(String(measuredWpm));
     setScrollMode("wpm");
+    setIsRunning(false);
+    setCountdown(0);
     trackEvent("pace_test_completed", {
       wpm: measuredWpm,
       seconds: insight.durationSeconds,
@@ -1741,29 +1813,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="ovi-section no-top" id="sample">
-          <div className="ovi-wrap ovi-sample-script">
-            <CueDivider label="Sample script" />
-            <h2>Try a one-minute creator intro.</h2>
-            <p>
-              This is loaded in the studio by default, so a new visitor can test
-              OviCue before writing anything.
-            </p>
-            <blockquote>{starterScript}</blockquote>
-            <button
-              type="button"
-              className="ovi-btn ovi-btn-dark"
-              onClick={() => {
-                setScript(starterScript);
-                resetPrompt();
-                goTo("studio");
-              }}
-            >
-              Open this sample
-            </button>
-          </div>
-        </section>
-
         <section className="ovi-section no-top" id="feedback">
           <div className="ovi-wrap ovi-feedback-block">
             <CueDivider label="Feedback" />
@@ -1824,7 +1873,6 @@ export default function Home() {
             </div>
             <div>
               <strong>Tools</strong>
-              <a href="#sample">Sample script</a>
               <a href="#how">Script timer</a>
               <a href="#features">Pace test</a>
             </div>
