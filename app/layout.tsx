@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VaaniCue - Online Teleprompter for Indian Creators",
+  title: "OviCue - Online Teleprompter for Indian Creators",
   description:
-    "A smooth India-first online teleprompter for creators, teachers, and speakers to prompt, rehearse, and record in English, Hindi, and Marathi.",
+    "A smooth India-first online teleprompter for creators, teachers, and speakers to prompt, rehearse, test pace, and record in English, Hindi, and Marathi.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

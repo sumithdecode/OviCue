@@ -16,14 +16,15 @@ type ScrollMode = "wpm" | "timed";
 type ScriptLanguage = "english" | "hindi" | "marathi";
 type ExperienceMode = "welcome" | "studio";
 type TextAlign = "left" | "center" | "right";
+type PermissionIntent = "calibration" | "camera" | "recording";
 type SessionInsight = {
   durationSeconds: number;
   readWords: number;
   wpm: number;
 };
 
-const productName = "VaaniCue";
-const productShortName = "VC";
+const productName = "OviCue";
+const productShortName = "OC";
 
 const languageSamples: Record<ScriptLanguage, string> = {
   english: starterScript,
@@ -98,6 +99,9 @@ export default function Home() {
     useState<ScriptLanguage>("english");
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const [permissionIntent, setPermissionIntent] =
+    useState<PermissionIntent | null>(null);
+  const [permissionPrimed, setPermissionPrimed] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedUrl, setRecordedUrl] = useState("");
   const [lastInsight, setLastInsight] = useState<SessionInsight | null>(null);
@@ -456,9 +460,36 @@ export default function Home() {
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraEnabled(true);
+      return true;
     } catch {
       setCameraError("Camera or microphone permission was blocked.");
       setCameraEnabled(false);
+      return false;
+    }
+  }
+
+  async function requestPersonalSpace(intent: PermissionIntent) {
+    setPermissionIntent(intent);
+  }
+
+  async function acceptPersonalSpace() {
+    const intent = permissionIntent;
+    setPermissionIntent(null);
+    setPermissionPrimed(true);
+
+    if (intent === "calibration") {
+      const allowed = await startCamera();
+      if (allowed) startCalibrationCore();
+      return;
+    }
+
+    if (intent === "camera") {
+      await startCamera();
+      return;
+    }
+
+    if (intent === "recording") {
+      await startRecordingCore();
     }
   }
 
@@ -476,6 +507,15 @@ export default function Home() {
       return;
     }
 
+    if (!permissionPrimed && !streamRef.current) {
+      requestPersonalSpace("recording");
+      return;
+    }
+
+    await startRecordingCore();
+  }
+
+  async function startRecordingCore() {
     if (!streamRef.current) {
       await startCamera();
     }
@@ -521,6 +561,14 @@ export default function Home() {
   }
 
   function startCalibration() {
+    if (!permissionPrimed && !streamRef.current) {
+      requestPersonalSpace("calibration");
+      return;
+    }
+    startCalibrationCore();
+  }
+
+  function startCalibrationCore() {
     setCalibrationRemaining(30);
     calibrationStartRef.current = performance.now();
     setIsCalibrating(true);
@@ -564,11 +612,12 @@ export default function Home() {
           </nav>
 
           <div className="hero-copy">
-            <p className="eyebrow">भारत का creator teleprompter</p>
-            <h1>Your words, your awaaz, your perfect take.</h1>
+            <p className="eyebrow">Free India-first teleprompter</p>
+            <h1>Paste your script. Start reading.</h1>
             <p>
-              A polished browser studio for teachers, students, coaches,
-              founders, and creators recording in English, Hindi, and Marathi.
+              A calm browser studio for teachers, students, coaches, founders,
+              and creators. Scripts stay on your device, and camera or mic
+              access is asked only when you choose to test or record.
             </p>
             <div className="hero-actions">
               <button
@@ -578,7 +627,12 @@ export default function Home() {
               >
                 Open prompter
               </button>
-              <a href="/signin-with-chatgpt?return_to=%2F">Continue with sign in</a>
+              <a href="#how-it-works">See how it works</a>
+            </div>
+            <div className="hero-note" aria-label="Trust notes">
+              <span>Phone, laptop, tablet</span>
+              <span>Scripts stay local</span>
+              <span>No watermark</span>
             </div>
           </div>
 
@@ -589,9 +643,9 @@ export default function Home() {
               <span />
             </div>
             <div className="preview-stage">
-              <p>नमस्ते creators.</p>
+              <p>This is a real teleprompter.</p>
               <p className="active">Read smoothly at your natural pace.</p>
-              <p>Record a confident educational video.</p>
+              <p>Camera and mic are your choice.</p>
             </div>
           </div>
         </section>
@@ -609,6 +663,137 @@ export default function Home() {
             <strong>Studio controls</strong>
             <span>Camera preview, recording, mirror mode, formatting, timed scroll, and fullscreen.</span>
           </div>
+        </section>
+
+        <section className="landing-section" id="how-it-works">
+          <div className="cue-line">
+            <i />
+            <span />
+            <strong>How it works</strong>
+            <span />
+            <i />
+          </div>
+          <h2>Three steps before a clean take.</h2>
+          <div className="landing-grid">
+            <div>
+              <small>Step one</small>
+              <strong>Paste the script</strong>
+              <p>Type, paste, or import a text file. Word count and read time update as you write.</p>
+            </div>
+            <div>
+              <small>Step two</small>
+              <strong>Test your pace</strong>
+              <p>Read a short passage. OviCue asks for mic and camera access only when you start that test.</p>
+            </div>
+            <div>
+              <small>Step three</small>
+              <strong>Read and record</strong>
+              <p>Use fullscreen, mirror mode, cue line, camera preview, and download your browser video.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-section">
+          <div className="cue-line">
+            <i />
+            <span />
+            <strong>Built for Indian creators</strong>
+            <span />
+            <i />
+          </div>
+          <div className="feature-split">
+            <div>
+              <h2>English interface. Indian context.</h2>
+              <p>
+                OviCue keeps the product simple in English, while supporting
+                practice scripts in English, Hindi, and Marathi for Indian
+                teachers, students, tutors, and content creators.
+              </p>
+            </div>
+            <div className="mini-stage">Read me in the glass</div>
+          </div>
+          <div className="feature-split reverse">
+            <div>
+              <h2>Privacy feels visible.</h2>
+              <p>
+                Before pace testing or recording, visitors see a clear personal
+                space prompt. The browser then asks for camera and mic access.
+                Nothing is uploaded in this version.
+              </p>
+            </div>
+            <div className="mini-stage permission-mini">
+              <span>Personal space</span>
+              <strong>Camera + mic only when you allow.</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="free-panel">
+          <h2>Free means useful from day one.</h2>
+          <ul>
+            <li>Scripts of any length</li>
+            <li>Unlimited prompting time</li>
+            <li>English, Hindi, and Marathi samples</li>
+            <li>Camera preview behind text</li>
+            <li>Mirror horizontal and vertical</li>
+            <li>Fullscreen reading mode</li>
+            <li>30-second pace calibration</li>
+            <li>Browser recording download</li>
+            <li>No watermark</li>
+            <li>No database required right now</li>
+          </ul>
+        </section>
+
+        <section className="landing-section">
+          <div className="cue-line">
+            <i />
+            <span />
+            <strong>Who reads with it</strong>
+            <span />
+            <i />
+          </div>
+          <div className="audience-strip">
+            {[
+              "Teachers",
+              "Online tutors",
+              "Students",
+              "YouTubers",
+              "Reels and Shorts creators",
+              "Corporate trainers",
+              "Founders",
+              "Keynote speakers",
+              "Coaches",
+              "People practicing English",
+            ].map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section faq-section">
+          <div className="cue-line">
+            <i />
+            <span />
+            <strong>Questions</strong>
+            <span />
+            <i />
+          </div>
+          <details open>
+            <summary>Do I need to sign up?</summary>
+            <p>No. For now, you can open the site, paste, test, and read. Sign-in can be added later for saved cloud scripts.</p>
+          </details>
+          <details>
+            <summary>Where do my scripts go?</summary>
+            <p>They stay in this browser on this device. This version does not use a database for scripts or recordings.</p>
+          </details>
+          <details>
+            <summary>Why does it ask for camera and mic?</summary>
+            <p>Only for pace testing, camera preview, and recording. You can deny it and still use the basic prompter.</p>
+          </details>
+          <details>
+            <summary>Does it work for Indian languages?</summary>
+            <p>Yes. The app includes English, Hindi, and Marathi samples, while keeping the interface clean and English-first.</p>
+          </details>
         </section>
       </main>
     );
@@ -923,7 +1108,11 @@ export default function Home() {
               type="checkbox"
               checked={cameraEnabled}
               onChange={(event) =>
-                event.target.checked ? startCamera() : stopCamera()
+                event.target.checked
+                  ? permissionPrimed || streamRef.current
+                    ? startCamera()
+                    : requestPersonalSpace("camera")
+                  : stopCamera()
               }
             />
             <span>Camera preview</span>
@@ -1055,7 +1244,7 @@ export default function Home() {
             Next line
           </button>
           {recordedUrl ? (
-            <a href={recordedUrl} download="vaanicue-recording.webm">
+            <a href={recordedUrl} download="ovicue-recording.webm">
               Download video
             </a>
           ) : (
@@ -1093,6 +1282,45 @@ export default function Home() {
           </button>
         </div>
       </section>
+      {permissionIntent && (
+        <div className="permission-overlay" role="dialog" aria-modal="true">
+          <div className="permission-card">
+            <span className="permission-mark">Personal space</span>
+            <h2>Allow camera and microphone?</h2>
+            <p>
+              OviCue uses access only for this browser session:
+              {permissionIntent === "calibration"
+                ? " to see your reading setup and prepare the 30-second pace test."
+                : permissionIntent === "recording"
+                  ? " to record your video and audio directly in your browser."
+                  : " to show your camera behind the teleprompter text."}
+            </p>
+            <ul>
+              <li>Your script stays on this device.</li>
+              <li>No recording is uploaded from this version.</li>
+              <li>You can turn camera preview off anytime.</li>
+            </ul>
+            <div className="permission-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setPermissionIntent(null);
+                  if (permissionIntent === "camera") setCameraEnabled(false);
+                }}
+              >
+                Not now
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={acceptPersonalSpace}
+              >
+                Allow and continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
