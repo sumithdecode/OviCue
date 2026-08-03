@@ -71,10 +71,31 @@ const calibrationPassages: Record<ScriptLanguage, string> = {
 };
 
 function splitLines(text: string) {
-  return text
+  const cueLines: string[] = [];
+  text
     .split(/\n+/)
     .map((line) => line.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .forEach((paragraph) => {
+      const words = paragraph.split(/\s+/).filter(Boolean);
+      let current: string[] = [];
+
+      words.forEach((word) => {
+        current.push(word);
+        const hasNaturalBreak = /[.!?।,:;]$/.test(word);
+        const shouldBreak =
+          current.length >= 12 || (current.length >= 7 && hasNaturalBreak);
+
+        if (shouldBreak) {
+          cueLines.push(current.join(" "));
+          current = [];
+        }
+      });
+
+      if (current.length > 0) cueLines.push(current.join(" "));
+    });
+
+  return cueLines;
 }
 
 function formatTime(totalSeconds: number) {
@@ -217,6 +238,7 @@ export default function Home() {
   const demoLastFrameRef = useRef<number | null>(null);
   const demoOffsetRef = useRef(0);
   const rollOffsetRef = useRef(0);
+  const activeLineRef = useRef(0);
   const demoPlayingRef = useRef(false);
   const demoEditingRef = useRef(false);
   const sessionStartRef = useRef<number | null>(null);
@@ -344,6 +366,10 @@ export default function Home() {
   }, [activeLine, isRunning]);
 
   useEffect(() => {
+    activeLineRef.current = activeLine;
+  }, [activeLine]);
+
+  useEffect(() => {
     demoPlayingRef.current = demoPlaying;
     demoEditingRef.current = demoEditing;
   }, [demoEditing, demoPlaying]);
@@ -449,14 +475,21 @@ export default function Home() {
       lastFrameRef.current = now;
 
       const totalScrollable = Math.max(
-        1,
+        0,
         content.scrollHeight - list.clientHeight,
       );
-      const pixelsPerWord = totalScrollable / Math.max(1, wordCount);
-      const wpmPixelsPerSecond = Math.max(34, (speed / 60) * pixelsPerWord);
+      if (totalScrollable <= 0) {
+        content.style.transform = `translate3d(0, 0, 0) scale(${
+          mirrorHorizontal ? -1 : 1
+        }, ${mirrorVertical ? -1 : 1})`;
+        animationRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      const wpmPixelsPerSecond = Math.min(86, Math.max(18, speed * 0.28));
       const pixelsPerSecond =
         scrollMode === "timed"
-          ? Math.max(30, totalScrollable / estimatedSeconds)
+          ? Math.min(96, Math.max(18, totalScrollable / estimatedSeconds))
           : wpmPixelsPerSecond;
       const nextOffset = Math.min(
         totalScrollable,
@@ -467,9 +500,27 @@ export default function Home() {
         mirrorHorizontal ? -1 : 1
       }, ${mirrorVertical ? -1 : 1})`;
 
+      const cueLineY = nextOffset + list.clientHeight * (textPosition / 100);
+      let nextActiveLine = activeLineRef.current;
+      for (let index = 0; index < lineRefs.current.length; index += 1) {
+        const line = lineRefs.current[index];
+        if (!line) continue;
+        if (line.offsetTop <= cueLineY) {
+          nextActiveLine = index;
+        } else {
+          break;
+        }
+      }
+
+      if (nextActiveLine !== activeLineRef.current) {
+        activeLineRef.current = nextActiveLine;
+        setActiveLine(nextActiveLine);
+      }
+
       if (nextOffset >= totalScrollable - 1) {
+        activeLineRef.current = lines.length - 1;
         setActiveLine(lines.length - 1);
-        finishSession();
+        finishSession(wordCount);
         setIsRunning(false);
         return;
       }
@@ -493,6 +544,7 @@ export default function Home() {
     mirrorVertical,
     scrollMode,
     speed,
+    textPosition,
     wordCount,
   ]);
 
@@ -587,12 +639,14 @@ export default function Home() {
     if (lines.length === 0) return;
     if (activeLine >= lines.length - 1) {
       setActiveLine(0);
+      activeLineRef.current = 0;
       if (lineListRef.current) lineListRef.current.scrollTop = 0;
       if (rollContentRef.current) {
         rollOffsetRef.current = 0;
         rollContentRef.current.style.transform = "";
       }
     } else if (activeLine === 0 && lineListRef.current) {
+      activeLineRef.current = 0;
       lineListRef.current.scrollTop = 0;
       if (rollContentRef.current) {
         rollOffsetRef.current = 0;
@@ -609,6 +663,7 @@ export default function Home() {
     setIsRunning(false);
     setCountdown(0);
     setActiveLine(0);
+    activeLineRef.current = 0;
     if (lineListRef.current) lineListRef.current.scrollTop = 0;
     rollOffsetRef.current = 0;
     if (rollContentRef.current) rollContentRef.current.style.transform = "";
@@ -626,13 +681,20 @@ export default function Home() {
     });
   }
 
-  function finishSession() {
+  function finishSession(readWordsOverride?: number) {
     if (sessionStartRef.current === null) return;
     const durationSeconds = Math.max(
       1,
       (performance.now() - sessionStartRef.current) / 1000,
     );
-    const readWords = Math.max(1, wordsRead);
+    if (durationSeconds < 8) {
+      sessionStartRef.current = null;
+      return;
+    }
+    const readWords = Math.min(
+      wordCount,
+      Math.max(1, readWordsOverride ?? wordsRead),
+    );
     const measuredWpm = Math.max(1, Math.round((readWords / durationSeconds) * 60));
     setLastInsight({
       durationSeconds: Math.round(durationSeconds),
@@ -1599,14 +1661,24 @@ export default function Home() {
         <div className="practice-strip">
           <button
             type="button"
-            onClick={() => setActiveLine((line) => Math.max(0, line - 1))}
+            onClick={() =>
+              setActiveLine((line) => {
+                const nextLine = Math.max(0, line - 1);
+                activeLineRef.current = nextLine;
+                return nextLine;
+              })
+            }
           >
             Previous
           </button>
           <button
             type="button"
             onClick={() =>
-              setActiveLine((line) => Math.min(lines.length - 1, line + 1))
+              setActiveLine((line) => {
+                const nextLine = Math.min(lines.length - 1, line + 1);
+                activeLineRef.current = nextLine;
+                return nextLine;
+              })
             }
           >
             Next line
@@ -1630,11 +1702,8 @@ export default function Home() {
               {lastInsight
                 ? `${lastInsight.readWords} words in ${formatTime(
                     lastInsight.durationSeconds,
-                  )}. Suggested roll speed is ${Math.min(
-                    280,
-                    Math.max(80, lastInsight.wpm),
-                  )} wpm.`
-                : `After you pause or finish, ${productName} estimates your pace and suggests a better roll speed.`}
+                  )}. Your measured speaking pace is ${lastInsight.wpm} wpm.`
+                : `Read for at least eight seconds, then ${productName} can estimate your natural speaking pace.`}
             </span>
           </div>
           <button
