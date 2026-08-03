@@ -2,6 +2,16 @@
 
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
+type TrackingProps = Record<string, boolean | number | string>;
+
+declare global {
+  interface Window {
+    umami?: {
+      track: (eventName: string, eventData?: TrackingProps) => void;
+    };
+  }
+}
+
 const starterScript = `Today I am practicing clear English communication.
 
 My goal is to speak clearly, breathe naturally, and sound confident.
@@ -24,14 +34,17 @@ type SessionInsight = {
 };
 
 const productName = "ovi";
-const demoSpeedPresets = [90, 110, 130, 160, 190];
-const studioSpeedPresets = [105, 130, 155, 190, 230];
+const demoSpeedPresets = [90, 110, 130, 150, 170];
+const studioSpeedPresets = [90, 110, 130, 150, 170];
+const feedbackFormBaseUrl = "https://tally.so/r/YOURFORM";
+const koFiUrl = "https://ko-fi.com/YOURPAGE";
+const upiUrl = "upi://pay?pa=YOURUPI@upi&pn=Ovi&cu=INR";
 
 const landingDemoScript = `This is a real teleprompter, not a picture of one.
 
 The text is moving at one hundred and thirty words a minute -- about the speed of a teacher explaining something.
 
-Choose Scroll Speed from one to five. One is calm practice. Five is a fast creator read.
+Speed two is calm practice. Speed four is a fast creator read. The number beside it is real words per minute, so it means something.
 
 Turn on mirror mode if you shoot through beam-splitter glass. The reflection flips the text, so we flip it first.
 
@@ -106,6 +119,11 @@ function formatTime(totalSeconds: number) {
 
 function countWords(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function trackEvent(eventName: string, eventData?: TrackingProps) {
+  if (typeof window === "undefined") return;
+  window.umami?.track(eventName, eventData);
 }
 
 function CueDivider({ label }: { label: string }) {
@@ -238,7 +256,11 @@ export default function Home() {
   const demoLastFrameRef = useRef<number | null>(null);
   const demoOffsetRef = useRef(0);
   const rollOffsetRef = useRef(0);
+  const rollProgressRef = useRef(0);
   const activeLineRef = useRef(0);
+  const promptFinishedTrackedRef = useRef(false);
+  const scriptPastedTrackedRef = useRef(false);
+  const textEditedTrackedRef = useRef(false);
   const demoPlayingRef = useRef(false);
   const demoEditingRef = useRef(false);
   const sessionStartRef = useRef<number | null>(null);
@@ -248,6 +270,11 @@ export default function Home() {
   const demoLines = useMemo(() => splitLines(demoText), [demoText]);
   const demoWordCount = useMemo(() => countWords(demoText), [demoText]);
   const demoDuration = Math.max(1, Math.round((demoWordCount / demoWpm) * 60));
+  const feedbackUrl = useMemo(() => {
+    if (typeof navigator === "undefined") return feedbackFormBaseUrl;
+    const query = new URLSearchParams({ ua: navigator.userAgent });
+    return `${feedbackFormBaseUrl}?${query.toString()}`;
+  }, []);
   const wordCount = useMemo(
     () => countWords(script),
     [script],
@@ -496,6 +523,7 @@ export default function Home() {
         rollOffsetRef.current + pixelsPerSecond * deltaSeconds,
       );
       rollOffsetRef.current = nextOffset;
+      rollProgressRef.current = nextOffset / totalScrollable;
       content.style.transform = `translate3d(0, ${-nextOffset}px, 0) scale(${
         mirrorHorizontal ? -1 : 1
       }, ${mirrorVertical ? -1 : 1})`;
@@ -515,6 +543,15 @@ export default function Home() {
       if (nextActiveLine !== activeLineRef.current) {
         activeLineRef.current = nextActiveLine;
         setActiveLine(nextActiveLine);
+      }
+
+      if (!promptFinishedTrackedRef.current && rollProgressRef.current >= 0.9) {
+        promptFinishedTrackedRef.current = true;
+        trackEvent("prompt_finished", {
+          progress: 90,
+          speed,
+          words: wordCount,
+        });
       }
 
       if (nextOffset >= totalScrollable - 1) {
@@ -547,6 +584,19 @@ export default function Home() {
     textPosition,
     wordCount,
   ]);
+
+  useEffect(() => {
+    function trackAbandonedPrompt() {
+      if (isRunning && rollProgressRef.current < 0.25) {
+        trackEvent("prompt_abandoned", {
+          progress: Math.round(rollProgressRef.current * 100),
+        });
+      }
+    }
+
+    window.addEventListener("pagehide", trackAbandonedPrompt);
+    return () => window.removeEventListener("pagehide", trackAbandonedPrompt);
+  }, [isRunning]);
 
   useEffect(() => {
     if (!isRunning || countdown <= 0) return;
@@ -637,6 +687,11 @@ export default function Home() {
 
   function startPrompt() {
     if (lines.length === 0) return;
+    promptFinishedTrackedRef.current = false;
+    trackEvent("prompt_started", {
+      speed,
+      words: wordCount,
+    });
     if (activeLine >= lines.length - 1) {
       setActiveLine(0);
       activeLineRef.current = 0;
@@ -663,6 +718,8 @@ export default function Home() {
     setIsRunning(false);
     setCountdown(0);
     setActiveLine(0);
+    promptFinishedTrackedRef.current = false;
+    rollProgressRef.current = 0;
     activeLineRef.current = 0;
     if (lineListRef.current) lineListRef.current.scrollTop = 0;
     rollOffsetRef.current = 0;
@@ -726,10 +783,12 @@ export default function Home() {
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraEnabled(true);
+      trackEvent("camera_allowed");
       return true;
     } catch {
       setCameraError("Camera or microphone permission was blocked.");
       setCameraEnabled(false);
+      trackEvent("camera_denied");
       return false;
     }
   }
@@ -810,6 +869,7 @@ export default function Home() {
     };
     recorder.start();
     setIsRecording(true);
+    trackEvent("recording_started");
     startPrompt();
   }
 
@@ -817,6 +877,14 @@ export default function Home() {
     if (!file) return;
     const text = await file.text();
     setScript(text);
+    if (!scriptPastedTrackedRef.current) {
+      scriptPastedTrackedRef.current = true;
+      trackEvent("script_pasted");
+    }
+    if (!textEditedTrackedRef.current) {
+      textEditedTrackedRef.current = true;
+      trackEvent("text_edited");
+    }
     resetPrompt();
   }
 
@@ -860,9 +928,38 @@ export default function Home() {
     setLastInsight(insight);
     setSpeed(measuredWpm);
     setScrollMode("wpm");
+    trackEvent("pace_test_completed", {
+      wpm: measuredWpm,
+      seconds: insight.durationSeconds,
+    });
     setIsCalibrating(false);
     setCalibrationRemaining(30);
     calibrationStartRef.current = null;
+  }
+
+  function chooseStudioSpeed(preset: number, level: number) {
+    setSpeed(preset);
+    setScrollMode("wpm");
+    trackEvent("speed_changed", {
+      speed: level,
+      wpm: preset,
+    });
+  }
+
+  function trackTextEditedOnce() {
+    if (textEditedTrackedRef.current) return;
+    textEditedTrackedRef.current = true;
+    trackEvent("text_edited");
+  }
+
+  function trackScriptPastedOnce() {
+    if (scriptPastedTrackedRef.current) return;
+    scriptPastedTrackedRef.current = true;
+    trackEvent("script_pasted");
+  }
+
+  function handleFeedbackClick() {
+    trackEvent("feedback_clicked");
   }
 
   if (experienceMode === "welcome") {
@@ -941,7 +1038,10 @@ export default function Home() {
                   setDemoEditing(false);
                   setDemoText(event.currentTarget.innerText);
                 }}
-                onInput={(event) => setDemoText(event.currentTarget.innerText)}
+                onInput={(event) => {
+                  setDemoText(event.currentTarget.innerText);
+                  trackTextEditedOnce();
+                }}
               >
                 {demoLines.map((line, index) => (
                   <p key={`${line}-${index}`}>{line}</p>
@@ -967,7 +1067,13 @@ export default function Home() {
                     type="button"
                     className={Math.abs(demoWpm - preset) < 8 ? "selected" : ""}
                     aria-pressed={Math.abs(demoWpm - preset) < 8}
-                    onClick={() => setDemoWpm(preset)}
+                    onClick={() => {
+                      setDemoWpm(preset);
+                      trackEvent("speed_changed", {
+                        speed: index + 1,
+                        wpm: preset,
+                      });
+                    }}
                   >
                     {index + 1}
                   </button>
@@ -978,7 +1084,12 @@ export default function Home() {
                 className="ovi-key"
                 aria-pressed={demoMirror}
                 aria-label="Mirror mode"
-                onClick={() => setDemoMirror((value) => !value)}
+                onClick={() =>
+                  setDemoMirror((value) => {
+                    if (!value) trackEvent("mirror_toggled");
+                    return !value;
+                  })
+                }
               >
                 ⇋
               </button>
@@ -1027,8 +1138,9 @@ export default function Home() {
                 <span className="ovi-mono">Step two</span>
                 <h3>Set your speed</h3>
                 <p>
-                  Pick a real number. 150 for news, 130 for teaching, 90 if you
-                  want room to breathe. Size, line height and width move with it.
+                  Five speeds, from 90 words a minute for calm practice to 170
+                  for a fast creator read. Pick one and the read time updates
+                  as you type.
                 </p>
               </div>
               <div className="ovi-card">
@@ -1048,19 +1160,19 @@ export default function Home() {
             <CueDivider label="Built for the way people actually shoot" />
             <FeatureRow
               title="Mirror mode, both ways"
-              copy="Beam-splitter glass flips your text left to right. Ceiling rigs flip it top to bottom too. Both toggles are here, and both are free."
+              copy="Beam-splitter glass flips your text left to right. Rigs mounted above the lens flip it top to bottom. Both toggles are here, and both are free."
               visual={<div className="ovi-mini flip">Read me in the glass<div className="ovi-cueline" /></div>}
             />
             <FeatureRow
               reverse
-              title="Camera and mic feel respectful"
+              title="We ask before the browser does"
               copy="Before pace testing, camera preview, or recording, ovi shows a personal space message. Then the browser asks for access. Your script stays on this device."
               visual={<div className="ovi-mini call"><span>Camera + mic only when you allow.</span></div>}
             />
             <FeatureRow
               title="It learns your pace"
               copy="Read a short passage for 30 seconds. The studio estimates your words per minute and lets you apply that speed to the real teleprompter."
-              visual={<div className="ovi-mini tracking"><span>and that is why we changed the process</span><span>which took about six weeks in total</span><b>▸ TRACKING · 142 WPM</b></div>}
+              visual={<div className="ovi-mini tracking"><small>00:30 SAMPLE</small><span>and that is why we changed the process</span><span>which took about six weeks in total</span><b>▸ YOUR PACE · 128 WPM</b></div>}
             />
           </div>
         </section>
@@ -1080,7 +1192,7 @@ export default function Home() {
                 <li>30-second pace calibration</li>
                 <li>Browser recording download</li>
                 <li>No watermark on anything</li>
-                <li>No database for this version</li>
+                <li>Works with no internet once the page has loaded</li>
                 <li>No account, ever, if you don&apos;t want one</li>
               </ul>
               <p>Nothing on that list will move behind a paywall later.</p>
@@ -1155,7 +1267,7 @@ export default function Home() {
             </details>
             <details>
               <summary>Where do my scripts go?</summary>
-              <p>Into your browser&apos;s own storage on this device. Nothing is uploaded in this version. You can import and keep working locally.</p>
+              <p>Into your browser&apos;s own storage on this device. Nothing is uploaded in this version. You can import and keep working locally. We count anonymous visits and which buttons get pressed, so we know what to fix. Your script text is never sent, never stored, and never seen by us.</p>
             </details>
             <details>
               <summary>Will my recording have a watermark?</summary>
@@ -1167,7 +1279,7 @@ export default function Home() {
             </details>
             <details>
               <summary>Can I use it with a hardware teleprompter?</summary>
-              <p>Yes. Turn on mirror mode, go full screen, and put the tablet or laptop under the glass. Vertical flip is still in the studio.</p>
+              <p>Yes. Turn on mirror mode, go full screen, and lay the tablet or laptop face-up under the glass. Vertical flip, for rigs mounted above the lens, is coming next.</p>
             </details>
             <details>
               <summary>What about other languages?</summary>
@@ -1189,11 +1301,34 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="ovi-tip-strip" aria-label="Support Ovi">
+          <div className="ovi-wrap">
+            <p>
+              Ovi is free and stays free. If it saved you a reshoot, you can
+              buy me a coffee.
+            </p>
+            <a href={koFiUrl} target="_blank" rel="noreferrer">
+              Buy me a coffee
+            </a>
+            <a href={upiUrl}>Pay with UPI</a>
+          </div>
+        </section>
+
         <footer className="ovi-footer">
           <div className="ovi-wrap ovi-foot">
             <a className="ovi-brand" href="#top"><i /> {productName}</a>
             <span className="ovi-mono">Made for people who talk to a camera</span>
             <span className="ovi-mono">Privacy · Terms · Contact</span>
+            <a
+              className="ovi-feedback-line"
+              href={feedbackUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={handleFeedbackClick}
+            >
+              Found a bug, or want something added? Tell me -- it goes straight
+              to one person.
+            </a>
           </div>
         </footer>
       </main>
@@ -1307,8 +1442,10 @@ export default function Home() {
         <textarea
           id="script"
           value={script}
+          onPaste={trackScriptPastedOnce}
           onChange={(event) => {
             setScript(event.target.value);
+            trackTextEditedOnce();
             resetPrompt();
           }}
           spellCheck
@@ -1368,8 +1505,7 @@ export default function Home() {
                 type="button"
                 className={Math.abs(speed - preset) < 13 ? "selected" : ""}
                 onClick={() => {
-                  setSpeed(preset);
-                  setScrollMode("wpm");
+                  chooseStudioSpeed(preset, index + 1);
                 }}
               >
                 {index + 1}
@@ -1484,7 +1620,10 @@ export default function Home() {
             <input
               type="checkbox"
               checked={mirrorHorizontal}
-              onChange={(event) => setMirrorHorizontal(event.target.checked)}
+              onChange={(event) => {
+                if (event.target.checked) trackEvent("mirror_toggled");
+                setMirrorHorizontal(event.target.checked);
+              }}
             />
             <span>Mirror horizontal</span>
           </label>
@@ -1492,7 +1631,10 @@ export default function Home() {
             <input
               type="checkbox"
               checked={mirrorVertical}
-              onChange={(event) => setMirrorVertical(event.target.checked)}
+              onChange={(event) => {
+                if (event.target.checked) trackEvent("mirror_toggled");
+                setMirrorVertical(event.target.checked);
+              }}
             />
             <span>Mirror vertical</span>
           </label>
@@ -1545,14 +1687,22 @@ export default function Home() {
                   className={Math.abs(speed - preset) < 13 ? "selected" : ""}
                   aria-pressed={Math.abs(speed - preset) < 13}
                   onClick={() => {
-                    setSpeed(preset);
-                    setScrollMode("wpm");
+                    chooseStudioSpeed(preset, index + 1);
                   }}
                 >
                   {index + 1}
                 </button>
               ))}
             </div>
+            <a
+              className="toolbar-feedback"
+              href={feedbackUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={handleFeedbackClick}
+            >
+              Report a problem
+            </a>
             <button type="button" onClick={resetPrompt} aria-label="Reset">
               Reset
             </button>

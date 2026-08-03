@@ -12,6 +12,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+const umamiScriptSrc =
+  process.env.NEXT_PUBLIC_UMAMI_SCRIPT_SRC ?? "https://cloud.umami.is/script.js";
+
 export const metadata: Metadata = {
   title: "ovi - Free Online Teleprompter for Indian Creators",
   description:
@@ -29,6 +33,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {umamiWebsiteId ? (
+          <script
+            defer
+            src={umamiScriptSrc}
+            data-website-id={umamiWebsiteId}
+          />
+        ) : null}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
