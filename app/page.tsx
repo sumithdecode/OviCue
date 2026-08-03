@@ -699,6 +699,13 @@ function StaticPage({
             database to run the core prompter.
           </p>
         </InfoCard>
+        <InfoCard title="No AI training">
+          <p>
+            OviCue does not sell, mine, process, or submit your scripts, speech
+            data, audio, or recordings to third-party AI training sets or
+            machine-learning pipelines.
+          </p>
+        </InfoCard>
         <InfoCard title="Local storage and retention">
           <p>
             Scripts and user settings can be saved in browser storage such as
@@ -808,7 +815,7 @@ function StaticPage({
         <h1>Small guides for better videos.</h1>
         <div className="ovi-info-grid">
           <InfoCard title="Hardware rig">
-            <p>Place your tablet or laptop face-up under teleprompter glass, then turn on Mirror Horizontal so the reflection reads normally.</p>
+            <p>Place your tablet or laptop face-up under beam-splitter glass, then turn on Mirror Horizontal so the reflected text reads normally to you and stays invisible to the camera.</p>
           </InfoCard>
           <InfoCard title="Phone setup">
             <p>Keep the prompter close to the camera lens so your eyes stay natural.</p>
@@ -820,10 +827,10 @@ function StaticPage({
             <p>Horizontal flip is for glass. Vertical flip helps with some mounted rigs.</p>
           </InfoCard>
           <InfoCard title="Permissions">
-            <p>Prompting needs no permission. Camera and microphone prompts appear only when you use preview, recording, or optional voice tools.</p>
+            <p>Chrome and Brave show camera and mic controls near the address bar. Safari keeps them in Settings, under Websites. OviCue asks only when you use preview, recording, or optional voice tools.</p>
           </InfoCard>
           <InfoCard title="Keyboard">
-            <p>Space starts or pauses. Arrow keys move line by line when practicing.</p>
+            <p>Space starts or pauses. Up and Down adjust speed during rehearsal. Esc exits browser fullscreen.</p>
           </InfoCard>
           <InfoCard title="Offline">
             <p>After the page loads, the app shell can reopen from browser cache.</p>
@@ -2644,17 +2651,17 @@ export default function Home() {
         <header className="ovi-hero" id="top">
           <div className="ovi-wrap">
             <span className="ovi-pill ovi-mono ovi-reveal">
-              Free · <b>no signup</b> · works offline
+              Free · <b>no account required</b> · works offline
             </span>
             <h1 className="ovi-reveal delay-1">
               Paste your script.
-              <em>Start reading.</em>
+              <em>Speak natural.</em>
             </h1>
             <p className="ovi-lead ovi-reveal delay-2">
-              Add your text and read smoothly, or first measure your natural
-              speaking speed and start the prompter at that personal pace.
-              Built for creators, teachers, and students who want clean videos
-              without setup drama.
+              The zero-friction teleprompter built for creators, educators, and
+              speakers. Test your speaking pace, mirror for real prompter
+              glass, and record clean videos in your browser with no paywalls
+              or watermarks.
             </p>
             <div className="ovi-cta-row ovi-reveal delay-3">
               <button
@@ -2662,21 +2669,21 @@ export default function Home() {
                 className="ovi-btn ovi-btn-dark"
                 onClick={() => goTo("studio")}
               >
-                Start prompting -- it&apos;s free
+                Start reading now
               </button>
               <button
                 type="button"
                 className="ovi-btn ovi-btn-ghost"
                 onClick={showFrontSpeedTest}
               >
-                Do the speed test
+                Test your speaking pace
               </button>
             </div>
             <div className="ovi-hero-note ovi-reveal delay-4">
               <span className="ovi-chip ovi-mono">Phone, laptop, tablet</span>
-              <span className="ovi-chip ovi-mono">Prompter + speed test</span>
-              <span className="ovi-chip ovi-mono">Scripts stay on your device</span>
-              <span className="ovi-chip ovi-mono">No watermark</span>
+              <span className="ovi-chip ovi-mono">Built-in speech speed test</span>
+              <span className="ovi-chip ovi-mono">Scripts never leave your device</span>
+              <span className="ovi-chip ovi-mono">Watermark-free recording</span>
             </div>
           </div>
         </header>
@@ -2904,32 +2911,31 @@ export default function Home() {
         <section className="ovi-section" id="how">
           <div className="ovi-wrap">
             <CueDivider label="How it works" />
-            <h2>Three steps. No account in any of them.</h2>
+            <h2>From raw draft to clean delivery in three steps.</h2>
             <div className="ovi-grid">
               <div className="ovi-card">
                 <span className="ovi-mono">Step one</span>
-                <h3>Paste the script</h3>
+                <h3>Paste or import your script</h3>
                 <p>
-                  Type it, paste it, or drop in a text file. Word count and read
-                  time appear as you write, so the script length is clear before
-                  you record it.
+                  Type directly, paste plain text, or import a text file. OviCue
+                  measures word count and reading time before you hit record.
                 </p>
               </div>
               <div className="ovi-card">
                 <span className="ovi-mono">Step two</span>
-                <h3>Set your speed</h3>
+                <h3>Calibrate your natural pace</h3>
                 <p>
-                  Pick speed 1 to 5 for a quick start, or type your exact
-                  custom WPM when you already know your rhythm. Read time
-                  updates as you type.
+                  Pick speed 1 to 5, type your exact WPM, or use the built-in
+                  speed test so the prompter matches you instead of the other
+                  way around.
                 </p>
               </div>
               <div className="ovi-card">
                 <span className="ovi-mono">Step three</span>
-                <h3>Read</h3>
+                <h3>Deliver and record on cue</h3>
                 <p>
-                  Full screen, black background, cue line at 38% so your eyes
-                  stay near the lens. Space bar pauses.
+                  Launch fullscreen, keep the cue line near the camera lens,
+                  and pause anytime with the spacebar.
                 </p>
               </div>
             </div>
@@ -2939,20 +2945,20 @@ export default function Home() {
         <section className="ovi-section no-top" id="free">
           <div className="ovi-wrap">
             <div className="ovi-free">
-              <h2>Free means free. Here is the whole list.</h2>
+              <h2>Free means free. Here is the ironclad promise.</h2>
               <ul>
-                <li>Scripts of any length</li>
-                <li>Unlimited prompting time</li>
+                <li>Unlimited script lengths</li>
+                <li>Infinite prompting runtime</li>
                 <li>Mirror horizontal and vertical</li>
-                <li>Every font and size</li>
-                <li>Camera preview behind the text</li>
-                <li>Full screen reading mode</li>
-                <li>English, Hindi, and Marathi samples</li>
-                <li>Pace test that learns your speed</li>
-                <li>Browser recording download</li>
-                <li>No watermark on anything</li>
-                <li>Works with no internet once the page has loaded</li>
-                <li>No account, ever, if you don&apos;t want one</li>
+                <li>Typography controls for size, weight, and alignment</li>
+                <li>Live background camera preview</li>
+                <li>High-contrast fullscreen reading mode</li>
+                <li>English, Hindi, and Marathi sample scripts</li>
+                <li>Speech speed test that learns your pace</li>
+                <li>Local browser recording export</li>
+                <li>Zero watermarks on any recording or script view</li>
+                <li>Works offline once the page has loaded</li>
+                <li>No account or credit card prompts</li>
               </ul>
               <p>Nothing on that list will move behind a paywall later.</p>
             </div>
@@ -2962,19 +2968,19 @@ export default function Home() {
         <section className="ovi-section no-top" id="features">
           <div className="ovi-wrap">
             <FeatureRow
-              title="Mirror mode, both ways"
-              copy="Beam-splitter glass flips your text left to right. Rigs mounted above the lens flip it top to bottom. Both toggles are here, and both are free."
+              title="Dual-axis glass mirroring"
+              copy="Hardware prompter glass flips text left to right. Some top-mounted rigs flip it top to bottom. OviCue includes independent horizontal and vertical toggles for both setups."
               visual={<div className="ovi-mini flip">Read me in the glass<div className="ovi-cueline" /></div>}
             />
             <FeatureRow
               reverse
-              title="We ask before the browser does"
-              copy="Before camera preview or recording, OviCue explains what is needed. Prompting itself never needs permission, and your script stays on this device."
+              title="On-demand hardware permissions"
+              copy="OviCue only asks for device access when you activate a feature. Camera preview requests the lens only. Recording requests camera and mic. Prompting itself never needs permission."
               visual={<div className="ovi-mini call"><span>Camera only when you switch preview on. Mic only for recording.</span></div>}
             />
             <FeatureRow
-              title="It learns your pace"
-              copy="Read your own script out loud once. OviCue works out your natural speed and sets the prompter to it."
+              title="Adaptive pace control"
+              copy="Read your own script out loud once. OviCue works out your natural speed and sets the prompter to it, so the words move with your rhythm."
               visual={<div className="ovi-mini tracking"><small>YOUR PACE</small><span>132 wpm</span><span>speed set from your read</span><b>▸ READY</b></div>}
             />
           </div>
@@ -2984,9 +2990,10 @@ export default function Home() {
           <div className="ovi-wrap audience-section">
             <h2>Built for anyone who has to say written words out loud.</h2>
             <p className="ovi-lead">
-              A wedding host, an exam candidate, a news reader and a teacher
-              have nothing in common except this: the words are already written,
-              and they do not want to sound like they are reading them.
+              A YouTube creator, tutor, keynote speaker, trainer, journalist,
+              advisor, and language learner have one thing in common: the words
+              are already written, and they do not want to sound like they are
+              reading them.
             </p>
             <div className="ovi-strip audience-strip">
               {[
@@ -3013,9 +3020,14 @@ export default function Home() {
               <p className="ovi-lead">
                 Most people guess wrong by twenty or thirty words a minute.
                 Read a short passage out loud, press Done, and find out. It
-                takes about ninety seconds, needs no microphone, and works in
+                needs no microphone by default and works in
                 any browser.
               </p>
+              <div className="speech-benchmark-list">
+                <span>110-125 WPM: calm and educational</span>
+                <span>130-145 WPM: natural broadcast</span>
+                <span>150-170 WPM: high-energy creator</span>
+              </div>
               <div className="ovi-cta-row">
                 <button
                   type="button"
@@ -3062,8 +3074,8 @@ export default function Home() {
               />
             </div>
             <p className="pro-note">
-              Pro and Team are being built. Voice tracking, sync across devices,
-              and shared script libraries.
+              Pro and Team are being built for cloud sync, wireless remote
+              control, shared script libraries, and longer production workflows.
             </p>
             <div className="pro-waitlist">
               <input
@@ -3090,7 +3102,7 @@ export default function Home() {
             </details>
             <details>
               <summary>Where do my scripts go?</summary>
-              <p>Into your browser&apos;s own storage on this device. Nothing is uploaded in this version. You can import and keep working locally. We count anonymous visits and which buttons get pressed, so we know what to fix. Your script text is never sent, never stored, and never seen by us.</p>
+              <p>Into your browser&apos;s own storage on this device. Nothing is uploaded in this version. Your script text is never sent, never stored on our server, never seen by us, and never submitted to AI training pipelines.</p>
             </details>
             <details>
               <summary>Will my recording have a watermark?</summary>
@@ -3106,7 +3118,11 @@ export default function Home() {
             </details>
             <details>
               <summary>What about other languages?</summary>
-              <p>English, Hindi, and Marathi samples are included. The interface stays English-first for Indian creators.</p>
+              <p>English, Hindi, and Marathi samples are included. OviCue supports Unicode text, so you can paste scripts in most written languages.</p>
+            </details>
+            <details>
+              <summary>Can I use it offline?</summary>
+              <p>Yes. Once the page loads, the prompter can keep working from browser cache for local prompting, mirroring, and rehearsal.</p>
             </details>
           </div>
         </section>

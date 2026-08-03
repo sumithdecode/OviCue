@@ -2506,6 +2506,23 @@ input[type="checkbox"] {
   margin-bottom: 28px;
 }
 
+.speech-benchmark-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.speech-benchmark-list span {
+  border: 1px solid rgba(15, 138, 97, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 245, 0.72);
+  color: var(--ink-2);
+  padding: 8px 11px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
 .speech-preview-card {
   display: grid;
   align-content: center;
