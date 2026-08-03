@@ -14,6 +14,7 @@ This video is for sharing knowledge, helping people, and becoming better every d
 
 type ScrollMode = "wpm" | "timed";
 type ScriptLanguage = "english" | "hindi" | "marathi";
+type ExperienceMode = "welcome" | "studio";
 type SessionInsight = {
   durationSeconds: number;
   readWords: number;
@@ -44,6 +45,15 @@ const languageLabels: Record<ScriptLanguage, string> = {
   marathi: "मराठी",
 };
 
+const calibrationPassages: Record<ScriptLanguage, string> = {
+  english:
+    "Today I want to speak with calm energy. I will look near the camera, keep my sentences natural, and explain one useful idea in a way that helps the listener understand quickly.",
+  hindi:
+    "आज मैं शांत आत्मविश्वास के साथ बोलना चाहता हूं। मैं कैमरे के पास देखूंगा, अपने वाक्य सरल रखूंगा, और एक उपयोगी विचार को ऐसे समझाऊंगा कि सुनने वाले को जल्दी समझ आए।",
+  marathi:
+    "आज मला शांत आत्मविश्वासाने बोलायचे आहे। मी कॅमेऱ्याजवळ पाहीन, माझी वाक्ये नैसर्गिक ठेवीन, आणि एक उपयोगी विचार असा समजावून सांगेन की ऐकणाऱ्याला पटकन समजेल.",
+};
+
 function splitLines(text: string) {
   return text
     .split(/\n+/)
@@ -62,10 +72,12 @@ function countWords(text: string) {
 }
 
 export default function Home() {
+  const [experienceMode, setExperienceMode] =
+    useState<ExperienceMode>("welcome");
   const [script, setScript] = useState(starterScript);
   const [activeLine, setActiveLine] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [speed, setSpeed] = useState(120);
+  const [speed, setSpeed] = useState(145);
   const [fontSize, setFontSize] = useState(52);
   const [countdown, setCountdown] = useState(0);
   const [scrollMode, setScrollMode] = useState<ScrollMode>("wpm");
@@ -81,6 +93,10 @@ export default function Home() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedUrl, setRecordedUrl] = useState("");
   const [lastInsight, setLastInsight] = useState<SessionInsight | null>(null);
+  const [calibrationInsight, setCalibrationInsight] =
+    useState<SessionInsight | null>(null);
+  const [isCalibrating, setIsCalibrating] = useState(false);
+  const [calibrationRemaining, setCalibrationRemaining] = useState(30);
   const [isLoaded, setIsLoaded] = useState(false);
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lineListRef = useRef<HTMLDivElement | null>(null);
@@ -92,6 +108,7 @@ export default function Home() {
   const animationRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
   const sessionStartRef = useRef<number | null>(null);
+  const calibrationStartRef = useRef<number | null>(null);
 
   const lines = useMemo(() => splitLines(script), [script]);
   const wordCount = useMemo(
@@ -126,6 +143,7 @@ export default function Home() {
           dimPast?: boolean;
           textPosition?: number;
           scriptLanguage?: ScriptLanguage;
+          calibrationInsight?: SessionInsight;
         };
         if (parsed.script) setScript(parsed.script);
         if (parsed.speed) setSpeed(parsed.speed < 40 ? 120 : parsed.speed);
@@ -141,6 +159,11 @@ export default function Home() {
         if (typeof parsed.dimPast === "boolean") setDimPast(parsed.dimPast);
         if (parsed.textPosition) setTextPosition(parsed.textPosition);
         if (parsed.scriptLanguage) setScriptLanguage(parsed.scriptLanguage);
+        if (parsed.calibrationInsight) {
+          setCalibrationInsight(parsed.calibrationInsight);
+          setLastInsight(parsed.calibrationInsight);
+          setSpeed(Math.min(280, Math.max(80, parsed.calibrationInsight.wpm)));
+        }
       } catch {
         window.localStorage.removeItem("daily-prompter-state");
       }
@@ -163,9 +186,11 @@ export default function Home() {
         mirrorVertical,
         dimPast,
         textPosition,
+        calibrationInsight,
       }),
     );
   }, [
+    calibrationInsight,
     dimPast,
     fontSize,
     isLoaded,
@@ -204,7 +229,15 @@ export default function Home() {
       lastFrameRef.current = now;
 
       const totalScrollable = Math.max(1, list.scrollHeight - list.clientHeight);
-      const pixelsPerSecond = totalScrollable / estimatedSeconds;
+      const averageWordsPerLine = Math.max(3, wordCount / Math.max(1, lines.length));
+      const wpmPixelsPerSecond = Math.max(
+        56,
+        ((fontSize * 2.4) / averageWordsPerLine) * (speed / 60),
+      );
+      const pixelsPerSecond =
+        scrollMode === "timed"
+          ? Math.max(48, totalScrollable / estimatedSeconds)
+          : wpmPixelsPerSecond;
       list.scrollTop = Math.min(
         totalScrollable,
         list.scrollTop + pixelsPerSecond * deltaSeconds,
@@ -243,7 +276,17 @@ export default function Home() {
       animationRef.current = null;
       lastFrameRef.current = null;
     };
-  }, [countdown, estimatedSeconds, isRunning, lines.length, textPosition]);
+  }, [
+    countdown,
+    estimatedSeconds,
+    fontSize,
+    isRunning,
+    lines.length,
+    scrollMode,
+    speed,
+    textPosition,
+    wordCount,
+  ]);
 
   useEffect(() => {
     if (!isRunning || countdown <= 0) return;
@@ -252,6 +295,18 @@ export default function Home() {
     }, 1000);
     return () => window.clearTimeout(timer);
   }, [countdown, isRunning]);
+
+  useEffect(() => {
+    if (!isCalibrating) return;
+    if (calibrationRemaining <= 0) {
+      finishCalibration();
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setCalibrationRemaining((value) => value - 1);
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [calibrationRemaining, isCalibrating]);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -440,46 +495,134 @@ export default function Home() {
     resetPrompt();
   }
 
+  function startCalibration() {
+    setCalibrationRemaining(30);
+    calibrationStartRef.current = performance.now();
+    setIsCalibrating(true);
+  }
+
+  function finishCalibration() {
+    if (calibrationStartRef.current === null) return;
+    const elapsedSeconds = Math.max(
+      5,
+      (performance.now() - calibrationStartRef.current) / 1000,
+    );
+    const passageWords = countWords(calibrationPassages[scriptLanguage]);
+    const measuredWpm = Math.max(
+      80,
+      Math.min(280, Math.round((passageWords / elapsedSeconds) * 60)),
+    );
+    const insight = {
+      durationSeconds: Math.round(elapsedSeconds),
+      readWords: passageWords,
+      wpm: measuredWpm,
+    };
+    setCalibrationInsight(insight);
+    setLastInsight(insight);
+    setSpeed(measuredWpm);
+    setScrollMode("wpm");
+    setIsCalibrating(false);
+    setCalibrationRemaining(30);
+    calibrationStartRef.current = null;
+  }
+
+  if (experienceMode === "welcome") {
+    return (
+      <main className="welcome-shell">
+        <section className="welcome-hero" aria-label="LumoCue welcome">
+          <nav className="welcome-nav">
+            <div>
+              <span className="mark">LC</span>
+              <strong>LumoCue</strong>
+            </div>
+            <a href="/signin-with-chatgpt?return_to=%2F">Sign in</a>
+          </nav>
+
+          <div className="hero-copy">
+            <p className="eyebrow">Teleprompter for Indian creators</p>
+            <h1>Speak like yourself. Let the script follow your pace.</h1>
+            <p>
+              A polished browser teleprompter for teachers, students, coaches,
+              founders, and creators recording in English, Hindi, and Marathi.
+            </p>
+            <div className="hero-actions">
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => setExperienceMode("studio")}
+              >
+                Enter studio
+              </button>
+              <a href="/signin-with-chatgpt?return_to=%2F">Continue with sign in</a>
+            </div>
+          </div>
+
+          <div className="hero-preview" aria-label="Product preview">
+            <div className="preview-topbar">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="preview-stage">
+              <p>Calibrate once.</p>
+              <p className="active">Read naturally with eye contact.</p>
+              <p>Record your clearest take.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="welcome-features" aria-label="Feature preview">
+          <div>
+            <strong>Pace calibration</strong>
+            <span>Read a short passage, then LumoCue suggests your roll speed.</span>
+          </div>
+          <div>
+            <strong>India-first scripts</strong>
+            <span>English, हिन्दी, and मराठी samples are ready without a database.</span>
+          </div>
+          <div>
+            <strong>Studio controls</strong>
+            <span>Camera preview, recording, mirror mode, timed scroll, and fullscreen.</span>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="app-shell">
       <section className="editor-panel" aria-label="Script editor">
         <div className="brand-row">
           <div>
-            <p className="eyebrow">Public creator studio</p>
-            <h1>Sumit Decode</h1>
+            <p className="eyebrow">India-first creator prompter</p>
+            <h1>LumoCue</h1>
           </div>
           <div className="status-pill">{lines.length} lines</div>
         </div>
 
         <div className="creator-intro">
-          <p>Decode your ideas into confident videos with a warm teleprompter for Indian teachers, students, creators, and graders.</p>
-          <div className="intro-tags" aria-label="PromptFlow highlights">
-            <span>Camera ready</span>
+          <p>Read naturally, keep eye contact, and record clean videos in English, Hindi, or Marathi. Everything runs in your browser for now.</p>
+          <div className="intro-tags" aria-label="LumoCue highlights">
+            <span>Smooth auto-roll</span>
             <span>हिन्दी</span>
             <span>मराठी</span>
-            <span>Sign in ready</span>
-            <span>Premium path</span>
+            <span>Camera ready</span>
+            <span>Local scripts</span>
           </div>
         </div>
 
-        <div className="account-panel">
+        <div className="studio-strip" aria-label="Studio highlights">
           <div>
-            <strong>Start free</strong>
-            <span>Use 15 practice runs to test your scripts. Upgrade when you want unlimited creator sessions.</span>
+            <strong>Prompt</strong>
+            <span>Paste or import a script</span>
           </div>
-          <a href="/signin-with-chatgpt?return_to=%2F">Sign in</a>
-        </div>
-
-        <div className="pricing-panel" aria-label="Plans">
           <div>
-            <small>Free</small>
-            <strong>15 runs</strong>
-            <span>Practice, import text, and record short sessions.</span>
+            <strong>Rehearse</strong>
+            <span>Tune roll speed and size</span>
           </div>
-          <div className="premium-plan">
-            <small>Premium</small>
-            <strong>₹99/year</strong>
-            <span>Unlimited prompting, longer scripts, and future saved history.</span>
+          <div>
+            <strong>Record</strong>
+            <span>Download your browser video</span>
           </div>
         </div>
 
@@ -510,6 +653,43 @@ export default function Home() {
                 {languageLabels[language]}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="calibration-card" aria-label="Pace calibration">
+          <div className="calibration-header">
+            <div>
+              <small>Personal pace</small>
+              <strong>
+                {calibrationInsight
+                  ? `${calibrationInsight.wpm} wpm`
+                  : "Calibrate before recording"}
+              </strong>
+            </div>
+            <span>{isCalibrating ? `${calibrationRemaining}s` : "30s test"}</span>
+          </div>
+          <p lang={scriptLanguage === "hindi" ? "hi" : scriptLanguage === "marathi" ? "mr" : "en"}>
+            {calibrationPassages[scriptLanguage]}
+          </p>
+          <div className="calibration-actions">
+            <button
+              type="button"
+              className="primary-button"
+              onClick={isCalibrating ? finishCalibration : startCalibration}
+            >
+              {isCalibrating ? "Finish calibration" : "Start pace test"}
+            </button>
+            <button
+              type="button"
+              disabled={!calibrationInsight}
+              onClick={() => {
+                if (!calibrationInsight) return;
+                setSpeed(calibrationInsight.wpm);
+                setScrollMode("wpm");
+              }}
+            >
+              Use my pace
+            </button>
           </div>
         </div>
 
@@ -573,8 +753,8 @@ export default function Home() {
             <span>Speaking pace</span>
             <input
               type="range"
-              min="60"
-              max="220"
+              min="80"
+              max="280"
               value={speed}
               onChange={(event) => setSpeed(Number(event.target.value))}
             />
@@ -793,10 +973,10 @@ export default function Home() {
                 ? `${lastInsight.readWords} words in ${formatTime(
                     lastInsight.durationSeconds,
                   )}. Suggested roll speed is ${Math.min(
-                    220,
-                    Math.max(60, lastInsight.wpm),
+                    280,
+                    Math.max(80, lastInsight.wpm),
                   )} wpm.`
-                : "After you pause or finish, Sumit Decode estimates your pace and suggests a better roll speed."}
+                : "After you pause or finish, LumoCue estimates your pace and suggests a better roll speed."}
             </span>
           </div>
           <button
@@ -804,7 +984,7 @@ export default function Home() {
             disabled={!lastInsight}
             onClick={() => {
               if (!lastInsight) return;
-              setSpeed(Math.min(220, Math.max(60, lastInsight.wpm)));
+              setSpeed(Math.min(280, Math.max(80, lastInsight.wpm)));
               setScrollMode("wpm");
             }}
           >

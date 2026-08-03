@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PromptFlow - Free Online Teleprompter for Creators",
+  title: "LumoCue - Online Teleprompter for Indian Creators",
   description:
-    "A bright online teleprompter for creators, teachers, and speakers to paste scripts, practice, record, and publish better videos.",
+    "A smooth online teleprompter for Indian creators, teachers, and speakers to prompt, rehearse, and record in English, Hindi, and Marathi.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
