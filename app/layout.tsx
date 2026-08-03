@@ -19,23 +19,23 @@ const umamiScriptSrc =
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://promptflow-teleprompter.csumeety.chatgpt.site"),
-  title: "Ovi - Free Online Teleprompter for Indian Creators",
+  title: "OviCue - Free Online Teleprompter for Indian Creators",
   description:
-    "Paste your script and read smoothly on camera. Ovi is a free online teleprompter for Indian creators, teachers, students, and speakers.",
+    "Paste your script and read smoothly on camera. OviCue is a free online teleprompter for Indian creators, teachers, students, and speakers.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Ovi - Free Online Teleprompter",
+    title: "OviCue - Free Online Teleprompter",
     description:
       "A smooth browser teleprompter with pace testing, mirror mode, camera preview, and local scripts.",
     url: "/",
-    siteName: "Ovi",
+    siteName: "OviCue",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ovi - Free Online Teleprompter",
+    title: "OviCue - Free Online Teleprompter",
     description:
       "Paste your script, choose a speed, and read smoothly while you record.",
   },

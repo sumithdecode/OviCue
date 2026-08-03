@@ -1,6 +1,6 @@
 {
-  "name": "Ovi - Free Online Teleprompter",
-  "short_name": "Ovi",
+  "name": "OviCue - Free Online Teleprompter",
+  "short_name": "OviCue",
   "description": "A free browser teleprompter for Indian creators, teachers, students, and speakers.",
   "start_url": "/prompt",
   "scope": "/",

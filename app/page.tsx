@@ -19,15 +19,19 @@ declare global {
   }
 }
 
-const starterScript = `Hi, my name is ______, and today I am testing Ovi, a simple teleprompter for people who create videos, teach online, or practice speaking clearly.
+const starterScript = `Every creator knows this moment.
 
-Ovi helps me paste a script, choose a reading speed, and keep my words moving smoothly while I look near the camera.
+The idea is clear in your mind, the camera is ready, but the words start jumping. You look down, you lose eye contact, you record again, and a simple video suddenly takes one full hour.
 
-I can use it for English practice, classroom videos, reels, presentations, tutorials, or any moment where I do not want to forget what I planned to say.
+OviCue changes that moment.
 
-The best part is that my script stays on this device. I can rehearse, adjust the speed, turn on mirror mode for a real teleprompter rig, and record when I am ready.
+Paste your script, choose your reading speed, or run the personal pace test so the prompter learns how you naturally speak. Then your words move upward smoothly, like movie credits, while your eyes stay close to the camera.
 
-If this feels useful in the first minute, then Ovi is probably for me. It is made for creators, teachers, students, and anyone who wants to speak with more confidence on camera.`;
+Use it for lessons, reels, YouTube videos, speeches, sales explainers, English practice, or any video where confidence matters.
+
+Your script stays on your device. You can mirror the text, use camera preview, record in the browser, and practice in English, Hindi, or Marathi.
+
+If you want videos that feel prepared, natural, and professional without complicated setup, OviCue is built for you.`;
 
 type ScrollMode = "wpm" | "timed";
 type ScriptLanguage = "english" | "hindi" | "marathi";
@@ -49,7 +53,7 @@ type SessionInsight = {
   wpm: number;
 };
 
-const productName = "ovi";
+const productName = "OviCue";
 const demoSpeedPresets = [90, 110, 130, 150, 170];
 const studioSpeedPresets = [90, 110, 130, 150, 170];
 const feedbackFormBaseUrl = "";
@@ -92,11 +96,11 @@ const languageLabels: Record<ScriptLanguage, string> = {
 
 const calibrationPassages: Record<ScriptLanguage, string> = {
   english:
-    "Today I want to speak with calm energy. I will look near the camera, keep my sentences natural, and explain one useful idea in a way that helps the listener understand quickly.",
+    "Today I am testing my natural speaking pace with OviCue. I will speak clearly, keep my eyes close to the camera, and read with calm confidence. I want the prompter to understand my rhythm, not force me into a random speed. If I speak slowly, it should feel steady. If I speak faster, it should keep up. This short test helps me choose a pace that feels human, comfortable, and useful for real videos.",
   hindi:
-    "आज मैं शांत आत्मविश्वास के साथ बोलना चाहता हूं। मैं कैमरे के पास देखूंगा, अपने वाक्य सरल रखूंगा, और एक उपयोगी विचार को ऐसे समझाऊंगा कि सुनने वाले को जल्दी समझ आए।",
+    "आज मैं OviCue के साथ अपनी प्राकृतिक बोलने की गति समझना चाहता हूं। मैं साफ बोलूंगा, कैमरे के पास देखूंगा, और शांत आत्मविश्वास के साथ पढ़ूंगा। मुझे ऐसी गति चाहिए जो मेरे बोलने के तरीके जैसी लगे, कोई जबरदस्ती वाली गति नहीं। यह छोटा टेस्ट मुझे वीडियो रिकॉर्ड करते समय सही रिदम चुनने में मदद करेगा।",
   marathi:
-    "आज मला शांत आत्मविश्वासाने बोलायचे आहे। मी कॅमेऱ्याजवळ पाहीन, माझी वाक्ये नैसर्गिक ठेवीन, आणि एक उपयोगी विचार असा समजावून सांगेन की ऐकणाऱ्याला पटकन समजेल.",
+    "आज मी OviCue सोबत माझी नैसर्गिक बोलण्याची गती समजून घेत आहे. मी स्पष्ट बोलेन, कॅमेऱ्याजवळ पाहीन, आणि शांत आत्मविश्वासाने वाचेन. मला अशी गती हवी आहे जी माझ्या बोलण्यासारखी वाटेल, जबरदस्तीची नाही. हा छोटा टेस्ट मला व्हिडिओ रेकॉर्ड करताना योग्य रिदम निवडायला मदत करेल.",
 };
 
 const routeModes: Record<string, ExperienceMode> = {
@@ -254,10 +258,10 @@ function StaticPage({
   const pageContent: Record<StaticPageMode, ReactNode> = {
     about: (
       <>
-        <span className="ovi-mono">About Ovi</span>
+        <span className="ovi-mono">About OviCue</span>
         <h1>One person, one problem, one page.</h1>
         <p className="ovi-lead">
-          Ovi was built because too many teleprompters ask for an account,
+          OviCue was built because too many teleprompters ask for an account,
           watermark the result, or charge for simple mirror mode. This one is
           for creators, teachers, students, and speakers who need to paste a
           script and read clearly.
@@ -271,7 +275,7 @@ function StaticPage({
         </InfoCard>
         <InfoCard title="Where your scripts live">
           <p>
-            In this version, scripts stay in your browser on your device. Ovi
+            In this version, scripts stay in your browser on your device. OviCue
             does not upload your script text to a database.
           </p>
         </InfoCard>
@@ -295,7 +299,7 @@ function StaticPage({
         <h1>Get in touch.</h1>
         <p className="ovi-lead">
           One person reads everything here. Send broken flows, missing features,
-          confusing screens, or anything that would make Ovi better.
+          confusing screens, or anything that would make OviCue better.
         </p>
         <div className="ovi-info-grid">
           <InfoCard title="Something is broken">
@@ -319,7 +323,7 @@ function StaticPage({
         <span className="ovi-mono">Last updated {lastUpdated}</span>
         <h1>Privacy policy.</h1>
         <p className="ovi-lead">
-          Ovi is designed so the teleprompter can run smoothly without a
+          OviCue is designed so the teleprompter can run smoothly without a
           database. The important rule: your script text stays on your device in
           this version.
         </p>
@@ -339,7 +343,7 @@ function StaticPage({
         </InfoCard>
         <InfoCard title="Analytics">
           <p>
-            Ovi may use privacy-friendly anonymous analytics to understand
+            OviCue may use privacy-friendly anonymous analytics to understand
             visits, button clicks, and errors. It does not track your script
             content.
           </p>
@@ -364,7 +368,7 @@ function StaticPage({
         <span className="ovi-mono">Last updated {lastUpdated}</span>
         <h1>Terms of service.</h1>
         <p className="ovi-lead">
-          Use Ovi for lawful speaking, teaching, rehearsal, and content creation.
+          Use OviCue for lawful speaking, teaching, rehearsal, and content creation.
           The tool is provided as-is while the product is being improved.
         </p>
         <InfoCard title="Your content">
@@ -375,7 +379,7 @@ function StaticPage({
         </InfoCard>
         <InfoCard title="No guarantees">
           <p>
-            Ovi should help you rehearse and record, but you should test it
+            OviCue should help you rehearse and record, but you should test it
             before important live work. Browser permissions, recording, and
             fullscreen behavior can vary by device.
           </p>
@@ -399,7 +403,7 @@ function StaticPage({
         <span className="ovi-mono">Accessibility</span>
         <h1>Built to be readable.</h1>
         <p className="ovi-lead">
-          Ovi is a reading tool, so accessibility starts with clean contrast,
+          OviCue is a reading tool, so accessibility starts with clean contrast,
           keyboard controls, visible focus, responsive layout, and adjustable
           text size.
         </p>
@@ -430,7 +434,7 @@ function StaticPage({
             <p>Keep the prompter close to the camera lens so your eyes stay natural.</p>
           </InfoCard>
           <InfoCard title="Scroll speed">
-            <p>Start at speed 2 or 3. Use the 30-second pace test for a personal WPM.</p>
+            <p>Start at speed 2 or 3. Use the 60-second pace test for a personal WPM.</p>
           </InfoCard>
           <InfoCard title="Mirror mode">
             <p>Horizontal flip is for glass. Vertical flip helps with some mounted rigs.</p>
@@ -482,7 +486,7 @@ function StaticPage({
             type="button"
             className="ovi-brand ovi-brand-button"
             onClick={() => onNavigate("welcome")}
-            aria-label="Open Ovi front page"
+            aria-label="Open OviCue front page"
           >
             <i /> {productName}
           </button>
@@ -559,7 +563,7 @@ export default function Home() {
   const [calibrationInsight, setCalibrationInsight] =
     useState<SessionInsight | null>(null);
   const [isCalibrating, setIsCalibrating] = useState(false);
-  const [calibrationRemaining, setCalibrationRemaining] = useState(30);
+  const [calibrationRemaining, setCalibrationRemaining] = useState(60);
   const [isLoaded, setIsLoaded] = useState(false);
   const [demoText, setDemoText] = useState(landingDemoScript);
   const [demoWpm, setDemoWpm] = useState(130);
@@ -1260,7 +1264,7 @@ export default function Home() {
   }
 
   function startCalibrationCore() {
-    setCalibrationRemaining(30);
+    setCalibrationRemaining(60);
     calibrationStartRef.current = performance.now();
     setIsCalibrating(true);
   }
@@ -1290,7 +1294,7 @@ export default function Home() {
       seconds: insight.durationSeconds,
     });
     setIsCalibrating(false);
-    setCalibrationRemaining(30);
+    setCalibrationRemaining(60);
     calibrationStartRef.current = null;
   }
 
@@ -1300,6 +1304,16 @@ export default function Home() {
     trackEvent("speed_changed", {
       speed: level,
       wpm: preset,
+    });
+  }
+
+  function chooseCustomSpeed(value: number) {
+    const customWpm = Math.min(280, Math.max(30, Math.round(value)));
+    setSpeed(customWpm);
+    setScrollMode("wpm");
+    trackEvent("speed_changed", {
+      speed: "custom",
+      wpm: customWpm,
     });
   }
 
@@ -1337,7 +1351,7 @@ export default function Home() {
       <main className="ovi-page">
         <nav className="ovi-nav">
           <div className="ovi-wrap">
-            <a className="ovi-brand" href="#top" aria-label="ovi home">
+            <a className="ovi-brand" href="#top" aria-label="OviCue home">
               <i /> {productName}
             </a>
             <div className="ovi-navlinks">
@@ -1509,9 +1523,9 @@ export default function Home() {
                 <span className="ovi-mono">Step two</span>
                 <h3>Set your speed</h3>
                 <p>
-                  Five speeds, from 90 words a minute for calm practice to 170
-                  for a fast creator read. Pick one and the read time updates
-                  as you type.
+                  Pick speed 1 to 5 for a quick start, or type your exact
+                  custom WPM when you already know your rhythm. Read time
+                  updates as you type.
                 </p>
               </div>
               <div className="ovi-card">
@@ -1537,13 +1551,13 @@ export default function Home() {
             <FeatureRow
               reverse
               title="We ask before the browser does"
-              copy="Before pace testing, camera preview, or recording, ovi shows a personal space message. Then the browser asks for access. Your script stays on this device."
+              copy="Before pace testing, camera preview, or recording, OviCue shows a personal space message. Then the browser asks for access. Your script stays on this device."
               visual={<div className="ovi-mini call"><span>Camera + mic only when you allow.</span></div>}
             />
             <FeatureRow
               title="It learns your pace"
-              copy="Read a short passage for 30 seconds. The studio estimates your words per minute and lets you apply that speed to the real teleprompter."
-              visual={<div className="ovi-mini tracking"><small>00:30 SAMPLE</small><span>and that is why we changed the process</span><span>which took about six weeks in total</span><b>▸ YOUR PACE · 128 WPM</b></div>}
+              copy="Read a short passage for 60 seconds. The studio estimates your words per minute and lets you apply that speed to the real teleprompter."
+              visual={<div className="ovi-mini tracking"><small>01:00 SAMPLE</small><span>and that is why we changed the process</span><span>which took about six weeks in total</span><b>▸ YOUR PACE · 128 WPM</b></div>}
             />
           </div>
         </section>
@@ -1560,7 +1574,7 @@ export default function Home() {
                 <li>Camera preview behind the text</li>
                 <li>Full screen reading mode</li>
                 <li>English, Hindi, and Marathi samples</li>
-                <li>30-second pace calibration</li>
+                <li>60-second pace calibration</li>
                 <li>Browser recording download</li>
                 <li>No watermark on anything</li>
                 <li>Works with no internet once the page has loaded</li>
@@ -1678,7 +1692,7 @@ export default function Home() {
             <h2>Try a one-minute creator intro.</h2>
             <p>
               This is loaded in the studio by default, so a new visitor can test
-              Ovi before writing anything.
+              OviCue before writing anything.
             </p>
             <blockquote>{starterScript}</blockquote>
             <button
@@ -1722,16 +1736,16 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="ovi-tip-strip" aria-label="Support Ovi">
+        <section className="ovi-tip-strip" aria-label="Support OviCue">
           <div className="ovi-wrap">
             <div>
               <p>
-                Ovi is free and stays free. If it saved you a reshoot, you can
+                OviCue is free and stays free. If it saved you a reshoot, you can
                 support it with UPI.
               </p>
               <span>Scan the QR with PhonePe, GPay, Paytm, or any UPI app.</span>
             </div>
-            <img src={upiQrPath} alt="UPI QR code for supporting Ovi" />
+            <img src={upiQrPath} alt="UPI QR code for supporting OviCue" />
           </div>
         </section>
 
@@ -1784,12 +1798,12 @@ export default function Home() {
 
   return (
     <main className="app-shell">
-      <aside className="workspace-sidebar" aria-label="Ovi workspace">
+      <aside className="workspace-sidebar" aria-label="OviCue workspace">
         <button
           type="button"
           className="workspace-brand"
           onClick={() => goTo("welcome")}
-          aria-label="Open Ovi landing page"
+          aria-label="Open OviCue landing page"
         >
           <i />
           <span>{productName}</span>
@@ -1926,7 +1940,7 @@ export default function Home() {
                   : "Calibrate before recording"}
               </strong>
             </div>
-            <span>{isCalibrating ? `${calibrationRemaining}s` : "30s test"}</span>
+            <span>{isCalibrating ? `${calibrationRemaining}s` : "60s test"}</span>
           </div>
           <p lang={scriptLanguage === "hindi" ? "hi" : scriptLanguage === "marathi" ? "mr" : "en"}>
             {calibrationPassages[scriptLanguage]}
@@ -2025,6 +2039,19 @@ export default function Home() {
                 {index + 1}
               </button>
             ))}
+            <label className="custom-speed-field">
+              <small>Custom</small>
+              <input
+                type="number"
+                min="30"
+                max="280"
+                step="1"
+                value={speed}
+                onChange={(event) => chooseCustomSpeed(Number(event.target.value))}
+                aria-label="Custom scroll speed in words per minute"
+              />
+              <small>wpm</small>
+            </label>
           </div>
           <div>
             <span>Text size</span>
@@ -2207,6 +2234,18 @@ export default function Home() {
                   {index + 1}
                 </button>
               ))}
+              <label className="toolbar-custom-speed">
+                <span>Custom</span>
+                <input
+                  type="number"
+                  min="30"
+                  max="280"
+                  step="1"
+                  value={speed}
+                  onChange={(event) => chooseCustomSpeed(Number(event.target.value))}
+                  aria-label="Custom scroll speed in words per minute"
+                />
+              </label>
             </div>
             <button type="button" onClick={resetPrompt} aria-label="Reset">
               Reset
@@ -2339,7 +2378,7 @@ export default function Home() {
             Next line
           </button>
           {recordedUrl ? (
-            <a href={recordedUrl} download="ovi-recording.webm">
+            <a href={recordedUrl} download="OviCue-recording.webm">
               Download video
             </a>
           ) : (
@@ -2380,9 +2419,9 @@ export default function Home() {
             <span className="permission-mark">Personal space</span>
             <h2>Allow camera and microphone?</h2>
             <p>
-              ovi uses access only for this browser session:
+              OviCue uses access only for this browser session:
               {permissionIntent === "calibration"
-                ? " to see your reading setup and prepare the 30-second pace test."
+                ? " to see your reading setup and prepare the 60-second pace test."
                 : permissionIntent === "recording"
                   ? " to record your video and audio directly in your browser."
                   : " to show your camera behind the teleprompter text."}
@@ -2428,7 +2467,7 @@ export default function Home() {
             </div>
             <h2>Sign in options are ready for the next phase.</h2>
             <p>
-              Ovi still works without login. Later, signing in can save scripts,
+              OviCue still works without login. Later, signing in can save scripts,
               sync devices, keep pace history, and unlock paid plans.
             </p>
             <div className="signin-options" aria-label="Future sign in options">

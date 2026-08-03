@@ -1037,7 +1037,7 @@ textarea:focus {
 
 .promptr-controls div {
   display: grid;
-  grid-template-columns: 98px repeat(5, minmax(34px, 1fr));
+  grid-template-columns: 98px repeat(5, minmax(34px, 1fr)) minmax(118px, 1.7fr);
   gap: 6px;
   align-items: center;
 }
@@ -1067,6 +1067,39 @@ textarea:focus {
   border-color: var(--accent);
   background: linear-gradient(135deg, var(--accent), #83b63f);
   color: #fffef1;
+}
+
+.custom-speed-field,
+.toolbar-custom-speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  border: 1px solid rgba(15, 138, 97, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 245, 0.78);
+  padding: 0 8px;
+}
+
+.custom-speed-field small,
+.toolbar-custom-speed span {
+  color: var(--accent-strong);
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.custom-speed-field input,
+.toolbar-custom-speed input {
+  width: 52px;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--charcoal);
+  font-weight: 950;
+  outline: 0;
+  text-align: center;
 }
 
 .control-stack label {
@@ -2831,8 +2864,8 @@ input[type="checkbox"] {
 }
 
 .toolbar-speed-control {
-  flex: 1 1 280px;
-  max-width: min(430px, 100%);
+  flex: 1 1 390px;
+  max-width: min(560px, 100%);
   min-width: 0;
   border-color: rgba(15, 138, 97, 0.2);
   background: rgba(15, 138, 97, 0.08);
@@ -2852,6 +2885,16 @@ input[type="checkbox"] {
   border-color: var(--accent-strong);
   background: var(--accent-strong);
   color: #fffff5;
+}
+
+.toolbar-custom-speed {
+  min-height: 32px;
+  background: rgba(255, 255, 245, 0.78);
+  padding: 0 7px;
+}
+
+.toolbar-custom-speed input {
+  width: 46px;
 }
 
 .prompt-panel:fullscreen .toolbar-speed-control,
