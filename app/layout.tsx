@@ -18,18 +18,39 @@ const umamiScriptSrc =
   process.env.NEXT_PUBLIC_UMAMI_SCRIPT_SRC ?? "https://cloud.umami.is/script.js";
 
 export const metadata: Metadata = {
-  title: "ovi - Free Online Teleprompter for Indian Creators",
+  metadataBase: new URL("https://promptflow-teleprompter.csumeety.chatgpt.site"),
+  title: "Ovi - Free Online Teleprompter for Indian Creators",
   description:
-    "A smooth India-first online teleprompter for creators, teachers, and speakers to prompt, rehearse, test pace, and record in English, Hindi, and Marathi.",
+    "Paste your script and read smoothly on camera. Ovi is a free online teleprompter for Indian creators, teachers, students, and speakers.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Ovi - Free Online Teleprompter",
+    description:
+      "A smooth browser teleprompter with pace testing, mirror mode, camera preview, and local scripts.",
+    url: "/",
+    siteName: "Ovi",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ovi - Free Online Teleprompter",
+    description:
+      "Paste your script, choose a speed, and read smoothly while you record.",
+  },
+  manifest: "/manifest.json",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#f2f8dc",
 };
 
 export default function RootLayout({

@@ -3011,3 +3011,161 @@ input[type="checkbox"] {
   border-radius: 14px;
   background: rgba(255, 255, 245, 0.96);
 }
+
+.ovi-brand-button,
+.ovi-navlinks button,
+.ovi-foot button {
+  min-height: auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  transform: none;
+}
+
+.ovi-brand-button:hover,
+.ovi-navlinks button:hover,
+.ovi-foot button:hover {
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent-strong);
+  transform: none;
+}
+
+.ovi-navlinks button {
+  color: var(--ink-2);
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.ovi-static-page {
+  min-height: calc(100vh - 62px);
+}
+
+.ovi-static-page .ovi-wrap {
+  max-width: 940px;
+}
+
+.ovi-static-page h1 {
+  margin-right: 0;
+  margin-left: 0;
+  text-align: left;
+}
+
+.ovi-static-page .ovi-lead {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.ovi-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.ovi-info-card {
+  margin-top: 18px;
+  border: 1px solid rgba(15, 138, 97, 0.18);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 245, 0.92), rgba(220, 236, 107, 0.2)),
+    #fbfff4;
+  padding: clamp(18px, 3vw, 26px);
+}
+
+.ovi-info-grid .ovi-info-card {
+  margin-top: 0;
+}
+
+.ovi-info-card p,
+.ovi-muted {
+  margin: 10px 0 0;
+  color: var(--ink-soft);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.ovi-static-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.ovi-foot {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, minmax(120px, 1fr));
+  align-items: start;
+  gap: 28px;
+}
+
+.ovi-foot > div {
+  display: grid;
+  gap: 10px;
+}
+
+.ovi-foot p {
+  max-width: 28ch;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.ovi-foot strong {
+  color: var(--charcoal);
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ovi-foot a,
+.ovi-foot button {
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ovi-footer-bottom {
+  grid-column: 1 / -1;
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px 14px !important;
+  border-top: 1px solid rgba(15, 138, 97, 0.16);
+  padding-top: 18px;
+}
+
+.ovi-footer-bottom span,
+.ovi-footer-bottom a {
+  color: var(--ink-soft);
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+@media (max-width: 980px) {
+  .ovi-info-grid,
+  .ovi-foot {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .ovi-info-grid,
+  .ovi-foot {
+    grid-template-columns: 1fr;
+  }
+
+  .ovi-static-actions .ovi-btn {
+    width: 100%;
+  }
+}

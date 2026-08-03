@@ -1,0 +1,18 @@
+{
+  "name": "Ovi - Free Online Teleprompter",
+  "short_name": "Ovi",
+  "description": "A free browser teleprompter for Indian creators, teachers, students, and speakers.",
+  "start_url": "/prompt",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f2f8dc",
+  "theme_color": "#0a5f45",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

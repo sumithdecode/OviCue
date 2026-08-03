@@ -31,7 +31,16 @@ If this feels useful in the first minute, then Ovi is probably for me. It is mad
 
 type ScrollMode = "wpm" | "timed";
 type ScriptLanguage = "english" | "hindi" | "marathi";
-type ExperienceMode = "welcome" | "studio";
+type StaticPageMode =
+  | "about"
+  | "contact"
+  | "privacy"
+  | "terms"
+  | "accessibility"
+  | "help"
+  | "changelog"
+  | "not-found";
+type ExperienceMode = "welcome" | "studio" | StaticPageMode;
 type TextAlign = "left" | "center" | "right";
 type PermissionIntent = "calibration" | "camera" | "recording";
 type SessionInsight = {
@@ -45,6 +54,7 @@ const demoSpeedPresets = [90, 110, 130, 150, 170];
 const studioSpeedPresets = [90, 110, 130, 150, 170];
 const feedbackFormBaseUrl = "";
 const upiQrPath = "/upi-qr.jpeg";
+const lastUpdated = "August 3, 2026";
 
 const landingDemoScript = `This is a real teleprompter, not a picture of one.
 
@@ -88,6 +98,25 @@ const calibrationPassages: Record<ScriptLanguage, string> = {
   marathi:
     "आज मला शांत आत्मविश्वासाने बोलायचे आहे। मी कॅमेऱ्याजवळ पाहीन, माझी वाक्ये नैसर्गिक ठेवीन, आणि एक उपयोगी विचार असा समजावून सांगेन की ऐकणाऱ्याला पटकन समजेल.",
 };
+
+const routeModes: Record<string, ExperienceMode> = {
+  "/": "welcome",
+  "/prompt": "studio",
+  "/about": "about",
+  "/contact": "contact",
+  "/privacy": "privacy",
+  "/terms": "terms",
+  "/accessibility": "accessibility",
+  "/help": "help",
+  "/changelog": "changelog",
+};
+
+function modeToPath(mode: ExperienceMode) {
+  if (mode === "welcome") return "/";
+  if (mode === "studio") return "/prompt";
+  if (mode === "not-found") return "/404";
+  return `/${mode}`;
+}
 
 function splitLines(text: string) {
   const cueLines: string[] = [];
@@ -206,6 +235,296 @@ function PlanCard({
   );
 }
 
+function InfoCard({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <article className="ovi-info-card">
+      <h3>{title}</h3>
+      {children}
+    </article>
+  );
+}
+
+function StaticPage({
+  mode,
+  onNavigate,
+}: {
+  mode: StaticPageMode;
+  onNavigate: (mode: ExperienceMode) => void;
+}) {
+  const pageContent: Record<StaticPageMode, ReactNode> = {
+    about: (
+      <>
+        <span className="ovi-mono">About Ovi</span>
+        <h1>One person, one problem, one page.</h1>
+        <p className="ovi-lead">
+          Ovi was built because too many teleprompters ask for an account,
+          watermark the result, or charge for simple mirror mode. This one is
+          for creators, teachers, students, and speakers who need to paste a
+          script and read clearly.
+        </p>
+        <InfoCard title="Why it stays free">
+          <p>
+            The core prompter is a public tool: paste, rehearse, pace-test,
+            full screen, mirror, camera preview, and local recording. Paid
+            features can come later for syncing scripts across devices.
+          </p>
+        </InfoCard>
+        <InfoCard title="Where your scripts live">
+          <p>
+            In this version, scripts stay in your browser on your device. Ovi
+            does not upload your script text to a database.
+          </p>
+        </InfoCard>
+        <InfoCard title="What it is not">
+          <p>
+            It is not a social app, not an ad network, and not a place that
+            reads your script for data. It is a focused reading surface.
+          </p>
+        </InfoCard>
+        <InfoCard title="Who is behind it">
+          <p>
+            Built from Pune for Indian creators first, with English interface
+            support and Hindi and Marathi reading samples.
+          </p>
+        </InfoCard>
+      </>
+    ),
+    contact: (
+      <>
+        <span className="ovi-mono">Contact</span>
+        <h1>Get in touch.</h1>
+        <p className="ovi-lead">
+          One person reads everything here. Send broken flows, missing features,
+          confusing screens, or anything that would make Ovi better.
+        </p>
+        <div className="ovi-info-grid">
+          <InfoCard title="Something is broken">
+            <p>Tell us the device, browser, what you clicked, and what happened.</p>
+          </InfoCard>
+          <InfoCard title="Something is missing">
+            <p>Suggest the feature that would save you time while recording.</p>
+          </InfoCard>
+          <InfoCard title="Anything else">
+            <p>Use the feedback button on the home page until the form is connected.</p>
+          </InfoCard>
+        </div>
+        <p className="ovi-muted">
+          Please do not send private scripts or sensitive personal information
+          through feedback.
+        </p>
+      </>
+    ),
+    privacy: (
+      <>
+        <span className="ovi-mono">Last updated {lastUpdated}</span>
+        <h1>Privacy policy.</h1>
+        <p className="ovi-lead">
+          Ovi is designed so the teleprompter can run smoothly without a
+          database. The important rule: your script text stays on your device in
+          this version.
+        </p>
+        <InfoCard title="Scripts">
+          <p>
+            Scripts are stored in your browser local storage so they are still
+            there when you return on the same device. We do not receive or read
+            the script text.
+          </p>
+        </InfoCard>
+        <InfoCard title="Camera and microphone">
+          <p>
+            Camera and microphone access is requested only when you start pace
+            testing, camera preview, or recording. Browser recording happens on
+            your device and downloads from your browser.
+          </p>
+        </InfoCard>
+        <InfoCard title="Analytics">
+          <p>
+            Ovi may use privacy-friendly anonymous analytics to understand
+            visits, button clicks, and errors. It does not track your script
+            content.
+          </p>
+        </InfoCard>
+        <InfoCard title="Payments and accounts">
+          <p>
+            Payments and login are not active yet. When added, they will use
+            third-party services with their own policies.
+          </p>
+        </InfoCard>
+        <InfoCard title="Rights">
+          <p>
+            If you are in India, the Digital Personal Data Protection Act, 2023
+            may apply. If you are in the EU or UK, GDPR-style rights may apply.
+            A real support email will be added before accounts or payments go live.
+          </p>
+        </InfoCard>
+      </>
+    ),
+    terms: (
+      <>
+        <span className="ovi-mono">Last updated {lastUpdated}</span>
+        <h1>Terms of service.</h1>
+        <p className="ovi-lead">
+          Use Ovi for lawful speaking, teaching, rehearsal, and content creation.
+          The tool is provided as-is while the product is being improved.
+        </p>
+        <InfoCard title="Your content">
+          <p>
+            You own the scripts you write or paste. You are responsible for
+            having rights to use that content.
+          </p>
+        </InfoCard>
+        <InfoCard title="No guarantees">
+          <p>
+            Ovi should help you rehearse and record, but you should test it
+            before important live work. Browser permissions, recording, and
+            fullscreen behavior can vary by device.
+          </p>
+        </InfoCard>
+        <InfoCard title="Payments later">
+          <p>
+            Paid plans are not active now. Any future paid plan will show its
+            price, renewal terms, and cancellation rules before purchase.
+          </p>
+        </InfoCard>
+        <InfoCard title="Governing law">
+          <p>
+            These terms are governed by the laws of India, with courts in Pune,
+            Maharashtra, unless another rule is required by law.
+          </p>
+        </InfoCard>
+      </>
+    ),
+    accessibility: (
+      <>
+        <span className="ovi-mono">Accessibility</span>
+        <h1>Built to be readable.</h1>
+        <p className="ovi-lead">
+          Ovi is a reading tool, so accessibility starts with clean contrast,
+          keyboard controls, visible focus, responsive layout, and adjustable
+          text size.
+        </p>
+        <InfoCard title="What is built in">
+          <p>
+            Keyboard play and pause, adjustable font size, alignment controls,
+            reduced-motion support, labels for controls, and no horizontal page
+            scroll on supported screens.
+          </p>
+        </InfoCard>
+        <InfoCard title="What needs work">
+          <p>
+            More screen-reader testing, better captions around recording
+            downloads, and a dedicated feedback form for accessibility issues.
+          </p>
+        </InfoCard>
+      </>
+    ),
+    help: (
+      <>
+        <span className="ovi-mono">Guides</span>
+        <h1>Small guides for better videos.</h1>
+        <div className="ovi-info-grid">
+          <InfoCard title="Hardware rig">
+            <p>Use mirror mode when reading through teleprompter glass.</p>
+          </InfoCard>
+          <InfoCard title="Phone setup">
+            <p>Keep the prompter close to the camera lens so your eyes stay natural.</p>
+          </InfoCard>
+          <InfoCard title="Scroll speed">
+            <p>Start at speed 2 or 3. Use the 30-second pace test for a personal WPM.</p>
+          </InfoCard>
+          <InfoCard title="Mirror mode">
+            <p>Horizontal flip is for glass. Vertical flip helps with some mounted rigs.</p>
+          </InfoCard>
+          <InfoCard title="Keyboard">
+            <p>Space starts or pauses. Arrow keys move line by line when practicing.</p>
+          </InfoCard>
+          <InfoCard title="Offline">
+            <p>After the page loads, the app shell can reopen from browser cache.</p>
+          </InfoCard>
+        </div>
+      </>
+    ),
+    changelog: (
+      <>
+        <span className="ovi-mono">Changelog</span>
+        <h1>What changed.</h1>
+        <InfoCard title="August 3, 2026">
+          <p>
+            Added continuous credit-style scrolling, pace testing, Hindi and
+            Marathi samples, UPI support, camera permission primer, fullscreen
+            controls, and a public website structure.
+          </p>
+        </InfoCard>
+        <InfoCard title="Next">
+          <p>
+            Feedback inbox, saved scripts, real account login, custom domain,
+            and optional paid syncing.
+          </p>
+        </InfoCard>
+      </>
+    ),
+    "not-found": (
+      <>
+        <span className="ovi-mono">404</span>
+        <h1>That page is not here.</h1>
+        <p className="ovi-lead">
+          The prompter is ready. The page you opened is not.
+        </p>
+      </>
+    ),
+  };
+
+  return (
+    <main className="ovi-page">
+      <nav className="ovi-nav">
+        <div className="ovi-wrap">
+          <button
+            type="button"
+            className="ovi-brand ovi-brand-button"
+            onClick={() => onNavigate("welcome")}
+            aria-label="Open Ovi front page"
+          >
+            <i /> {productName}
+          </button>
+          <div className="ovi-navlinks">
+            <button type="button" onClick={() => onNavigate("about")}>About</button>
+            <button type="button" onClick={() => onNavigate("help")}>Help</button>
+            <button type="button" onClick={() => onNavigate("contact")}>Contact</button>
+          </div>
+          <button
+            type="button"
+            className="ovi-btn ovi-btn-dark ovi-btn-sm"
+            onClick={() => onNavigate("studio")}
+          >
+            Start prompting
+          </button>
+        </div>
+      </nav>
+      <section className="ovi-section ovi-static-page">
+        <div className="ovi-wrap">
+          {pageContent[mode]}
+          <div className="ovi-static-actions">
+            <button
+              type="button"
+              className="ovi-btn ovi-btn-dark"
+              onClick={() => onNavigate("studio")}
+            >
+              Start prompting
+            </button>
+            <button
+              type="button"
+              className="ovi-btn ovi-btn-ghost"
+              onClick={() => onNavigate("welcome")}
+            >
+              Back to front page
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 export default function Home() {
   const [experienceMode, setExperienceMode] =
     useState<ExperienceMode>("welcome");
@@ -273,6 +592,16 @@ export default function Home() {
   const sessionStartRef = useRef<number | null>(null);
   const calibrationStartRef = useRef<number | null>(null);
 
+  function goTo(mode: ExperienceMode) {
+    setExperienceMode(mode);
+    if (typeof window === "undefined") return;
+    const nextPath = modeToPath(mode);
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState(null, "", nextPath);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   const lines = useMemo(() => splitLines(script), [script]);
   const demoLines = useMemo(() => splitLines(demoText), [demoText]);
   const demoWordCount = useMemo(() => countWords(demoText), [demoText]);
@@ -301,6 +630,23 @@ export default function Home() {
     lines.length > 1 ? Math.round((activeLine / (lines.length - 1)) * 100) : 0;
 
   useEffect(() => {
+    function syncRoute() {
+      const pathname = window.location.pathname.replace(/\/$/, "") || "/";
+      setExperienceMode(routeModes[pathname] ?? "not-found");
+    }
+
+    syncRoute();
+    window.addEventListener("popstate", syncRoute);
+    return () => window.removeEventListener("popstate", syncRoute);
+  }, []);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    }
+  }, []);
+
+  useEffect(() => {
     const saved = window.localStorage.getItem("daily-prompter-state");
     if (saved) {
       try {
@@ -321,6 +667,8 @@ export default function Home() {
           scriptLanguage?: ScriptLanguage;
           calibrationInsight?: SessionInsight;
         };
+        // Restoring local draft state once on mount is intentional for the offline prompter.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (parsed.script) setScript(parsed.script);
         if (parsed.speed) setSpeed(parsed.speed < 40 ? 120 : parsed.speed);
         if (parsed.fontSize) setFontSize(parsed.fontSize);
@@ -897,7 +1245,7 @@ export default function Home() {
     resetPrompt();
   }
 
-  function useLanguageSample(language: ScriptLanguage) {
+  function applyLanguageSample(language: ScriptLanguage) {
     setScriptLanguage(language);
     setScript(languageSamples[language]);
     resetPrompt();
@@ -977,6 +1325,13 @@ export default function Home() {
     event.currentTarget.href = feedbackUrl;
   }
 
+  if (
+    experienceMode !== "welcome" &&
+    experienceMode !== "studio"
+  ) {
+    return <StaticPage mode={experienceMode} onNavigate={goTo} />;
+  }
+
   if (experienceMode === "welcome") {
     return (
       <main className="ovi-page">
@@ -989,12 +1344,13 @@ export default function Home() {
               <a href="#how">How it works</a>
               <a href="#features">Features</a>
               <a href="#free">What&apos;s free</a>
-              <a href="#pricing">Pricing</a>
+              <button type="button" onClick={() => goTo("about")}>About</button>
+              <button type="button" onClick={() => goTo("help")}>Help</button>
             </div>
             <button
               type="button"
               className="ovi-btn ovi-btn-dark ovi-btn-sm"
-              onClick={() => setExperienceMode("studio")}
+              onClick={() => goTo("studio")}
             >
               Start prompting
             </button>
@@ -1019,7 +1375,7 @@ export default function Home() {
               <button
                 type="button"
                 className="ovi-btn ovi-btn-dark"
-                onClick={() => setExperienceMode("studio")}
+                onClick={() => goTo("studio")}
               >
                 Start prompting -- it&apos;s free
               </button>
@@ -1250,7 +1606,7 @@ export default function Home() {
                 suffix=" forever"
                 items={["Everything in the list above", "Saved in this browser", "Five-minute recordings", "No signup"]}
                 action="Start prompting"
-                onClick={() => setExperienceMode("studio")}
+                onClick={() => goTo("studio")}
               />
               <PlanCard
                 hot
@@ -1259,7 +1615,7 @@ export default function Home() {
                 suffix=""
                 items={["Voice tracking", "Sync across your devices", "Recordings of any length", "Share scripts by link", "Phone as a remote control"]}
                 action="Join later"
-                onClick={() => setExperienceMode("studio")}
+                onClick={() => goTo("studio")}
               />
               <PlanCard
                 label="Team"
@@ -1267,7 +1623,7 @@ export default function Home() {
                 suffix=""
                 items={["Everything in Pro", "Shared script library", "Roles and brand presets", "Team seats"]}
                 action="Talk later"
-                onClick={() => setExperienceMode("studio")}
+                onClick={() => goTo("studio")}
               />
             </div>
           </div>
@@ -1309,7 +1665,7 @@ export default function Home() {
             <button
               type="button"
               className="ovi-btn ovi-btn-dark"
-              onClick={() => setExperienceMode("studio")}
+              onClick={() => goTo("studio")}
             >
               Start prompting -- it&apos;s free
             </button>
@@ -1331,7 +1687,7 @@ export default function Home() {
               onClick={() => {
                 setScript(starterScript);
                 resetPrompt();
-                setExperienceMode("studio");
+                goTo("studio");
               }}
             >
               Open this sample
@@ -1381,18 +1737,45 @@ export default function Home() {
 
         <footer className="ovi-footer">
           <div className="ovi-wrap ovi-foot">
-            <a className="ovi-brand" href="#top"><i /> {productName}</a>
-            <span className="ovi-mono">Made for people who talk to a camera</span>
-            <span className="ovi-mono">Privacy · Terms · Contact</span>
-            <a
-              className="ovi-feedback-line"
-              href={feedbackUrl}
-              onClick={openFeedback}
-            >
-              {feedbackFormBaseUrl
-                ? "Found a bug, or want something added? Tell me -- it goes straight to one person."
-                : "Found a bug, or want something added? Feedback form setup is next."}
-            </a>
+            <div>
+              <button
+                type="button"
+                className="ovi-brand ovi-brand-button"
+                onClick={() => goTo("welcome")}
+              >
+                <i /> {productName}
+              </button>
+              <p>Free online teleprompter for Indian creators.</p>
+            </div>
+            <div>
+              <strong>Product</strong>
+              <button type="button" onClick={() => goTo("studio")}>Prompter</button>
+              <button type="button" onClick={() => goTo("help")}>Guides</button>
+              <button type="button" onClick={() => goTo("changelog")}>Changelog</button>
+            </div>
+            <div>
+              <strong>Tools</strong>
+              <a href="#sample">Sample script</a>
+              <a href="#how">Script timer</a>
+              <a href="#features">Pace test</a>
+            </div>
+            <div>
+              <strong>Company</strong>
+              <button type="button" onClick={() => goTo("about")}>About</button>
+              <button type="button" onClick={() => goTo("privacy")}>Privacy</button>
+              <button type="button" onClick={() => goTo("terms")}>Terms</button>
+              <button type="button" onClick={() => goTo("accessibility")}>Accessibility</button>
+              <button type="button" onClick={() => goTo("contact")}>Contact</button>
+            </div>
+            <div className="ovi-footer-bottom">
+              <span>Built in Pune</span>
+              <span>No cookies</span>
+              <span>No ads</span>
+              <span>Your scripts never leave your device</span>
+              <a href={feedbackUrl} onClick={openFeedback}>
+                {feedbackFormBaseUrl ? "Report a problem" : "Feedback form setup pending"}
+              </a>
+            </div>
           </div>
         </footer>
       </main>
@@ -1405,7 +1788,7 @@ export default function Home() {
         <button
           type="button"
           className="workspace-brand"
-          onClick={() => setExperienceMode("welcome")}
+          onClick={() => goTo("welcome")}
           aria-label="Open Ovi landing page"
         >
           <i />
@@ -1413,6 +1796,9 @@ export default function Home() {
           <strong>Free</strong>
         </button>
         <nav className="workspace-nav" aria-label="Workspace sections">
+          <button type="button" onClick={() => goTo("welcome")}>
+            <span>Front page</span>
+          </button>
           <button type="button" className="selected">
             <span>Prompt studio</span>
           </button>
@@ -1430,6 +1816,9 @@ export default function Home() {
           <a href="#feedback" onClick={openFeedback}>
             <span>Feedback</span>
           </a>
+          <button type="button" onClick={() => goTo("help")}>
+            <span>Help guides</span>
+          </button>
         </nav>
         <div className="workspace-bottom">
           <button
@@ -1452,6 +1841,13 @@ export default function Home() {
             <h1>{productName}</h1>
           </div>
           <div className="brand-actions">
+            <button
+              type="button"
+              className="icon-button"
+              onClick={() => goTo("welcome")}
+            >
+              Front page
+            </button>
             <button
               type="button"
               className="icon-button"
@@ -1512,7 +1908,7 @@ export default function Home() {
                 key={language}
                 type="button"
                 className={scriptLanguage === language ? "selected" : ""}
-                onClick={() => useLanguageSample(language)}
+                onClick={() => applyLanguageSample(language)}
               >
                 {languageLabels[language]}
               </button>
