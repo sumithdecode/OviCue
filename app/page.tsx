@@ -107,6 +107,15 @@ type SpeechTestResult = {
   seconds: number;
   wpm: number;
 };
+type AudienceKey =
+  | "creator"
+  | "teacher"
+  | "student"
+  | "english"
+  | "speaker"
+  | "advisor"
+  | "hindi"
+  | "marathi";
 
 const productName = "OviCue";
 const demoSpeedPresets = [90, 110, 130, 150, 170];
@@ -126,6 +135,164 @@ Speed two is calm practice. Speed four is a fast creator read. The number beside
 Turn on mirror mode if you shoot through beam-splitter glass. The reflection flips the text, so we flip it first.
 
 Click the text to edit it. Paste your own script and read it right here, before you sign up for anything. Because you never have to.`;
+
+const audienceScripts: Record<AudienceKey, { label: string; text: string }> = {
+  creator: {
+    label: "Creator",
+    text: starterScript,
+  },
+  teacher: {
+    label: "Teacher",
+    text: `Good morning, everyone. Before we start, one thing about today's topic.
+
+You have seen this idea before, but probably not in this order.
+
+We are going to do three things.
+
+First, the part everybody already knows, quickly, so we are on the same page.
+
+Second, the part that trips most people up. We will slow down there.
+
+Third, one question I want you to try before the next class.
+
+If you lose me at any point, stop me. It is much easier to fix a small gap now than a big one later.
+
+Right. Let us begin.
+
+Now delete this and paste your own lesson.`,
+  },
+  student: {
+    label: "Student",
+    text: `Thank you for the opportunity.
+
+Let me start with a short introduction.
+
+I come from a background in this field, and over the last few years I have worked mainly on problems of this kind.
+
+The thing I am most proud of is not the result. It is that I was wrong at the start, and I changed my approach when the evidence said I should.
+
+What draws me to this role is the chance to do that at a larger scale.
+
+I am still learning, and I would rather say that clearly than pretend otherwise.
+
+I am happy to take any questions.
+
+Now delete this and paste your own answer.`,
+  },
+  english: {
+    label: "English practice",
+    text: `I am practising speaking clearly.
+
+Not quickly. Clearly.
+
+When I hurry, my words run into each other, and the person listening has to work harder than I do.
+
+So I will slow down. I will finish each sentence before I begin the next one.
+
+A short pause is not a mistake. It gives the listener a moment, and it gives me a moment too.
+
+If I make an error, I will keep going. Stopping to correct one word breaks the rhythm of the whole sentence.
+
+Fluency is not about speed. It is about not stopping.
+
+I will read this again tomorrow, a little more easily than today.
+
+Now delete this and paste your own practice text.`,
+  },
+  speaker: {
+    label: "Speaker",
+    text: `Good evening, and thank you all for being here.
+
+I will keep this short, because the best part of tonight is not the speech.
+
+There is one thing I want to say, and then I will get out of the way.
+
+When we started, nobody was certain this would work. There were plenty of good reasons to think it would not.
+
+What changed it was not a plan. It was a small number of people who kept turning up.
+
+Some of them are in this room.
+
+So before anything else, thank you.
+
+Now, please, enjoy the evening.
+
+Now delete this and paste your own speech.`,
+  },
+  advisor: {
+    label: "Advisor",
+    text: `Thanks for taking the time.
+
+Before we go into the details, let me be clear about what this is and what it is not.
+
+This is a long-term product. It is not designed for quick returns, and anyone who tells you otherwise is selling you something else.
+
+There are three things you should understand before you decide.
+
+What it costs. What it does in a bad year. And what happens if you need the money early.
+
+I will go through each one, and then you can take as long as you need.
+
+Please read the terms in full before you sign anything.
+
+Now delete this and paste your own script.`,
+  },
+  hindi: {
+    label: "हिंदी",
+    text: `हर बार वही होता है।
+
+बात दिमाग़ में साफ़ है। कैमरा तैयार है।
+
+लेकिन शब्द भागने लगते हैं।
+
+आप नीचे देखते हैं, नज़र हट जाती है, और वीडियो दोबारा शुरू।
+
+दो मिनट का वीडियो एक घंटा ले लेता है।
+
+यहाँ वही ठीक होता है।
+
+अपनी स्क्रिप्ट डालिए, अपनी गति चुनिए, और शब्द ऊपर की ओर बहने लगेंगे।
+
+आपकी नज़र कैमरे पर रहेगी।
+
+कोई अकाउंट नहीं। कोई वॉटरमार्क नहीं।
+
+अब यह सब हटाइए, और अपनी स्क्रिप्ट डालिए।`,
+  },
+  marathi: {
+    label: "मराठी",
+    text: `प्रत्येक वेळी हेच होतं.
+
+विचार स्पष्ट असतो. कॅमेरा तयार असतो.
+
+पण शब्द सुटायला लागतात.
+
+तुम्ही खाली बघता, नजर हटते, आणि पुन्हा सुरुवात.
+
+दोन मिनिटांचा व्हिडिओ एक तास घेतो.
+
+इथे तेच सुटतं.
+
+तुमची स्क्रिप्ट टाका, वेग निवडा, आणि शब्द वर सरकत येतील.
+
+तुमची नजर कॅमेऱ्यावरच राहील.
+
+अकाउंट नाही. वॉटरमार्क नाही.
+
+आता हे सगळं काढा, आणि तुमची स्क्रिप्ट टाका.`,
+  },
+};
+
+const audienceOrder: AudienceKey[] = [
+  "creator",
+  "teacher",
+  "student",
+  "english",
+  "speaker",
+  "advisor",
+  "hindi",
+  "marathi",
+];
 
 const speechSpeedPassages: Record<
   SpeechTestKind,
@@ -632,7 +799,7 @@ function StaticPage({
             <p>Keep the prompter close to the camera lens so your eyes stay natural.</p>
           </InfoCard>
           <InfoCard title="Scroll speed">
-            <p>Start at speed 2 or 3, or let voice matching follow your spoken WPM.</p>
+            <p>Start at speed 2 or 3, or use Find my pace to set your spoken WPM.</p>
           </InfoCard>
           <InfoCard title="Mirror mode">
             <p>Horizontal flip is for glass. Vertical flip helps with some mounted rigs.</p>
@@ -770,7 +937,9 @@ export default function Home() {
     "Matches the scroll speed to your spoken WPM while you read.",
   );
   const [isLoaded, setIsLoaded] = useState(false);
-  const [demoText, setDemoText] = useState(landingDemoScript);
+  const [selectedAudience, setSelectedAudience] =
+    useState<AudienceKey>("creator");
+  const [demoText, setDemoText] = useState(audienceScripts.creator.text);
   const [demoWpm, setDemoWpm] = useState(130);
   const [demoPlaying, setDemoPlaying] = useState(false);
   const [demoMirror, setDemoMirror] = useState(false);
@@ -780,12 +949,15 @@ export default function Home() {
     useState<SpeechTestKind>("conversational");
   const [isSpeechTestRunning, setIsSpeechTestRunning] = useState(false);
   const [speechTestElapsed, setSpeechTestElapsed] = useState(0);
+  const [speechTestTextSnapshot, setSpeechTestTextSnapshot] = useState("");
   const [speechTestResult, setSpeechTestResult] =
     useState<SpeechTestResult | null>(null);
   const [speechTestError, setSpeechTestError] = useState("");
   const [speechTestAutoStop, setSpeechTestAutoStop] = useState(false);
   const [speechTestAutoStopAvailable, setSpeechTestAutoStopAvailable] =
     useState(false);
+  const [proEmail, setProEmail] = useState("");
+  const [proWaitlistMessage, setProWaitlistMessage] = useState("");
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lineListRef = useRef<HTMLDivElement | null>(null);
   const rollContentRef = useRef<HTMLDivElement | null>(null);
@@ -914,6 +1086,14 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const savedAudience =
+      window.localStorage.getItem("ovicue.audience") as AudienceKey | null;
+    if (!savedAudience || !audienceScripts[savedAudience]) return;
+    setSelectedAudience(savedAudience);
+    setDemoText(audienceScripts[savedAudience].text);
+  }, []);
+
+  useEffect(() => {
     const saved = window.localStorage.getItem("daily-prompter-state");
     if (saved) {
       try {
@@ -986,6 +1166,24 @@ export default function Home() {
         }
       } catch {
         window.localStorage.removeItem("daily-prompter-state");
+      }
+    }
+    const savedStandalonePace = window.localStorage.getItem("ovicue.pace");
+    if (savedStandalonePace) {
+      const parsedPace = Number(savedStandalonePace);
+      if (Number.isFinite(parsedPace)) {
+        const savedPace = Math.min(
+          maxCustomWpm,
+          Math.max(minCustomWpm, Math.round(parsedPace)),
+        );
+        setSpeed(savedPace);
+        setCustomSpeedValue(String(savedPace));
+        setCalibrationInsight({
+          durationSeconds: 0,
+          readWords: 0,
+          wpm: savedPace,
+        });
+        setPersonalPaceSource("speech-test");
       }
     }
     setIsLoaded(true);
@@ -1462,6 +1660,17 @@ export default function Home() {
 
   async function startCamera(includeAudio = false) {
     setCameraError("");
+    const cameraPerm = window.localStorage.getItem("ovicue.perm.camera");
+    const micPerm = window.localStorage.getItem("ovicue.perm.mic");
+    if (cameraPerm === "denied" || (includeAudio && micPerm === "denied")) {
+      setCameraError(
+        cameraPerm === "denied"
+          ? "Camera is blocked in your browser settings."
+          : "Microphone is blocked in your browser settings.",
+      );
+      setCameraEnabled(false);
+      return false;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: includeAudio,
@@ -1474,9 +1683,13 @@ export default function Home() {
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraEnabled(true);
+      window.localStorage.setItem("ovicue.perm.camera", "granted");
+      if (includeAudio) window.localStorage.setItem("ovicue.perm.mic", "granted");
       trackEvent("camera_allowed");
       return true;
     } catch {
+      window.localStorage.setItem("ovicue.perm.camera", "denied");
+      if (includeAudio) window.localStorage.setItem("ovicue.perm.mic", "denied");
       setCameraError(
         includeAudio
           ? "Camera or microphone permission was blocked."
@@ -1490,15 +1703,21 @@ export default function Home() {
 
   async function startMicrophone() {
     setCameraError("");
+    if (window.localStorage.getItem("ovicue.perm.mic") === "denied") {
+      setCameraError("Microphone is blocked in your browser settings.");
+      return false;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false,
       });
       micStreamRef.current = stream;
+      window.localStorage.setItem("ovicue.perm.mic", "granted");
       trackEvent("microphone_allowed");
       return true;
     } catch {
+      window.localStorage.setItem("ovicue.perm.mic", "denied");
       setCameraError("Microphone permission was blocked.");
       trackEvent("microphone_denied");
       return false;
@@ -1622,6 +1841,11 @@ export default function Home() {
     speechTestMicStreamRef.current = null;
   }
 
+  function getCurrentSpeechTestText() {
+    if (experienceMode === "welcome") return demoText;
+    return speechSpeedPassages[speechTestKind].text;
+  }
+
   async function startSpeechSpeedAutoStop() {
     const SpeechRecognition =
       window.SpeechRecognition ?? window.webkitSpeechRecognition;
@@ -1640,7 +1864,10 @@ export default function Home() {
       recognition.lang = "en-IN";
       recognition.onresult = (event) => {
         const spokenWords = countWords(extractSpeechText(event.results));
-        const targetWords = speechSpeedPassages[speechTestKind].wordCount * 0.9;
+        const sourceWords = countWords(
+          speechTestTextSnapshot || getCurrentSpeechTestText(),
+        );
+        const targetWords = sourceWords * 0.9;
         if (spokenWords >= targetWords) {
           finishSpeechSpeedTest();
         }
@@ -1680,6 +1907,8 @@ export default function Home() {
     setSpeechTestResult(null);
     setSpeechTestError("");
     setSpeechTestElapsed(0);
+    const sourceText = getCurrentSpeechTestText();
+    setSpeechTestTextSnapshot(sourceText);
 
     if (speechTestAutoStop) {
       if (!mediaAlreadyConfirmed && !hasVisitMediaConsent()) {
@@ -1701,15 +1930,17 @@ export default function Home() {
   function finishSpeechSpeedTest() {
     if (speechTestStartedAtRef.current === null) return;
     const seconds = (performance.now() - speechTestStartedAtRef.current) / 1000;
-    const passage = speechSpeedPassages[speechTestKind];
-    const measuredWpm = Math.round(((passage.wordCount / seconds) * 60) / 5) * 5;
+    const sourceText = speechTestTextSnapshot || getCurrentSpeechTestText();
+    const sourceWords = countWords(sourceText);
+    const rawWpm = Math.round(((sourceWords / seconds) * 60) / 5) * 5;
+    const measuredWpm = Math.min(maxCustomWpm, Math.max(60, rawWpm));
 
     speechTestStartedAtRef.current = null;
     setIsSpeechTestRunning(false);
     setSpeechTestElapsed(seconds);
     stopSpeechSpeedAutoStop();
 
-    if (seconds < 25 || measuredWpm > 260 || measuredWpm < 55) {
+    if (seconds < 25 || sourceWords < 20) {
       setSpeechTestResult(null);
       setSpeechTestError("That did not look like a full read - try again.");
       trackEvent("speech_speed_test_rejected", {
@@ -1724,6 +1955,7 @@ export default function Home() {
       seconds,
       wpm: measuredWpm,
     });
+    window.localStorage.setItem("ovicue.pace", String(measuredWpm));
     trackEvent("speech_speed_test_completed", {
       passage: speechTestKind,
       seconds: Math.round(seconds),
@@ -1992,6 +2224,42 @@ export default function Home() {
     handleFeedbackClick();
     if (!feedbackFormBaseUrl) return;
     event.currentTarget.href = feedbackUrl;
+  }
+
+  function chooseAudience(audience: AudienceKey) {
+    setSelectedAudience(audience);
+    setDemoPlaying(false);
+    setDemoEditing(false);
+    setDemoText(audienceScripts[audience].text);
+    resetSpeechSpeedTest();
+    demoOffsetRef.current = 0;
+    if (demoTrackRef.current) {
+      demoTrackRef.current.style.transform = `translate3d(-50%, 0, 0) scaleX(${
+        demoMirror ? -1 : 1
+      })`;
+    }
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("ovicue.audience", audience);
+    }
+  }
+
+  function saveProWaitlist() {
+    const email = proEmail.trim();
+    if (!email) {
+      setProWaitlistMessage("Add your email first.");
+      return;
+    }
+    const saved = window.localStorage.getItem("ovicue.proWaitlist");
+    let emails: string[] = [];
+    try {
+      emails = saved ? (JSON.parse(saved) as string[]) : [];
+    } catch {
+      emails = [];
+    }
+    const nextEmails = Array.from(new Set([...emails, email]));
+    window.localStorage.setItem("ovicue.proWaitlist", JSON.stringify(nextEmails));
+    setProWaitlistMessage("Saved on this device for now. We will connect a real list before Pro launches.");
+    setProEmail("");
   }
 
   function showFrontSpeedTest() {
@@ -2284,7 +2552,6 @@ export default function Home() {
   }
 
   if (experienceMode === "welcome") {
-    const frontActivePassage = speechSpeedPassages[speechTestKind];
     const frontResultBand = speechTestResult
       ? speechSpeedBandFor(speechTestResult.wpm)
       : null;
@@ -2359,6 +2626,19 @@ export default function Home() {
           id="rig"
           aria-label={frontTool === "speed-test" ? "Speech speed test" : "Live teleprompter preview"}
         >
+          <div className="audience-switcher" aria-label="Choose sample script audience">
+            {audienceOrder.map((audience) => (
+              <button
+                key={audience}
+                type="button"
+                className={selectedAudience === audience ? "selected" : ""}
+                onClick={() => chooseAudience(audience)}
+              >
+                {audienceScripts[audience].label}
+              </button>
+            ))}
+          </div>
+
           <div className="front-tool-switch" aria-label="Choose OviCue tool">
             <button
               type="button"
@@ -2479,33 +2759,16 @@ export default function Home() {
           ) : (
             <div className="speech-test-panel front-speech-test">
               <div className="speech-test-top">
-                <div className="speech-test-tabs" aria-label="Passage type">
-                  {(Object.keys(speechSpeedPassages) as SpeechTestKind[]).map(
-                    (kind) => (
-                      <button
-                        key={kind}
-                        type="button"
-                        disabled={isSpeechTestRunning}
-                        className={speechTestKind === kind ? "selected" : ""}
-                        onClick={() => {
-                          resetSpeechSpeedTest();
-                          setSpeechTestKind(kind);
-                        }}
-                      >
-                        {speechSpeedPassages[kind].label}
-                      </button>
-                    ),
-                  )}
-                </div>
+                <span className="ovi-mono">Find my pace · {audienceScripts[selectedAudience].label}</span>
                 <strong>{formatTime(speechTestElapsed)}</strong>
               </div>
               <p className="speech-test-instruction">
                 {isSpeechTestRunning
                   ? "Read out loud at your normal speaking voice."
-                  : "Pick a passage, press Start, read it aloud, then press Done."}
+                  : "Use the same script from the prompter preview. Press Start, read it aloud, then press Done."}
               </p>
               <div className="speech-test-passage" aria-label="Speech test passage">
-                {frontActivePassage.text.split(/\n+/).map((paragraph) => (
+                {demoText.split(/\n+/).filter(Boolean).map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
               </div>
@@ -2588,8 +2851,8 @@ export default function Home() {
                 <h3>Paste the script</h3>
                 <p>
                   Type it, paste it, or drop in a text file. Word count and read
-                  time appear as you write, so a 60-second reel script is 60
-                  seconds before you record it.
+                  time appear as you write, so the script length is clear before
+                  you record it.
                 </p>
               </div>
               <div className="ovi-card">
@@ -2613,28 +2876,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="ovi-section no-top" id="features">
-          <div className="ovi-wrap">
-            <CueDivider label="Built for the way people actually shoot" />
-            <FeatureRow
-              title="Mirror mode, both ways"
-              copy="Beam-splitter glass flips your text left to right. Rigs mounted above the lens flip it top to bottom. Both toggles are here, and both are free."
-              visual={<div className="ovi-mini flip">Read me in the glass<div className="ovi-cueline" /></div>}
-            />
-            <FeatureRow
-              reverse
-              title="We ask before the browser does"
-              copy="Voice matching asks for the microphone only. Camera preview asks for the camera only. Recording asks for both. Your script stays on this device."
-              visual={<div className="ovi-mini call"><span>Mic for voice matching. Camera only when you switch it on.</span></div>}
-            />
-            <FeatureRow
-              title="It learns your pace"
-              copy="Read your own script aloud. OviCue listens to the words per minute and moves faster or slower while you speak."
-              visual={<div className="ovi-mini tracking"><small>LIVE MATCH</small><span>matching your voice at 132 wpm</span><span>speed changes as you read</span><b>▸ YOUR PACE · LIVE</b></div>}
-            />
-          </div>
-        </section>
-
         <section className="ovi-section no-top" id="free">
           <div className="ovi-wrap">
             <div className="ovi-free">
@@ -2647,7 +2888,7 @@ export default function Home() {
                 <li>Camera preview behind the text</li>
                 <li>Full screen reading mode</li>
                 <li>English, Hindi, and Marathi samples</li>
-                <li>Voice matching that learns your speed</li>
+                <li>Pace test that learns your speed</li>
                 <li>Browser recording download</li>
                 <li>No watermark on anything</li>
                 <li>Works with no internet once the page has loaded</li>
@@ -2658,23 +2899,45 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="ovi-section no-top">
+        <section className="ovi-section no-top" id="features">
           <div className="ovi-wrap">
-            <CueDivider label="Who reads with it" />
-            <div className="ovi-strip">
+            <FeatureRow
+              title="Mirror mode, both ways"
+              copy="Beam-splitter glass flips your text left to right. Rigs mounted above the lens flip it top to bottom. Both toggles are here, and both are free."
+              visual={<div className="ovi-mini flip">Read me in the glass<div className="ovi-cueline" /></div>}
+            />
+            <FeatureRow
+              reverse
+              title="We ask before the browser does"
+              copy="Before camera preview or recording, OviCue explains what is needed. Prompting itself never needs permission, and your script stays on this device."
+              visual={<div className="ovi-mini call"><span>Camera only when you switch preview on. Mic only for recording.</span></div>}
+            />
+            <FeatureRow
+              title="It learns your pace"
+              copy="Read your own script out loud once. OviCue works out your natural speed and sets the prompter to it."
+              visual={<div className="ovi-mini tracking"><small>YOUR PACE</small><span>132 wpm</span><span>speed set from your read</span><b>▸ READY</b></div>}
+            />
+          </div>
+        </section>
+
+        <section className="ovi-section no-top">
+          <div className="ovi-wrap audience-section">
+            <h2>Built for anyone who has to say written words out loud.</h2>
+            <p className="ovi-lead">
+              A wedding host, an exam candidate, a news reader and a teacher
+              have nothing in common except this: the words are already written,
+              and they do not want to sound like they are reading them.
+            </p>
+            <div className="ovi-strip audience-strip">
               {[
-                "News desks",
-                "YouTubers",
-                "Reels and Shorts",
                 "Teachers",
-                "Online tutors",
-                "Corporate trainers",
-                "Keynote speakers",
+                "Reels and Shorts",
+                "YouTubers",
+                "Students and interviews",
+                "English practice",
+                "Speakers and hosts",
+                "Advisors and sales",
                 "Podcasters",
-                "Doctors and lawyers",
-                "Students rehearsing",
-                "Speakers who need it slower",
-                "People practicing English",
               ].map((item) => (
                 <span className="ovi-chip" key={item}>{item}</span>
               ))}
@@ -2685,7 +2948,7 @@ export default function Home() {
         <section className="ovi-section no-top" id="speech-speed-test">
           <div className="ovi-wrap speech-signpost">
             <div>
-              <CueDivider label="Free tool" />
+              <span className="ovi-mono section-eyebrow">Free tool</span>
               <h2>How fast do you actually speak?</h2>
               <p className="ovi-lead">
                 Most people guess wrong by twenty or thirty words a minute.
@@ -2720,36 +2983,41 @@ export default function Home() {
         </section>
 
         <section className="ovi-section no-top" id="pricing">
-          <div className="ovi-wrap">
+          <div className="ovi-wrap pricing-single">
             <CueDivider label="Pricing" />
-            <h2>Pay only when you want it on every device.</h2>
-            <div className="ovi-plans">
+            <h2>Start free. Stay free.</h2>
+            <div className="ovi-plans single-plan">
               <PlanCard
                 label="Free"
                 price="₹0"
                 suffix=" forever"
-                items={["Everything in the list above", "Saved in this browser", "Five-minute recordings", "No signup"]}
+                items={[
+                  "Everything in the list above",
+                  "Saved in this browser",
+                  "Five-minute recordings",
+                  "No signup",
+                ]}
                 action="Start prompting"
                 onClick={() => goTo("studio")}
               />
-              <PlanCard
-                hot
-                label="Pro"
-                price="Coming soon"
-                suffix=""
-                items={["Voice tracking", "Sync across your devices", "Recordings of any length", "Share scripts by link", "Phone as a remote control"]}
-                action="Join later"
-                onClick={() => goTo("studio")}
-              />
-              <PlanCard
-                label="Team"
-                price="Coming soon"
-                suffix=""
-                items={["Everything in Pro", "Shared script library", "Roles and brand presets", "Team seats"]}
-                action="Talk later"
-                onClick={() => goTo("studio")}
-              />
             </div>
+            <p className="pro-note">
+              Pro and Team are being built. Voice tracking, sync across devices,
+              and shared script libraries.
+            </p>
+            <div className="pro-waitlist">
+              <input
+                type="email"
+                value={proEmail}
+                onChange={(event) => setProEmail(event.target.value)}
+                placeholder="Email for Pro updates"
+                aria-label="Email for Pro updates"
+              />
+              <button type="button" className="ovi-btn ovi-btn-dark" onClick={saveProWaitlist}>
+                Tell me when Pro is ready
+              </button>
+            </div>
+            {proWaitlistMessage && <p className="pro-message">{proWaitlistMessage}</p>}
           </div>
         </section>
 
@@ -2796,32 +3064,27 @@ export default function Home() {
           </div>
         </section>
 
+        {feedbackFormBaseUrl && (
         <section className="ovi-section no-top" id="feedback">
           <div className="ovi-wrap ovi-feedback-block">
-            <CueDivider label="Feedback" />
             <h2>Found a bug, or want something added?</h2>
             <p>
               Tell me what broke, what device you used, and what you expected to
               happen. The form will open here once the feedback link is
               connected.
             </p>
-            {feedbackFormBaseUrl ? (
-              <a
-                className="ovi-btn ovi-btn-dark"
-                href={feedbackUrl}
-                target="_blank"
-                rel="noreferrer"
-                onClick={openFeedback}
-              >
-                Send feedback
-              </a>
-            ) : (
-              <span className="feedback-pending">
-                Feedback form setup pending
-              </span>
-            )}
+            <a
+              className="ovi-btn ovi-btn-dark"
+              href={feedbackUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={openFeedback}
+            >
+              Send feedback
+            </a>
           </div>
         </section>
+        )}
 
         <section className="ovi-tip-strip" aria-label="Support OviCue">
           <div className="ovi-wrap">
@@ -2856,8 +3119,6 @@ export default function Home() {
             </div>
             <div>
               <strong>Tools</strong>
-              <button type="button" onClick={() => goTo("speech-speed-test")}>Speech speed test</button>
-              <button type="button" onClick={() => goTo("studio")}>Script timer</button>
             </div>
             <div>
               <strong>Company</strong>
@@ -2872,9 +3133,11 @@ export default function Home() {
               <span>No cookies</span>
               <span>No ads</span>
               <span>Your scripts never leave your device</span>
-              <a href={feedbackUrl} onClick={openFeedback}>
-                {feedbackFormBaseUrl ? "Report a problem" : "Feedback form setup pending"}
-              </a>
+              {feedbackFormBaseUrl && (
+                <a href={feedbackUrl} onClick={openFeedback}>
+                  Report a problem
+                </a>
+              )}
             </div>
           </div>
         </footer>
@@ -3069,7 +3332,7 @@ export default function Home() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => goTo("speech-speed-test")}
+                  onClick={showFrontSpeedTest}
                 >
                   Retest speed
                 </button>
@@ -3081,7 +3344,7 @@ export default function Home() {
                   className="primary-button"
                   onClick={isCalibrating ? finishCalibration : startCalibration}
                 >
-                  {isCalibrating ? "Done matching" : "Match my voice"}
+                  {isCalibrating ? "Done" : "Find my pace"}
                 </button>
                 <button
                   type="button"
@@ -3622,6 +3885,19 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => {
+                  if (mediaConsentIntent === "camera") {
+                    window.localStorage.setItem("ovicue.perm.camera", "denied");
+                  }
+                  if (
+                    mediaConsentIntent === "microphone" ||
+                    mediaConsentIntent === "speech-auto-stop"
+                  ) {
+                    window.localStorage.setItem("ovicue.perm.mic", "denied");
+                  }
+                  if (mediaConsentIntent === "recording") {
+                    window.localStorage.setItem("ovicue.perm.camera", "denied");
+                    window.localStorage.setItem("ovicue.perm.mic", "denied");
+                  }
                   setMediaConsentIntent(null);
                   if (mediaConsentIntent === "camera") setCameraEnabled(false);
                 }}
