@@ -547,7 +547,11 @@ button:disabled {
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(174px, 210px) minmax(280px, 350px) minmax(0, 1fr);
+  grid-template-columns: minmax(320px, 430px) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    "topbar topbar"
+    "editor prompt";
   gap: 14px;
   width: 100%;
   max-width: 100vw;
@@ -562,25 +566,23 @@ button:disabled {
   min-width: 0;
 }
 
-.workspace-sidebar {
+.workspace-topbar {
+  grid-area: topbar;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
-  max-height: calc(100dvh - 24px);
   border: 1px solid rgba(15, 138, 97, 0.16);
-  border-radius: 18px;
+  border-radius: 16px;
   background: rgba(255, 255, 245, 0.62);
-  padding: 14px;
-  overflow: hidden;
+  padding: 10px;
 }
 
 .workspace-brand,
 .workspace-nav button,
-.workspace-nav a,
 .signin-button {
   display: flex;
   align-items: center;
-  width: 100%;
   border: 0;
   background: transparent;
   color: var(--charcoal);
@@ -594,6 +596,13 @@ button:disabled {
   font-family: "Bricolage Grotesque", Inter, Arial, system-ui, sans-serif;
   font-size: 24px;
   font-weight: 800;
+}
+
+.workspace-brand.compact {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 38px;
+  padding: 0 10px;
 }
 
 .workspace-brand i {
@@ -617,24 +626,32 @@ button:disabled {
 }
 
 .workspace-nav {
-  display: grid;
+  display: flex;
+  align-items: center;
   gap: 6px;
-  margin-top: 28px;
+  min-width: 0;
+  margin: 0;
+  overflow-x: auto;
 }
 
-.workspace-nav button,
-.workspace-nav a {
+.workspace-nav.horizontal {
+  flex: 1;
+}
+
+.workspace-nav button {
   justify-content: space-between;
-  min-height: 42px;
-  border-radius: 12px;
-  padding: 0 10px;
+  width: auto;
+  min-height: 38px;
+  border-radius: 999px;
+  padding: 0 12px;
   font-size: 14px;
   font-weight: 850;
+  gap: 7px;
+  white-space: nowrap;
 }
 
 .workspace-nav button.selected,
-.workspace-nav button:hover,
-.workspace-nav a:hover {
+.workspace-nav button:hover {
   background: rgba(245, 216, 92, 0.24);
 }
 
@@ -645,36 +662,34 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.workspace-bottom {
-  display: grid;
-  gap: 10px;
-  margin-top: auto;
-  border-top: 1px solid rgba(15, 138, 97, 0.16);
-  padding-top: 14px;
+.workspace-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
 }
 
 .signin-button {
   justify-content: center;
-  min-height: 42px;
+  width: auto;
+  min-height: 38px;
   border: 1px solid rgba(15, 138, 97, 0.22);
   border-radius: 999px;
   background: var(--accent-strong);
   color: #fffff5;
+  padding: 0 16px;
 }
 
-.workspace-bottom p {
-  margin: 0;
-  color: var(--ink-soft);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
+.signin-button.compact {
+  min-width: 88px;
 }
 
 .editor-panel {
+  grid-area: editor;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-height: calc(100dvh - 24px);
+  gap: 12px;
+  max-height: calc(100dvh - 92px);
   overflow-x: hidden;
   overflow-y: auto;
   border: 1px solid rgba(15, 138, 97, 0.14);
@@ -682,7 +697,7 @@ button:disabled {
   background:
     linear-gradient(180deg, rgba(255, 255, 250, 0.88), rgba(244, 251, 226, 0.92)),
     var(--panel);
-  padding: 18px;
+  padding: 14px;
   box-shadow: 0 28px 70px rgba(31, 53, 45, 0.12);
 }
 
@@ -1179,10 +1194,11 @@ input[type="checkbox"] {
 }
 
 .prompt-panel {
+  grid-area: prompt;
   display: grid;
-  grid-template-rows: auto minmax(260px, 1fr) auto auto;
+  grid-template-rows: auto minmax(520px, 1fr) auto auto;
   gap: 12px;
-  height: calc(100dvh - 24px);
+  height: calc(100dvh - 92px);
   min-height: 0;
   overflow: hidden;
 }
@@ -1659,6 +1675,76 @@ input[type="checkbox"] {
   line-height: 1.45;
 }
 
+.studio-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 24;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(19, 42, 34, 0.28);
+  padding: 12px;
+  backdrop-filter: blur(4px);
+}
+
+.studio-drawer {
+  width: min(440px, 100%);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  border: 1px solid rgba(15, 138, 97, 0.22);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 250, 0.98), rgba(231, 248, 179, 0.96)),
+    var(--panel);
+  padding: 20px;
+  box-shadow: -24px 0 70px rgba(19, 42, 34, 0.24);
+}
+
+.studio-drawer h2 {
+  margin: 16px 0 10px;
+  color: var(--charcoal);
+  font-family: "Bricolage Grotesque", Inter, Arial, system-ui, sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  line-height: 0.98;
+}
+
+.studio-drawer > p {
+  margin: 0 0 16px;
+  color: var(--ink-soft);
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.drawer-list {
+  display: grid;
+  gap: 12px;
+}
+
+.drawer-list .ovi-info-card {
+  margin-top: 0;
+}
+
+.drawer-stat {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0;
+  border: 1px solid rgba(15, 138, 97, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 245, 0.66);
+  padding: 16px;
+}
+
+.drawer-stat span {
+  color: var(--accent-strong);
+  font-size: 2rem;
+  font-weight: 950;
+}
+
+.drawer-stat p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-weight: 750;
+}
+
 .permission-card h2 {
   margin: 8px 0 10px;
   color: var(--charcoal);
@@ -1788,9 +1874,13 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 980px) {
-  .welcome-hero,
   .app-shell {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "topbar"
+      "editor"
+      "prompt";
   }
 
   .app-shell {
@@ -1799,8 +1889,14 @@ input[type="checkbox"] {
     overflow-y: auto;
   }
 
-  .workspace-sidebar {
-    display: none;
+  .workspace-topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .workspace-status,
+  .workspace-nav.horizontal {
+    width: 100%;
   }
 
   .welcome-hero {
@@ -1813,7 +1909,7 @@ input[type="checkbox"] {
 
   .prompt-panel {
     height: auto;
-    min-height: 78vh;
+    min-height: 82vh;
     overflow: visible;
   }
 }
@@ -3115,6 +3211,13 @@ input[type="checkbox"] {
   width: 100%;
 }
 
+.ovi-feedback-form.compact {
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
 .feedback-notice {
   margin: 16px auto 0;
   color: var(--accent-strong);
@@ -3495,8 +3598,20 @@ input[type="checkbox"] {
 }
 
 .editor-panel {
-  gap: 18px;
-  padding: 20px;
+  gap: 12px;
+  padding: 14px;
+}
+
+.editor-panel .brand-actions {
+  display: none;
+}
+
+.editor-panel h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+}
+
+.editor-panel .creator-intro p {
+  font-size: 0.9rem;
 }
 
 .brand-row h1,

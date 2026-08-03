@@ -96,6 +96,7 @@ type MediaConsentIntent =
   | "recording"
   | "speech-auto-stop";
 type PaceSource = "voice-match" | "speech-test" | null;
+type StudioPanel = "scripts" | "pace" | "profile" | "feedback" | "help" | "account";
 type SpeechTestKind = "conversational" | "presentation" | "news";
 type SessionInsight = {
   durationSeconds: number;
@@ -944,7 +945,7 @@ export default function Home() {
     useState<ScriptLanguage>("english");
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraError, setCameraError] = useState("");
-  const [accountPanelOpen, setAccountPanelOpen] = useState(false);
+  const [studioPanel, setStudioPanel] = useState<StudioPanel | null>(null);
   const [mediaConsentIntent, setMediaConsentIntent] =
     useState<MediaConsentIntent | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -3255,10 +3256,10 @@ export default function Home() {
 
   return (
     <main className="app-shell">
-      <aside className="workspace-sidebar" aria-label="OviCue workspace">
+      <header className="workspace-topbar" aria-label="OviCue workspace">
         <button
           type="button"
-          className="workspace-brand"
+          className="workspace-brand compact"
           onClick={() => goTo("welcome")}
           aria-label="Open OviCue landing page"
         >
@@ -3266,45 +3267,38 @@ export default function Home() {
           <span>{productName}</span>
           <strong>Free</strong>
         </button>
-        <nav className="workspace-nav" aria-label="Workspace sections">
-          <button type="button" onClick={() => goTo("welcome")}>
-            <span>Front page</span>
-          </button>
+        <nav className="workspace-nav horizontal" aria-label="Workspace sections">
           <button type="button" className="selected">
             <span>Prompt studio</span>
           </button>
-          <button type="button" onClick={() => setAccountPanelOpen(true)}>
+          <button type="button" onClick={() => setStudioPanel("scripts")}>
             <span>My scripts</span>
             <small>soon</small>
           </button>
-          <button type="button" onClick={() => setAccountPanelOpen(true)}>
+          <button type="button" onClick={() => setStudioPanel("pace")}>
             <span>Pace insights</span>
             <small>local</small>
           </button>
-          <button type="button" onClick={() => setAccountPanelOpen(true)}>
+          <button type="button" onClick={() => setStudioPanel("profile")}>
             <span>Profile</span>
           </button>
-          <button type="button" onClick={showFeedbackSection}>
+          <button type="button" onClick={() => setStudioPanel("feedback")}>
             <span>Feedback</span>
           </button>
-          <button type="button" onClick={() => goTo("help")}>
+          <button type="button" onClick={() => setStudioPanel("help")}>
             <span>Help guides</span>
           </button>
         </nav>
-        <div className="workspace-bottom">
-          <button
-            type="button"
-            className="signin-button"
-            onClick={() => setAccountPanelOpen(true)}
-          >
+        <div className="workspace-status">
+          <span className={mediaIsLive ? "status-pill live" : "status-pill"}>
+            {mediaStatus}
+          </span>
+          <span className="status-pill">{lines.length} lines</span>
+          <button type="button" className="signin-button compact" onClick={() => setStudioPanel("account")}>
             Sign in
           </button>
-          <p>
-            Local mode today. Sign in is staged for saved scripts, history, and
-            paid plans later.
-          </p>
         </div>
-      </aside>
+      </header>
       <section className="editor-panel" aria-label="Script editor">
         <div className="brand-row">
           <div>
@@ -3312,21 +3306,6 @@ export default function Home() {
             <h1>{productName}</h1>
           </div>
           <div className="brand-actions">
-            <button
-              type="button"
-              className="icon-button"
-              onClick={() => goTo("welcome")}
-            >
-              Front page
-            </button>
-            <button
-              type="button"
-              className="icon-button"
-              onClick={() => setAccountPanelOpen(true)}
-              aria-label="Account and sign in options"
-            >
-              Sign in
-            </button>
             <div className={mediaIsLive ? "status-pill live" : "status-pill"}>
               {mediaStatus}
             </div>
@@ -4017,39 +3996,149 @@ export default function Home() {
           </div>
         </div>
       )}
-      {accountPanelOpen && (
-        <div className="permission-overlay" role="dialog" aria-modal="true">
-          <div className="account-card">
+      {studioPanel && (
+        <div className="studio-drawer-overlay" role="dialog" aria-modal="true">
+          <aside className="studio-drawer" aria-label="Workspace panel">
             <div className="account-card-header">
-              <span className="permission-mark">Account preview</span>
+              <span className="permission-mark">
+                {studioPanel === "scripts"
+                  ? "My scripts"
+                  : studioPanel === "pace"
+                    ? "Pace insights"
+                    : studioPanel === "profile"
+                      ? "Profile"
+                      : studioPanel === "feedback"
+                        ? "Feedback"
+                        : studioPanel === "help"
+                          ? "Help guides"
+                          : "Account preview"}
+              </span>
               <button
                 type="button"
-                onClick={() => setAccountPanelOpen(false)}
-                aria-label="Close account options"
+                onClick={() => setStudioPanel(null)}
+                aria-label="Close workspace panel"
               >
                 Close
               </button>
             </div>
-            <h2>Sign in options are ready for the next phase.</h2>
-            <p>
-              OviCue still works without login. Later, signing in can save scripts,
-              sync devices, keep pace history, and unlock paid plans.
-            </p>
-            <div className="signin-options" aria-label="Future sign in options">
-              <button type="button">Continue with Google</button>
-              <button type="button">Continue with email</button>
-              <button type="button">Continue with phone</button>
-            </div>
-            <div className="account-roadmap">
-              <span>Planned after database setup</span>
-              <ul>
-                <li>Saved scripts across phone and laptop</li>
-                <li>Reading history and pace reports</li>
-                <li>Feedback inbox and issue tracking</li>
-                <li>Optional premium plan access</li>
-              </ul>
-            </div>
-          </div>
+
+            {studioPanel === "help" && (
+              <>
+                <h2>Help guides without leaving the studio.</h2>
+                <div className="drawer-list">
+                  <InfoCard title="Beam-splitter glass">
+                    <p>Place the laptop or tablet flat under the glass, turn on Mirror Horizontal, then go fullscreen.</p>
+                  </InfoCard>
+                  <InfoCard title="Speed control">
+                    <p>Use presets 1 to 5 for quick reads, or type an exact WPM up to 1400 in Custom.</p>
+                  </InfoCard>
+                  <InfoCard title="Keyboard">
+                    <p>Space starts or pauses. Up and Down change speed while reading. Esc exits fullscreen.</p>
+                  </InfoCard>
+                  <InfoCard title="Permissions">
+                    <p>Prompting needs no permission. Camera and mic are requested only for preview, recording, or optional voice features.</p>
+                  </InfoCard>
+                </div>
+              </>
+            )}
+
+            {studioPanel === "feedback" && (
+              <>
+                <h2>Send a note from here.</h2>
+                <p>Saved locally for now. When the feedback inbox is connected, this same panel can send reports directly.</p>
+                <form className="ovi-feedback-form compact" onSubmit={saveFeedback}>
+                  <label>
+                    <span>Category</span>
+                    <select
+                      value={feedbackType}
+                      onChange={(event) =>
+                        setFeedbackType(event.target.value as FeedbackType)
+                      }
+                    >
+                      <option value="bug">Report a bug</option>
+                      <option value="feature">Request a feature</option>
+                      <option value="hardware">Prompter hardware issue</option>
+                      <option value="other">General feedback</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Device and browser</span>
+                    <input
+                      type="text"
+                      value={feedbackDevice}
+                      onChange={(event) => setFeedbackDevice(event.target.value)}
+                      placeholder="MacBook / Safari"
+                    />
+                  </label>
+                  <label>
+                    <span>Message</span>
+                    <textarea
+                      required
+                      rows={4}
+                      value={feedbackMessage}
+                      onChange={(event) => setFeedbackMessage(event.target.value)}
+                      placeholder="What happened?"
+                    />
+                  </label>
+                  <button type="submit" className="ovi-btn ovi-btn-dark">Save feedback</button>
+                </form>
+                {feedbackNotice && <p className="feedback-notice">{feedbackNotice}</p>}
+              </>
+            )}
+
+            {studioPanel === "pace" && (
+              <>
+                <h2>Your pace, right inside the studio.</h2>
+                <div className="drawer-stat">
+                  <span>{calibrationInsight ? `${calibrationInsight.wpm} wpm` : `${speed} wpm`}</span>
+                  <p>{calibrationInsight ? "Measured pace available." : "Current prompt speed."}</p>
+                </div>
+                <button type="button" className="ovi-btn ovi-btn-dark" onClick={showFrontSpeedTest}>
+                  Run speed test
+                </button>
+                <p>After a speed test, OviCue can reopen the prompt studio at that exact WPM.</p>
+              </>
+            )}
+
+            {studioPanel === "scripts" && (
+              <>
+                <h2>Saved scripts are planned next.</h2>
+                <p>Today, scripts stay local in this browser. Import a text file or paste directly into the editor.</p>
+                <div className="drawer-list">
+                  <InfoCard title="Local mode">
+                    <p>No database is connected yet, so your text is not uploaded.</p>
+                  </InfoCard>
+                  <InfoCard title="Next phase">
+                    <p>Accounts can add saved script libraries and sync across phone, tablet, and laptop.</p>
+                  </InfoCard>
+                </div>
+              </>
+            )}
+
+            {(studioPanel === "profile" || studioPanel === "account") && (
+              <>
+                <h2>Sign in options are ready for the next phase.</h2>
+                <p>
+                  OviCue still works without login. Later, signing in can save
+                  scripts, sync devices, keep pace history, and unlock paid plans.
+                </p>
+                <div className="signin-options" aria-label="Future sign in options">
+                  <button type="button">Continue with Google</button>
+                  <button type="button">Continue with email</button>
+                  <button type="button">Continue with phone</button>
+                </div>
+                <div className="account-roadmap">
+                  <span>Planned after database setup</span>
+                  <ul>
+                    <li>Saved scripts across phone and laptop</li>
+                    <li>Reading history and pace reports</li>
+                    <li>Feedback inbox and issue tracking</li>
+                    <li>Optional premium plan access</li>
+                  </ul>
+                </div>
+              </>
+            )}
+          </aside>
         </div>
       )}
     </main>
