@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,6 +27,11 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,19 +39,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        {umamiWebsiteId ? (
-          <script
-            defer
-            src={umamiScriptSrc}
-            data-website-id={umamiWebsiteId}
-          />
-        ) : null}
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        {umamiWebsiteId ? (
+          <Script
+            src={umamiScriptSrc}
+            data-website-id={umamiWebsiteId}
+            strategy="afterInteractive"
+          />
+        ) : null}
       </body>
     </html>
   );
