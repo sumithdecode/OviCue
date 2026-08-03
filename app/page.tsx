@@ -2276,6 +2276,7 @@ export default function Home() {
             </a>
             <div className="ovi-navlinks">
               <a href="#how">How it works</a>
+              <button type="button" onClick={() => goTo("speech-speed-test")}>Speed test</button>
               <a href="#features">Features</a>
               <a href="#free">What&apos;s free</a>
               <button type="button" onClick={() => goTo("about")}>About</button>
@@ -2301,9 +2302,10 @@ export default function Home() {
               <em>Start reading.</em>
             </h1>
             <p className="ovi-lead ovi-reveal delay-2">
-              Add your text, choose Scroll Speed 1 to 5, and let it roll upward
-              smoothly while you speak. Built for creators, teachers, and
-              students who want clean videos without setup drama.
+              Add your text and read smoothly, or first measure your natural
+              speaking speed and start the prompter at that personal pace.
+              Built for creators, teachers, and students who want clean videos
+              without setup drama.
             </p>
             <div className="ovi-cta-row ovi-reveal delay-3">
               <button
@@ -2313,12 +2315,17 @@ export default function Home() {
               >
                 Start prompting -- it&apos;s free
               </button>
-              <a className="ovi-btn ovi-btn-ghost" href="#how">
-                See how it works
-              </a>
+              <button
+                type="button"
+                className="ovi-btn ovi-btn-ghost"
+                onClick={() => goTo("speech-speed-test")}
+              >
+                Do the speed test
+              </button>
             </div>
             <div className="ovi-hero-note ovi-reveal delay-4">
               <span className="ovi-chip ovi-mono">Phone, laptop, tablet</span>
+              <span className="ovi-chip ovi-mono">Prompter + speed test</span>
               <span className="ovi-chip ovi-mono">Scripts stay on your device</span>
               <span className="ovi-chip ovi-mono">No watermark</span>
             </div>
