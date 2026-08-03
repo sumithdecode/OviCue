@@ -89,6 +89,7 @@ type StaticPageMode =
   | "not-found";
 type ExperienceMode = "welcome" | "studio" | StaticPageMode;
 type TextAlign = "left" | "center" | "right";
+type MediaConsentIntent = "microphone" | "camera" | "recording";
 type SessionInsight = {
   durationSeconds: number;
   readWords: number;
@@ -639,6 +640,8 @@ export default function Home() {
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [accountPanelOpen, setAccountPanelOpen] = useState(false);
+  const [mediaConsentIntent, setMediaConsentIntent] =
+    useState<MediaConsentIntent | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedUrl, setRecordedUrl] = useState("");
   const [lastInsight, setLastInsight] = useState<SessionInsight | null>(null);
@@ -1407,13 +1410,33 @@ export default function Home() {
     releaseCameraStream();
   }
 
+  async function acceptMediaConsent() {
+    const intent = mediaConsentIntent;
+    setMediaConsentIntent(null);
+
+    if (intent === "microphone") {
+      const allowed = await startMicrophone();
+      if (allowed) startCalibrationCore();
+      return;
+    }
+
+    if (intent === "camera") {
+      await startCamera(false);
+      return;
+    }
+
+    if (intent === "recording") {
+      await startRecordingCore();
+    }
+  }
+
   async function toggleRecording() {
     if (isRecording) {
       recorderRef.current?.stop();
       return;
     }
 
-    await startRecordingCore();
+    setMediaConsentIntent("recording");
   }
 
   async function startRecordingCore() {
@@ -1484,8 +1507,8 @@ export default function Home() {
 
   async function startCalibration() {
     if (!micStreamRef.current) {
-      const allowed = await startMicrophone();
-      if (!allowed) return;
+      setMediaConsentIntent("microphone");
+      return;
     }
     startCalibrationCore();
   }
@@ -2446,7 +2469,9 @@ export default function Home() {
               type="checkbox"
               checked={cameraEnabled}
               onChange={(event) =>
-                event.target.checked ? startCamera(false) : stopCamera()
+                event.target.checked
+                  ? setMediaConsentIntent("camera")
+                  : stopCamera()
               }
             />
             <span>Camera preview</span>
@@ -2675,6 +2700,51 @@ export default function Home() {
           </button>
         </div>
       </section>
+      {mediaConsentIntent && (
+        <div className="permission-overlay" role="dialog" aria-modal="true">
+          <div className="permission-card">
+            <span className="permission-mark">Use this time</span>
+            <h2>
+              {mediaConsentIntent === "microphone"
+                ? "Use microphone for this pace test?"
+                : mediaConsentIntent === "camera"
+                  ? "Turn camera preview on for this session?"
+                  : "Use camera and microphone for this recording?"}
+            </h2>
+            <p>
+              OviCue will ask the browser only after you choose to continue.
+              When you finish the test, turn preview off, or stop recording,
+              the active mic/camera connection is closed.
+            </p>
+            <ul>
+              <li>Your script stays on this device.</li>
+              <li>No recording is uploaded from this version.</li>
+              <li>
+                Browser permission choices are controlled by Safari or Chrome,
+                but OviCue uses the access only for the action you start here.
+              </li>
+            </ul>
+            <div className="permission-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setMediaConsentIntent(null);
+                  if (mediaConsentIntent === "camera") setCameraEnabled(false);
+                }}
+              >
+                Not now
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={acceptMediaConsent}
+              >
+                Continue this time
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {accountPanelOpen && (
         <div className="permission-overlay" role="dialog" aria-modal="true">
           <div className="account-card">
