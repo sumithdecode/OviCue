@@ -56,6 +56,8 @@ type SessionInsight = {
 const productName = "OviCue";
 const demoSpeedPresets = [90, 110, 130, 150, 170];
 const studioSpeedPresets = [90, 110, 130, 150, 170];
+const minCustomWpm = 30;
+const maxCustomWpm = 1400;
 const feedbackFormBaseUrl = "";
 const upiQrPath = "/upi-qr.jpeg";
 const lastUpdated = "August 3, 2026";
@@ -536,6 +538,7 @@ export default function Home() {
   const [activeLine, setActiveLine] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [speed, setSpeed] = useState(145);
+  const [customSpeedValue, setCustomSpeedValue] = useState("145");
   const [fontSize, setFontSize] = useState(52);
   const [textAlign, setTextAlign] = useState<TextAlign>("center");
   const [textWeight, setTextWeight] = useState(800);
@@ -632,6 +635,9 @@ export default function Home() {
   const estimatedSeconds = scrollMode === "timed" ? timedSeconds : wpmSeconds;
   const progress =
     lines.length > 1 ? Math.round((activeLine / (lines.length - 1)) * 100) : 0;
+  const customSpeedSelected = !studioSpeedPresets.some(
+    (preset) => Math.abs(speed - preset) < 13,
+  );
 
   useEffect(() => {
     function syncRoute() {
@@ -674,7 +680,14 @@ export default function Home() {
         // Restoring local draft state once on mount is intentional for the offline prompter.
         // eslint-disable-next-line react-hooks/set-state-in-effect
         if (parsed.script) setScript(parsed.script);
-        if (parsed.speed) setSpeed(parsed.speed < 40 ? 120 : parsed.speed);
+        if (parsed.speed) {
+          const savedSpeed = Math.min(
+            maxCustomWpm,
+            Math.max(minCustomWpm, parsed.speed < 40 ? 120 : parsed.speed),
+          );
+          setSpeed(savedSpeed);
+          setCustomSpeedValue(String(savedSpeed));
+        }
         if (parsed.fontSize) setFontSize(parsed.fontSize);
         if (parsed.textAlign) setTextAlign(parsed.textAlign);
         if (parsed.textWeight) setTextWeight(parsed.textWeight);
@@ -694,7 +707,12 @@ export default function Home() {
         if (parsed.calibrationInsight) {
           setCalibrationInsight(parsed.calibrationInsight);
           setLastInsight(parsed.calibrationInsight);
-          setSpeed(Math.min(280, Math.max(80, parsed.calibrationInsight.wpm)));
+          const savedPace = Math.min(
+            maxCustomWpm,
+            Math.max(minCustomWpm, parsed.calibrationInsight.wpm),
+          );
+          setSpeed(savedPace);
+          setCustomSpeedValue(String(savedPace));
         }
       } catch {
         window.localStorage.removeItem("daily-prompter-state");
@@ -873,7 +891,7 @@ export default function Home() {
         return;
       }
 
-      const wpmPixelsPerSecond = Math.min(86, Math.max(18, speed * 0.28));
+      const wpmPixelsPerSecond = Math.min(520, Math.max(10, speed * 0.28));
       const pixelsPerSecond =
         scrollMode === "timed"
           ? Math.min(96, Math.max(18, totalScrollable / estimatedSeconds))
@@ -1278,7 +1296,7 @@ export default function Home() {
     const passageWords = countWords(calibrationPassages[scriptLanguage]);
     const measuredWpm = Math.max(
       80,
-      Math.min(280, Math.round((passageWords / elapsedSeconds) * 60)),
+      Math.min(maxCustomWpm, Math.round((passageWords / elapsedSeconds) * 60)),
     );
     const insight = {
       durationSeconds: Math.round(elapsedSeconds),
@@ -1288,6 +1306,7 @@ export default function Home() {
     setCalibrationInsight(insight);
     setLastInsight(insight);
     setSpeed(measuredWpm);
+    setCustomSpeedValue(String(measuredWpm));
     setScrollMode("wpm");
     trackEvent("pace_test_completed", {
       wpm: measuredWpm,
@@ -1300,6 +1319,7 @@ export default function Home() {
 
   function chooseStudioSpeed(preset: number, level: number) {
     setSpeed(preset);
+    setCustomSpeedValue(String(preset));
     setScrollMode("wpm");
     trackEvent("speed_changed", {
       speed: level,
@@ -1307,14 +1327,29 @@ export default function Home() {
     });
   }
 
-  function chooseCustomSpeed(value: number) {
-    const customWpm = Math.min(280, Math.max(30, Math.round(value)));
+  function chooseCustomSpeed(value: string) {
+    setCustomSpeedValue(value);
+    if (value.trim() === "") return;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return;
+    const customWpm = Math.min(
+      maxCustomWpm,
+      Math.max(minCustomWpm, Math.round(parsed)),
+    );
     setSpeed(customWpm);
     setScrollMode("wpm");
     trackEvent("speed_changed", {
       speed: "custom",
       wpm: customWpm,
     });
+  }
+
+  function commitCustomSpeed() {
+    if (customSpeedValue.trim() === "") {
+      setCustomSpeedValue(String(speed));
+      return;
+    }
+    setCustomSpeedValue(String(speed));
   }
 
   function trackTextEditedOnce() {
@@ -2039,15 +2074,22 @@ export default function Home() {
                 {index + 1}
               </button>
             ))}
-            <label className="custom-speed-field">
+            <label
+              className={
+                customSpeedSelected
+                  ? "custom-speed-field selected"
+                  : "custom-speed-field"
+              }
+            >
               <small>Custom</small>
               <input
                 type="number"
-                min="30"
-                max="280"
+                min={minCustomWpm}
+                max={maxCustomWpm}
                 step="1"
-                value={speed}
-                onChange={(event) => chooseCustomSpeed(Number(event.target.value))}
+                value={customSpeedValue}
+                onBlur={commitCustomSpeed}
+                onChange={(event) => chooseCustomSpeed(event.target.value)}
                 aria-label="Custom scroll speed in words per minute"
               />
               <small>wpm</small>
@@ -2113,10 +2155,10 @@ export default function Home() {
             <span>Speaking pace</span>
             <input
               type="range"
-              min="80"
-              max="280"
+              min={minCustomWpm}
+              max={maxCustomWpm}
               value={speed}
-              onChange={(event) => setSpeed(Number(event.target.value))}
+              onChange={(event) => chooseCustomSpeed(event.target.value)}
             />
             <strong>{speed} wpm</strong>
           </label>
@@ -2234,15 +2276,22 @@ export default function Home() {
                   {index + 1}
                 </button>
               ))}
-              <label className="toolbar-custom-speed">
+              <label
+                className={
+                  customSpeedSelected
+                    ? "toolbar-custom-speed selected"
+                    : "toolbar-custom-speed"
+                }
+              >
                 <span>Custom</span>
                 <input
                   type="number"
-                  min="30"
-                  max="280"
+                  min={minCustomWpm}
+                  max={maxCustomWpm}
                   step="1"
-                  value={speed}
-                  onChange={(event) => chooseCustomSpeed(Number(event.target.value))}
+                  value={customSpeedValue}
+                  onBlur={commitCustomSpeed}
+                  onChange={(event) => chooseCustomSpeed(event.target.value)}
                   aria-label="Custom scroll speed in words per minute"
                 />
               </label>
@@ -2405,7 +2454,12 @@ export default function Home() {
             disabled={!lastInsight}
             onClick={() => {
               if (!lastInsight) return;
-              setSpeed(Math.min(280, Math.max(80, lastInsight.wpm)));
+              const suggestedSpeed = Math.min(
+                maxCustomWpm,
+                Math.max(minCustomWpm, lastInsight.wpm),
+              );
+              setSpeed(suggestedSpeed);
+              setCustomSpeedValue(String(suggestedSpeed));
               setScrollMode("wpm");
             }}
           >

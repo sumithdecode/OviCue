@@ -1,4 +1,4 @@
-const CACHE_NAME = "ovi-shell-v1";
+const CACHE_NAME = "ovicue-shell-v3";
 const APP_SHELL = [
   "/",
   "/prompt",
@@ -37,14 +37,25 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const requestUrl = new URL(event.request.url);
+  const isSameOrigin = requestUrl.origin === self.location.origin;
+  const isNavigation = event.request.mode === "navigate";
+
+  if (!isSameOrigin) return;
+
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
+    fetch(event.request)
+      .then((response) => {
+        if (!response || response.status !== 200) return response;
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         return response;
-      });
-    })
+      })
+      .catch(async () => {
+        if (isNavigation) {
+          return (await caches.match("/")) || caches.match(event.request);
+        }
+        return caches.match(event.request);
+      })
   );
 });
