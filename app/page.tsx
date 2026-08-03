@@ -89,7 +89,6 @@ type StaticPageMode =
   | "not-found";
 type ExperienceMode = "welcome" | "studio" | StaticPageMode;
 type TextAlign = "left" | "center" | "right";
-type PermissionIntent = "calibration" | "camera" | "recording";
 type SessionInsight = {
   durationSeconds: number;
   readWords: number;
@@ -639,8 +638,6 @@ export default function Home() {
     useState<ScriptLanguage>("english");
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [cameraError, setCameraError] = useState("");
-  const [permissionIntent, setPermissionIntent] =
-    useState<PermissionIntent | null>(null);
   const [accountPanelOpen, setAccountPanelOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedUrl, setRecordedUrl] = useState("");
@@ -730,6 +727,14 @@ export default function Home() {
   const customSpeedSelected = !studioSpeedPresets.some(
     (preset) => Math.abs(speed - preset) < 13,
   );
+  const mediaStatus = isRecording
+    ? "Recording"
+    : isVoiceMatching
+      ? "Mic in use"
+      : cameraEnabled
+        ? "Camera in use"
+        : "Media off";
+  const mediaIsLive = isRecording || isVoiceMatching || cameraEnabled;
 
   useEffect(() => {
     function syncRoute() {
@@ -1390,35 +1395,16 @@ export default function Home() {
     micStreamRef.current = null;
   }
 
-  async function requestPersonalSpace(intent: PermissionIntent) {
-    setPermissionIntent(intent);
-  }
-
-  async function acceptPersonalSpace() {
-    const intent = permissionIntent;
-    setPermissionIntent(null);
-    if (intent === "calibration") {
-      const allowed = await startMicrophone();
-      if (allowed) startCalibrationCore();
-      return;
-    }
-
-    if (intent === "camera") {
-      await startCamera(false);
-      return;
-    }
-
-    if (intent === "recording") {
-      await startRecordingCore();
-    }
-  }
-
-  function stopCamera() {
-    if (isRecording) return;
+  function releaseCameraStream() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraEnabled(false);
+  }
+
+  function stopCamera() {
+    if (isRecording) return;
+    releaseCameraStream();
   }
 
   async function toggleRecording() {
@@ -1427,16 +1413,19 @@ export default function Home() {
       return;
     }
 
-    if (!streamRef.current) {
-      requestPersonalSpace("recording");
-      return;
-    }
-
     await startRecordingCore();
   }
 
   async function startRecordingCore() {
-    if (!streamRef.current) {
+    const hasLiveVideo = streamRef.current
+      ?.getVideoTracks()
+      .some((track) => track.readyState === "live");
+    const hasLiveAudio = streamRef.current
+      ?.getAudioTracks()
+      .some((track) => track.readyState === "live");
+
+    if (!hasLiveVideo || !hasLiveAudio) {
+      releaseCameraStream();
       await startCamera(true);
     }
 
@@ -1461,6 +1450,10 @@ export default function Home() {
       const blob = new Blob(chunksRef.current, { type: "video/webm" });
       setRecordedUrl(URL.createObjectURL(blob));
       setIsRecording(false);
+      setIsRunning(false);
+      setCountdown(0);
+      releaseCameraStream();
+      trackEvent("recording_stopped");
     };
     recorder.start();
     setIsRecording(true);
@@ -1489,10 +1482,10 @@ export default function Home() {
     resetPrompt();
   }
 
-  function startCalibration() {
+  async function startCalibration() {
     if (!micStreamRef.current) {
-      requestPersonalSpace("calibration");
-      return;
+      const allowed = await startMicrophone();
+      if (!allowed) return;
     }
     startCalibrationCore();
   }
@@ -2117,6 +2110,9 @@ export default function Home() {
             >
               Sign in
             </button>
+            <div className={mediaIsLive ? "status-pill live" : "status-pill"}>
+              {mediaStatus}
+            </div>
             <div className="status-pill">{lines.length} lines</div>
           </div>
         </div>
@@ -2127,7 +2123,8 @@ export default function Home() {
             <span>Smooth auto-roll</span>
             <span>हिन्दी</span>
             <span>मराठी</span>
-            <span>Camera ready</span>
+            <span>{isVoiceMatching ? "Mic listening" : "Mic off"}</span>
+            <span>{cameraEnabled || isRecording ? "Camera live" : "Camera off"}</span>
             <span>Local scripts</span>
           </div>
         </div>
@@ -2449,11 +2446,7 @@ export default function Home() {
               type="checkbox"
               checked={cameraEnabled}
               onChange={(event) =>
-                event.target.checked
-                  ? streamRef.current
-                    ? startCamera(false)
-                    : requestPersonalSpace("camera")
-                  : stopCamera()
+                event.target.checked ? startCamera(false) : stopCamera()
               }
             />
             <span>Camera preview</span>
@@ -2682,55 +2675,6 @@ export default function Home() {
           </button>
         </div>
       </section>
-      {permissionIntent && (
-        <div className="permission-overlay" role="dialog" aria-modal="true">
-          <div className="permission-card">
-            <span className="permission-mark">Personal space</span>
-            <h2>
-              {permissionIntent === "calibration"
-                ? "Allow microphone?"
-                : permissionIntent === "camera"
-                  ? "Allow camera?"
-                  : "Allow camera and microphone?"}
-            </h2>
-            <p>
-              OviCue uses access only for this browser session:
-              {permissionIntent === "calibration"
-                ? " to match the scroll speed to your spoken WPM while you read."
-                : permissionIntent === "recording"
-                  ? " to record your video and audio directly in your browser."
-                  : " to show your camera behind the teleprompter text."}
-            </p>
-            <ul>
-              <li>Your script stays on this device.</li>
-              <li>No recording is uploaded from this version.</li>
-              <li>
-                {permissionIntent === "calibration"
-                  ? "Camera is not requested for voice speed matching."
-                  : "You can turn camera preview off anytime."}
-              </li>
-            </ul>
-            <div className="permission-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setPermissionIntent(null);
-                  if (permissionIntent === "camera") setCameraEnabled(false);
-                }}
-              >
-                Not now
-              </button>
-              <button
-                type="button"
-                className="primary-button"
-                onClick={acceptPersonalSpace}
-              >
-                Allow and continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {accountPanelOpen && (
         <div className="permission-overlay" role="dialog" aria-modal="true">
           <div className="account-card">
