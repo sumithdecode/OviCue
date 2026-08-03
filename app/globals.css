@@ -994,6 +994,34 @@ input[type="checkbox"] {
   gap: 12px;
 }
 
+.prompt-panel:fullscreen,
+.prompt-panel.is-fullscreen {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--background);
+  padding: 12px;
+}
+
+.prompt-panel:fullscreen .prompt-stage,
+.prompt-panel.is-fullscreen .prompt-stage {
+  min-height: 0;
+  height: 100%;
+}
+
+.prompt-panel:fullscreen .prompt-toolbar,
+.prompt-panel:fullscreen .practice-strip,
+.prompt-panel:fullscreen .insight-panel,
+.prompt-panel.is-fullscreen .prompt-toolbar,
+.prompt-panel.is-fullscreen .practice-strip,
+.prompt-panel.is-fullscreen .insight-panel {
+  position: relative;
+  z-index: 8;
+}
+
 .creator-note {
   display: grid;
   gap: 4px;

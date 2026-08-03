@@ -172,6 +172,7 @@ export default function Home() {
   const [textItalic, setTextItalic] = useState(false);
   const [textUnderline, setTextUnderline] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [scrollMode, setScrollMode] = useState<ScrollMode>("wpm");
   const [targetMinutes, setTargetMinutes] = useState(2);
   const [mirrorHorizontal, setMirrorHorizontal] = useState(false);
@@ -201,6 +202,7 @@ export default function Home() {
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lineListRef = useRef<HTMLDivElement | null>(null);
   const rollContentRef = useRef<HTMLDivElement | null>(null);
+  const promptPanelRef = useRef<HTMLElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const demoTrackRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -463,25 +465,8 @@ export default function Home() {
         mirrorHorizontal ? -1 : 1
       }, ${mirrorVertical ? -1 : 1})`;
 
-      const center =
-        list.getBoundingClientRect().top +
-        list.clientHeight * (textPosition / 100);
-      let closestIndex = 0;
-      let closestDistance = Number.POSITIVE_INFINITY;
-      lineRefs.current.forEach((line, index) => {
-        if (!line) return;
-        const rect = line.getBoundingClientRect();
-        const distance = Math.abs(rect.top + rect.height / 2 - center);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = index;
-        }
-      });
-      setActiveLine((current) =>
-        current === closestIndex ? current : closestIndex,
-      );
-
       if (nextOffset >= totalScrollable - 1) {
+        setActiveLine(lines.length - 1);
         finishSession();
         setIsRunning(false);
         return;
@@ -506,7 +491,6 @@ export default function Home() {
     mirrorVertical,
     scrollMode,
     speed,
-    textPosition,
     wordCount,
   ]);
 
@@ -534,6 +518,16 @@ export default function Home() {
     if (!videoRef.current) return;
     videoRef.current.srcObject = streamRef.current;
   }, [cameraEnabled]);
+
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setIsFullscreen(document.fullscreenElement === promptPanelRef.current);
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -646,8 +640,12 @@ export default function Home() {
     sessionStartRef.current = null;
   }
 
-  function goFullscreen() {
-    stageRef.current?.requestFullscreen?.();
+  async function goFullscreen() {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen?.();
+      return;
+    }
+    await promptPanelRef.current?.requestFullscreen?.();
   }
 
   async function startCamera() {
@@ -1461,7 +1459,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="prompt-panel" aria-label="Teleprompter">
+      <section
+        ref={promptPanelRef}
+        className={isFullscreen ? "prompt-panel is-fullscreen" : "prompt-panel"}
+        aria-label="Teleprompter"
+      >
         <div className="prompt-toolbar">
           <div>
             <p>
@@ -1475,8 +1477,8 @@ export default function Home() {
             <button type="button" onClick={resetPrompt} aria-label="Reset">
               Reset
             </button>
-            <button type="button" onClick={goFullscreen} aria-label="Fullscreen">
-              Fullscreen
+            <button type="button" onClick={goFullscreen} aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+              {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
             </button>
             <button
               type="button"
