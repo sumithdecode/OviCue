@@ -2205,3 +2205,262 @@ input[type="checkbox"] {
     transform: none;
   }
 }
+
+/* Unified ovi skin: Ovi layout language with the original green-yellow palette. */
+.ovi-page {
+  --paper: var(--background);
+  --card: #fbfff4;
+  --ink: var(--charcoal);
+  --ink-2: var(--ink-soft);
+  --ovi-line: rgba(15, 138, 97, 0.18);
+  --glass: #082f27;
+  --amber: var(--sun);
+  --teal: var(--accent);
+  background:
+    linear-gradient(145deg, rgba(245, 216, 92, 0.32), transparent 34%),
+    linear-gradient(90deg, rgba(15, 138, 97, 0.14), transparent 48%),
+    var(--paper);
+}
+
+.ovi-nav {
+  background: rgba(242, 248, 220, 0.84);
+}
+
+.ovi-brand i {
+  border-left-color: var(--sun);
+}
+
+.ovi-btn-dark,
+.ovi-plan.hot .ovi-btn {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: #fffff5;
+}
+
+.ovi-btn-dark:hover,
+.ovi-plan.hot .ovi-btn:hover {
+  background: var(--accent);
+}
+
+.ovi-btn-ghost,
+.ovi-pill,
+.ovi-chip,
+.ovi-card,
+.ovi-plan {
+  background: rgba(255, 255, 245, 0.74);
+}
+
+.ovi-pill b,
+.ovi-card .ovi-mono,
+.ovi-plan .ovi-mono,
+.ovi-cue i {
+  color: var(--accent-strong);
+}
+
+.ovi-glass,
+.ovi-stage,
+.ovi-mini,
+.ovi-free {
+  background:
+    linear-gradient(180deg, rgba(12, 82, 62, 0.96), rgba(8, 47, 39, 1)),
+    var(--glass);
+}
+
+.ovi-track {
+  color: #f8ffe4;
+}
+
+.ovi-stage.dim .ovi-track p {
+  opacity: 0.4;
+}
+
+.ovi-cueline {
+  border-top-color: rgba(245, 216, 92, 0.45);
+}
+
+.ovi-cueline::before {
+  border-left-color: var(--sun);
+}
+
+.ovi-cueline::after {
+  border-right-color: var(--sun);
+}
+
+.ovi-fade-top {
+  background: linear-gradient(#082f27, transparent);
+}
+
+.ovi-fade-bottom {
+  background: linear-gradient(transparent, #082f27);
+}
+
+.ovi-deck {
+  border-top-color: rgba(245, 216, 92, 0.14);
+  background: #062c25;
+}
+
+.ovi-key {
+  border-color: rgba(245, 216, 92, 0.22);
+  background: rgba(255, 255, 245, 0.06);
+  color: #f8ffe4;
+}
+
+.ovi-key[aria-pressed="true"],
+.ovi-key.play {
+  border-color: var(--sun);
+  background: var(--sun);
+  color: var(--charcoal);
+}
+
+.ovi-readout b,
+.ovi-mini.tracking b,
+.ovi-free p {
+  color: var(--sun);
+}
+
+.ovi-free li::before {
+  background: var(--sun);
+}
+
+.ovi-plan.hot {
+  border-color: var(--accent-strong);
+  background: #fffff5;
+}
+
+.ovi-price,
+.ovi-faq summary {
+  color: var(--charcoal);
+}
+
+.ovi-plan li::before {
+  background: var(--accent);
+}
+
+.ovi-footer {
+  background: rgba(251, 255, 244, 0.46);
+}
+
+.app-shell {
+  background:
+    linear-gradient(145deg, rgba(245, 216, 92, 0.26), transparent 36%),
+    linear-gradient(90deg, rgba(15, 138, 97, 0.12), transparent 55%),
+    var(--background);
+  font-family: "Instrument Sans", Inter, Arial, "Noto Sans Devanagari",
+    system-ui, sans-serif;
+}
+
+.editor-panel,
+.prompt-toolbar,
+.practice-strip,
+.insight-panel,
+.creator-intro,
+.language-panel,
+.stats-grid div,
+.studio-strip div,
+.toggle-grid label,
+.promptr-controls,
+.segmented-control {
+  border-color: rgba(15, 138, 97, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 245, 0.74);
+  box-shadow: none;
+}
+
+.editor-panel {
+  gap: 18px;
+  padding: 20px;
+}
+
+.brand-row h1,
+.permission-card h2,
+.app-shell h1 {
+  font-family: "Bricolage Grotesque", Inter, Arial, system-ui, sans-serif;
+  color: var(--charcoal);
+  letter-spacing: 0;
+}
+
+.eyebrow,
+.prompt-toolbar p,
+.script-label,
+.language-panel > span,
+.promptr-controls span,
+.insight-panel small,
+.calibration-header small {
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.status-pill,
+.intro-tags span {
+  border-color: rgba(15, 138, 97, 0.2);
+  background: rgba(220, 236, 107, 0.34);
+  color: var(--accent-strong);
+}
+
+.calibration-card {
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(12, 82, 62, 0.96), rgba(8, 47, 39, 1)),
+    #082f27;
+  color: #f8ffe4;
+}
+
+.calibration-actions .primary-button,
+.language-buttons button.selected,
+.promptr-controls button.selected,
+.segmented-control button.selected,
+.primary-button {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: #fffff5;
+}
+
+.primary-button:hover {
+  background: var(--accent);
+}
+
+.prompt-stage {
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(251, 255, 244, 0.92), rgba(220, 236, 107, 0.28)),
+    radial-gradient(circle at 50% 14%, rgba(245, 216, 92, 0.38), transparent 30%),
+    var(--stage);
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 138, 97, 0.16),
+    0 34px 70px -30px rgba(31, 53, 45, 0.38);
+}
+
+.line-list {
+  color: var(--charcoal);
+  font-family: Inter, Arial, "Noto Sans Devanagari", system-ui, sans-serif;
+}
+
+.line-list p.active {
+  color: #082f27;
+  text-shadow: 0 3px 18px rgba(255, 255, 245, 0.9);
+}
+
+.camera-shade {
+  background:
+    linear-gradient(90deg, rgba(15, 138, 97, 0.18), rgba(245, 216, 92, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 245, 0.08), rgba(8, 47, 39, 0.48));
+}
+
+.recording-button {
+  border-color: var(--rose);
+  background: var(--rose);
+  color: #fffdf8;
+}
+
+.permission-overlay {
+  background: rgba(8, 47, 39, 0.58);
+}
+
+.permission-card {
+  border-color: rgba(15, 138, 97, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 245, 0.96);
+}
