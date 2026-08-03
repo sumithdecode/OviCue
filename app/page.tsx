@@ -10,12 +10,41 @@ import {
 } from "react";
 
 type TrackingProps = Record<string, boolean | number | string>;
+type SpeechRecognitionAlternativeLike = {
+  transcript: string;
+};
+type SpeechRecognitionResultLike = {
+  isFinal: boolean;
+  length: number;
+  [index: number]: SpeechRecognitionAlternativeLike;
+};
+type SpeechRecognitionResultListLike = {
+  length: number;
+  [index: number]: SpeechRecognitionResultLike;
+};
+type SpeechRecognitionEventLike = {
+  results: SpeechRecognitionResultListLike;
+};
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  abort: () => void;
+  start: () => void;
+  stop: () => void;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
 declare global {
   interface Window {
     umami?: {
       track: (eventName: string, eventData?: TrackingProps) => void;
     };
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
   }
 }
 
@@ -490,7 +519,7 @@ function StaticPage({
             <p>Keep the prompter close to the camera lens so your eyes stay natural.</p>
           </InfoCard>
           <InfoCard title="Scroll speed">
-            <p>Start at speed 2 or 3. Use the 60-second pace test for a personal WPM.</p>
+            <p>Start at speed 2 or 3, or let voice matching follow your spoken WPM.</p>
           </InfoCard>
           <InfoCard title="Mirror mode">
             <p>Horizontal flip is for glass. Vertical flip helps with some mounted rigs.</p>
@@ -612,7 +641,6 @@ export default function Home() {
   const [cameraError, setCameraError] = useState("");
   const [permissionIntent, setPermissionIntent] =
     useState<PermissionIntent | null>(null);
-  const [permissionPrimed, setPermissionPrimed] = useState(false);
   const [accountPanelOpen, setAccountPanelOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedUrl, setRecordedUrl] = useState("");
@@ -621,6 +649,11 @@ export default function Home() {
     useState<SessionInsight | null>(null);
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationRemaining, setCalibrationRemaining] = useState(60);
+  const [isVoiceMatching, setIsVoiceMatching] = useState(false);
+  const [liveSpokenWords, setLiveSpokenWords] = useState(0);
+  const [voiceMatchStatus, setVoiceMatchStatus] = useState(
+    "Matches the scroll speed to your spoken WPM while you read.",
+  );
   const [isLoaded, setIsLoaded] = useState(false);
   const [demoText, setDemoText] = useState(landingDemoScript);
   const [demoWpm, setDemoWpm] = useState(130);
@@ -636,6 +669,7 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const animationRef = useRef<number | null>(null);
@@ -653,6 +687,9 @@ export default function Home() {
   const demoEditingRef = useRef(false);
   const sessionStartRef = useRef<number | null>(null);
   const calibrationStartRef = useRef<number | null>(null);
+  const voiceMatchStartRef = useRef<number | null>(null);
+  const spokenWordsRef = useRef(0);
+  const stopVoiceMatchRef = useRef(false);
 
   function goTo(mode: ExperienceMode) {
     setExperienceMode(mode);
@@ -1075,6 +1112,8 @@ export default function Home() {
 
   useEffect(() => {
     return () => {
+      stopVoiceMatchRef.current = true;
+      recognitionRef.current?.abort();
       streamRef.current?.getTracks().forEach((track) => track.stop());
       micStreamRef.current?.getTracks().forEach((track) => track.stop());
     };
@@ -1211,11 +1250,11 @@ export default function Home() {
     await promptPanelRef.current?.requestFullscreen?.();
   }
 
-  async function startCamera() {
+  async function startCamera(includeAudio = false) {
     setCameraError("");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: includeAudio,
         video: {
           facingMode: "user",
           width: { ideal: 1280 },
@@ -1228,7 +1267,11 @@ export default function Home() {
       trackEvent("camera_allowed");
       return true;
     } catch {
-      setCameraError("Camera or microphone permission was blocked.");
+      setCameraError(
+        includeAudio
+          ? "Camera or microphone permission was blocked."
+          : "Camera permission was blocked.",
+      );
       setCameraEnabled(false);
       trackEvent("camera_denied");
       return false;
@@ -1252,6 +1295,101 @@ export default function Home() {
     }
   }
 
+  function speechRecognitionLanguage() {
+    if (scriptLanguage === "hindi") return "hi-IN";
+    if (scriptLanguage === "marathi") return "mr-IN";
+    return "en-IN";
+  }
+
+  function extractSpeechText(results: SpeechRecognitionResultListLike) {
+    const transcript: string[] = [];
+    for (let index = 0; index < results.length; index += 1) {
+      const result = results[index];
+      if (result?.[0]?.transcript) transcript.push(result[0].transcript);
+    }
+    return transcript.join(" ");
+  }
+
+  function applyLiveVoicePace(spokenWords: number) {
+    if (voiceMatchStartRef.current === null) return;
+    const elapsedSeconds = Math.max(
+      1,
+      (performance.now() - voiceMatchStartRef.current) / 1000,
+    );
+    if (elapsedSeconds < 1.5 || spokenWords < 1) return;
+    const liveWpm = Math.min(
+      maxCustomWpm,
+      Math.max(minCustomWpm, Math.round((spokenWords / elapsedSeconds) * 60)),
+    );
+    setSpeed(liveWpm);
+    setCustomSpeedValue(String(liveWpm));
+    setScrollMode("wpm");
+    setVoiceMatchStatus(`Matching your voice at ${liveWpm} wpm`);
+  }
+
+  function startVoiceMatching() {
+    const SpeechRecognition =
+      window.SpeechRecognition ?? window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setVoiceMatchStatus(
+        "Live voice matching is not supported in this browser. Finish the test to apply your measured pace.",
+      );
+      return false;
+    }
+
+    recognitionRef.current?.abort();
+    stopVoiceMatchRef.current = false;
+    spokenWordsRef.current = 0;
+    setLiveSpokenWords(0);
+    setIsVoiceMatching(true);
+    setVoiceMatchStatus("Listening and matching your reading speed...");
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = speechRecognitionLanguage();
+    recognition.onresult = (event) => {
+      const spokenWords = countWords(extractSpeechText(event.results));
+      spokenWordsRef.current = spokenWords;
+      setLiveSpokenWords(spokenWords);
+      applyLiveVoicePace(spokenWords);
+    };
+    recognition.onerror = () => {
+      setVoiceMatchStatus(
+        "Voice matching paused. You can finish the test to use the measured pace.",
+      );
+    };
+    recognition.onend = () => {
+      if (stopVoiceMatchRef.current) return;
+      try {
+        recognition.start();
+      } catch {
+        setIsVoiceMatching(false);
+      }
+    };
+
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+      return true;
+    } catch {
+      setIsVoiceMatching(false);
+      setVoiceMatchStatus(
+        "Voice matching could not start. Finish the test to use the measured pace.",
+      );
+      return false;
+    }
+  }
+
+  function stopVoiceMatching() {
+    stopVoiceMatchRef.current = true;
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setIsVoiceMatching(false);
+    micStreamRef.current?.getTracks().forEach((track) => track.stop());
+    micStreamRef.current = null;
+  }
+
   async function requestPersonalSpace(intent: PermissionIntent) {
     setPermissionIntent(intent);
   }
@@ -1259,8 +1397,6 @@ export default function Home() {
   async function acceptPersonalSpace() {
     const intent = permissionIntent;
     setPermissionIntent(null);
-    setPermissionPrimed(true);
-
     if (intent === "calibration") {
       const allowed = await startMicrophone();
       if (allowed) startCalibrationCore();
@@ -1268,7 +1404,7 @@ export default function Home() {
     }
 
     if (intent === "camera") {
-      await startCamera();
+      await startCamera(false);
       return;
     }
 
@@ -1291,7 +1427,7 @@ export default function Home() {
       return;
     }
 
-    if (!permissionPrimed && !streamRef.current) {
+    if (!streamRef.current) {
       requestPersonalSpace("recording");
       return;
     }
@@ -1301,7 +1437,7 @@ export default function Home() {
 
   async function startRecordingCore() {
     if (!streamRef.current) {
-      await startCamera();
+      await startCamera(true);
     }
 
     if (!streamRef.current) return;
@@ -1368,7 +1504,9 @@ export default function Home() {
     resetPrompt();
     setCalibrationRemaining(60);
     calibrationStartRef.current = performance.now();
+    voiceMatchStartRef.current = performance.now();
     setIsCalibrating(true);
+    startVoiceMatching();
     window.setTimeout(() => {
       startPrompt();
     }, 0);
@@ -1380,12 +1518,16 @@ export default function Home() {
       5,
       (performance.now() - calibrationStartRef.current) / 1000,
     );
-    const passageWords = Math.min(
-      countWords(script.trim() ? script : starterScript),
-      Math.max(1, wordsRead),
-    );
+    const spokenWords = spokenWordsRef.current;
+    const passageWords =
+      spokenWords > 0
+        ? spokenWords
+        : Math.min(
+            countWords(script.trim() ? script : starterScript),
+            Math.max(1, wordsRead),
+          );
     const measuredWpm = Math.max(
-      80,
+      minCustomWpm,
       Math.min(maxCustomWpm, Math.round((passageWords / elapsedSeconds) * 60)),
     );
     const insight = {
@@ -1400,6 +1542,7 @@ export default function Home() {
     setScrollMode("wpm");
     setIsRunning(false);
     setCountdown(0);
+    stopVoiceMatching();
     trackEvent("pace_test_completed", {
       wpm: measuredWpm,
       seconds: insight.durationSeconds,
@@ -1407,6 +1550,7 @@ export default function Home() {
     setIsCalibrating(false);
     setCalibrationRemaining(60);
     calibrationStartRef.current = null;
+    voiceMatchStartRef.current = null;
   }
 
   function chooseStudioSpeed(preset: number, level: number) {
@@ -1678,13 +1822,13 @@ export default function Home() {
             <FeatureRow
               reverse
               title="We ask before the browser does"
-              copy="Before pace testing, camera preview, or recording, OviCue shows a personal space message. Then the browser asks for access. Your script stays on this device."
-              visual={<div className="ovi-mini call"><span>Camera + mic only when you allow.</span></div>}
+              copy="Voice matching asks for the microphone only. Camera preview asks for the camera only. Recording asks for both. Your script stays on this device."
+              visual={<div className="ovi-mini call"><span>Mic for voice matching. Camera only when you switch it on.</span></div>}
             />
             <FeatureRow
               title="It learns your pace"
-              copy="Read a short passage for 60 seconds. The studio estimates your words per minute and lets you apply that speed to the real teleprompter."
-              visual={<div className="ovi-mini tracking"><small>01:00 SAMPLE</small><span>and that is why we changed the process</span><span>which took about six weeks in total</span><b>▸ YOUR PACE · 128 WPM</b></div>}
+              copy="Read your own script aloud. OviCue listens to the words per minute and moves faster or slower while you speak."
+              visual={<div className="ovi-mini tracking"><small>LIVE MATCH</small><span>matching your voice at 132 wpm</span><span>speed changes as you read</span><b>▸ YOUR PACE · LIVE</b></div>}
             />
           </div>
         </section>
@@ -1701,7 +1845,7 @@ export default function Home() {
                 <li>Camera preview behind the text</li>
                 <li>Full screen reading mode</li>
                 <li>English, Hindi, and Marathi samples</li>
-                <li>60-second pace calibration</li>
+                <li>Voice matching that learns your speed</li>
                 <li>Browser recording download</li>
                 <li>No watermark on anything</li>
                 <li>Works with no internet once the page has loaded</li>
@@ -2043,11 +2187,13 @@ export default function Home() {
                   : "Calibrate before recording"}
               </strong>
             </div>
-            <span>{isCalibrating ? `${calibrationRemaining}s` : "60s test"}</span>
+            <span>{isCalibrating ? `${calibrationRemaining}s` : "Live match"}</span>
           </div>
           <p>
-            Uses the script below. Press start, read the same words on the
-            teleprompter, and OviCue will estimate your natural WPM.
+            Uses the script below. Read naturally and OviCue will move faster
+            or slower with your spoken WPM.
+            {isVoiceMatching ? ` ${voiceMatchStatus}` : ""}
+            {liveSpokenWords > 0 ? ` ${liveSpokenWords} words heard.` : ""}
           </p>
           <div className="calibration-actions">
             <button
@@ -2055,7 +2201,7 @@ export default function Home() {
               className="primary-button"
               onClick={isCalibrating ? finishCalibration : startCalibration}
             >
-              {isCalibrating ? "Finish calibration" : "Start pace test"}
+              {isCalibrating ? "Done matching" : "Match my voice"}
             </button>
             <button
               type="button"
@@ -2304,8 +2450,8 @@ export default function Home() {
               checked={cameraEnabled}
               onChange={(event) =>
                 event.target.checked
-                  ? permissionPrimed || streamRef.current
-                    ? startCamera()
+                  ? streamRef.current
+                    ? startCamera(false)
                     : requestPersonalSpace("camera")
                   : stopCamera()
               }
@@ -2543,12 +2689,14 @@ export default function Home() {
             <h2>
               {permissionIntent === "calibration"
                 ? "Allow microphone?"
-                : "Allow camera and microphone?"}
+                : permissionIntent === "camera"
+                  ? "Allow camera?"
+                  : "Allow camera and microphone?"}
             </h2>
             <p>
               OviCue uses access only for this browser session:
               {permissionIntent === "calibration"
-                ? " to run the 60-second pace test while you read the same script."
+                ? " to match the scroll speed to your spoken WPM while you read."
                 : permissionIntent === "recording"
                   ? " to record your video and audio directly in your browser."
                   : " to show your camera behind the teleprompter text."}
@@ -2558,7 +2706,7 @@ export default function Home() {
               <li>No recording is uploaded from this version.</li>
               <li>
                 {permissionIntent === "calibration"
-                  ? "Camera is not requested for pace testing."
+                  ? "Camera is not requested for voice speed matching."
                   : "You can turn camera preview off anytime."}
               </li>
             </ul>
