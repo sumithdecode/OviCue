@@ -96,15 +96,6 @@ const languageLabels: Record<ScriptLanguage, string> = {
   marathi: "मराठी",
 };
 
-const calibrationPassages: Record<ScriptLanguage, string> = {
-  english:
-    "Today I am testing my natural speaking pace with OviCue. I will speak clearly, keep my eyes close to the camera, and read with calm confidence. I want the prompter to understand my rhythm, not force me into a random speed. If I speak slowly, it should feel steady. If I speak faster, it should keep up. This short test helps me choose a pace that feels human, comfortable, and useful for real videos.",
-  hindi:
-    "आज मैं OviCue के साथ अपनी प्राकृतिक बोलने की गति समझना चाहता हूं। मैं साफ बोलूंगा, कैमरे के पास देखूंगा, और शांत आत्मविश्वास के साथ पढ़ूंगा। मुझे ऐसी गति चाहिए जो मेरे बोलने के तरीके जैसी लगे, कोई जबरदस्ती वाली गति नहीं। यह छोटा टेस्ट मुझे वीडियो रिकॉर्ड करते समय सही रिदम चुनने में मदद करेगा।",
-  marathi:
-    "आज मी OviCue सोबत माझी नैसर्गिक बोलण्याची गती समजून घेत आहे. मी स्पष्ट बोलेन, कॅमेऱ्याजवळ पाहीन, आणि शांत आत्मविश्वासाने वाचेन. मला अशी गती हवी आहे जी माझ्या बोलण्यासारखी वाटेल, जबरदस्तीची नाही. हा छोटा टेस्ट मला व्हिडिओ रेकॉर्ड करताना योग्य रिदम निवडायला मदत करेल.",
-};
-
 const routeModes: Record<string, ExperienceMode> = {
   "/": "welcome",
   "/prompt": "studio",
@@ -338,9 +329,9 @@ function StaticPage({
         </InfoCard>
         <InfoCard title="Camera and microphone">
           <p>
-            Camera and microphone access is requested only when you start pace
-            testing, camera preview, or recording. Browser recording happens on
-            your device and downloads from your browser.
+            Microphone access is requested for pace testing. Camera access is
+            requested only for camera preview or recording. Browser recording
+            happens on your device and downloads from your browser.
           </p>
         </InfoCard>
         <InfoCard title="Analytics">
@@ -581,6 +572,7 @@ export default function Home() {
   const demoTrackRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const animationRef = useRef<number | null>(null);
@@ -1014,6 +1006,7 @@ export default function Home() {
   useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((track) => track.stop());
+      micStreamRef.current?.getTracks().forEach((track) => track.stop());
     };
   }, []);
 
@@ -1172,6 +1165,23 @@ export default function Home() {
     }
   }
 
+  async function startMicrophone() {
+    setCameraError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+      micStreamRef.current = stream;
+      trackEvent("microphone_allowed");
+      return true;
+    } catch {
+      setCameraError("Microphone permission was blocked.");
+      trackEvent("microphone_denied");
+      return false;
+    }
+  }
+
   async function requestPersonalSpace(intent: PermissionIntent) {
     setPermissionIntent(intent);
   }
@@ -1182,7 +1192,7 @@ export default function Home() {
     setPermissionPrimed(true);
 
     if (intent === "calibration") {
-      const allowed = await startCamera();
+      const allowed = await startMicrophone();
       if (allowed) startCalibrationCore();
       return;
     }
@@ -1274,7 +1284,7 @@ export default function Home() {
   }
 
   function startCalibration() {
-    if (!permissionPrimed && !streamRef.current) {
+    if (!micStreamRef.current) {
       requestPersonalSpace("calibration");
       return;
     }
@@ -1282,9 +1292,16 @@ export default function Home() {
   }
 
   function startCalibrationCore() {
+    if (script.trim().length === 0) {
+      setScript(starterScript);
+    }
+    resetPrompt();
     setCalibrationRemaining(60);
     calibrationStartRef.current = performance.now();
     setIsCalibrating(true);
+    window.setTimeout(() => {
+      startPrompt();
+    }, 0);
   }
 
   function finishCalibration() {
@@ -1293,7 +1310,10 @@ export default function Home() {
       5,
       (performance.now() - calibrationStartRef.current) / 1000,
     );
-    const passageWords = countWords(calibrationPassages[scriptLanguage]);
+    const passageWords = Math.min(
+      countWords(script.trim() ? script : starterScript),
+      Math.max(1, wordsRead),
+    );
     const measuredWpm = Math.max(
       80,
       Math.min(maxCustomWpm, Math.round((passageWords / elapsedSeconds) * 60)),
@@ -1977,8 +1997,9 @@ export default function Home() {
             </div>
             <span>{isCalibrating ? `${calibrationRemaining}s` : "60s test"}</span>
           </div>
-          <p lang={scriptLanguage === "hindi" ? "hi" : scriptLanguage === "marathi" ? "mr" : "en"}>
-            {calibrationPassages[scriptLanguage]}
+          <p>
+            Uses the script below. Press start, read the same words on the
+            teleprompter, and OviCue will estimate your natural WPM.
           </p>
           <div className="calibration-actions">
             <button
@@ -2471,11 +2492,15 @@ export default function Home() {
         <div className="permission-overlay" role="dialog" aria-modal="true">
           <div className="permission-card">
             <span className="permission-mark">Personal space</span>
-            <h2>Allow camera and microphone?</h2>
+            <h2>
+              {permissionIntent === "calibration"
+                ? "Allow microphone?"
+                : "Allow camera and microphone?"}
+            </h2>
             <p>
               OviCue uses access only for this browser session:
               {permissionIntent === "calibration"
-                ? " to see your reading setup and prepare the 60-second pace test."
+                ? " to run the 60-second pace test while you read the same script."
                 : permissionIntent === "recording"
                   ? " to record your video and audio directly in your browser."
                   : " to show your camera behind the teleprompter text."}
@@ -2483,7 +2508,11 @@ export default function Home() {
             <ul>
               <li>Your script stays on this device.</li>
               <li>No recording is uploaded from this version.</li>
-              <li>You can turn camera preview off anytime.</li>
+              <li>
+                {permissionIntent === "calibration"
+                  ? "Camera is not requested for pace testing."
+                  : "You can turn camera preview off anytime."}
+              </li>
             </ul>
             <div className="permission-actions">
               <button
