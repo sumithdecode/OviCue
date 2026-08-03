@@ -89,7 +89,12 @@ type StaticPageMode =
   | "not-found";
 type ExperienceMode = "welcome" | "studio" | "speech-speed-test" | StaticPageMode;
 type TextAlign = "left" | "center" | "right";
-type MediaConsentIntent = "microphone" | "camera" | "recording";
+type MediaConsentIntent =
+  | "microphone"
+  | "camera"
+  | "recording"
+  | "speech-auto-stop";
+type PaceSource = "voice-match" | "speech-test" | null;
 type SpeechTestKind = "conversational" | "presentation" | "news";
 type SessionInsight = {
   durationSeconds: number;
@@ -754,6 +759,8 @@ export default function Home() {
   const [lastInsight, setLastInsight] = useState<SessionInsight | null>(null);
   const [calibrationInsight, setCalibrationInsight] =
     useState<SessionInsight | null>(null);
+  const [personalPaceSource, setPersonalPaceSource] =
+    useState<PaceSource>(null);
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationRemaining, setCalibrationRemaining] = useState(60);
   const [isVoiceMatching, setIsVoiceMatching] = useState(false);
@@ -924,6 +931,7 @@ export default function Home() {
           textPosition?: number;
           scriptLanguage?: ScriptLanguage;
           calibrationInsight?: SessionInsight;
+          personalPaceSource?: PaceSource;
         };
         if (parsed.script) {
           const savedLanguage = parsed.scriptLanguage ?? "english";
@@ -959,9 +967,14 @@ export default function Home() {
         if (typeof parsed.dimPast === "boolean") setDimPast(parsed.dimPast);
         if (parsed.textPosition) setTextPosition(parsed.textPosition);
         if (parsed.scriptLanguage) setScriptLanguage(parsed.scriptLanguage);
+        if (parsed.personalPaceSource) {
+          setPersonalPaceSource(parsed.personalPaceSource);
+        }
         if (parsed.calibrationInsight) {
           setCalibrationInsight(parsed.calibrationInsight);
-          setLastInsight(parsed.calibrationInsight);
+          if (parsed.calibrationInsight.durationSeconds > 0) {
+            setLastInsight(parsed.calibrationInsight);
+          }
           const savedPace = Math.min(
             maxCustomWpm,
             Math.max(minCustomWpm, parsed.calibrationInsight.wpm),
@@ -995,6 +1008,7 @@ export default function Home() {
       readWords: 0,
       wpm: queryWpm,
     });
+    setPersonalPaceSource("speech-test");
   }, [experienceMode]);
 
   useEffect(() => {
@@ -1017,6 +1031,7 @@ export default function Home() {
         dimPast,
         textPosition,
         calibrationInsight,
+        personalPaceSource,
       }),
     );
   }, [
@@ -1026,6 +1041,7 @@ export default function Home() {
     isLoaded,
     mirrorHorizontal,
     mirrorVertical,
+    personalPaceSource,
     script,
     scriptLanguage,
     scrollMode,
@@ -1648,12 +1664,26 @@ export default function Home() {
     }
   }
 
-  async function startSpeechSpeedTest() {
+  function hasVisitMediaConsent() {
+    if (typeof window === "undefined") return false;
+    return window.sessionStorage.getItem("ovicue-media-consent") === "true";
+  }
+
+  function rememberVisitMediaConsent() {
+    if (typeof window === "undefined") return;
+    window.sessionStorage.setItem("ovicue-media-consent", "true");
+  }
+
+  async function startSpeechSpeedTest(mediaAlreadyConfirmed = false) {
     setSpeechTestResult(null);
     setSpeechTestError("");
     setSpeechTestElapsed(0);
 
     if (speechTestAutoStop) {
+      if (!mediaAlreadyConfirmed && !hasVisitMediaConsent()) {
+        setMediaConsentIntent("speech-auto-stop");
+        return;
+      }
       const started = await startSpeechSpeedAutoStop();
       if (!started) return;
     }
@@ -1721,6 +1751,7 @@ export default function Home() {
       readWords: 0,
       wpm: personalWpm,
     });
+    setPersonalPaceSource("speech-test");
     setExperienceMode("studio");
     if (typeof window !== "undefined") {
       window.history.pushState(null, "", `/prompt?wpm=${personalWpm}`);
@@ -1728,19 +1759,10 @@ export default function Home() {
     }
   }
 
-  async function copySpeechSpeedResult() {
-    if (!speechTestResult) return;
-    const band = speechSpeedBandFor(speechTestResult.wpm);
-    const text = `My speech speed is ${speechTestResult.wpm} words per minute - ${band.label}. Tested with OviCue.`;
-    await navigator.clipboard?.writeText(text);
-    trackEvent("speech_speed_result_copied", {
-      wpm: speechTestResult.wpm,
-    });
-  }
-
-  async function acceptMediaConsent() {
+  async function acceptMediaConsent(scope: "visit" | "once" = "once") {
     const intent = mediaConsentIntent;
     setMediaConsentIntent(null);
+    if (scope === "visit") rememberVisitMediaConsent();
 
     if (intent === "microphone") {
       const allowed = await startMicrophone();
@@ -1755,12 +1777,22 @@ export default function Home() {
 
     if (intent === "recording") {
       await startRecordingCore();
+      return;
+    }
+
+    if (intent === "speech-auto-stop") {
+      await startSpeechSpeedTest(true);
     }
   }
 
   async function toggleRecording() {
     if (isRecording) {
       recorderRef.current?.stop();
+      return;
+    }
+
+    if (hasVisitMediaConsent()) {
+      await startRecordingCore();
       return;
     }
 
@@ -1835,6 +1867,11 @@ export default function Home() {
 
   async function startCalibration() {
     if (!micStreamRef.current) {
+      if (hasVisitMediaConsent()) {
+        const allowed = await startMicrophone();
+        if (allowed) startCalibrationCore();
+        return;
+      }
       setMediaConsentIntent("microphone");
       return;
     }
@@ -1884,6 +1921,7 @@ export default function Home() {
     setSpeed(measuredWpm);
     setCustomSpeedValue(String(measuredWpm));
     setScrollMode("wpm");
+    setPersonalPaceSource("voice-match");
     setIsRunning(false);
     setCountdown(0);
     stopVoiceMatching();
@@ -2094,7 +2132,7 @@ export default function Home() {
                   <button
                     type="button"
                     className="ovi-btn ovi-btn-dark"
-                    onClick={startSpeechSpeedTest}
+                    onClick={() => startSpeechSpeedTest()}
                   >
                     Start the test
                   </button>
@@ -2115,7 +2153,7 @@ export default function Home() {
                       className="ovi-btn ovi-btn-dark"
                       onClick={() => openPrompterWithWpm(speechTestResult.wpm)}
                     >
-                      Use this speed in the prompter
+                      Start prompting at {speechTestResult.wpm} wpm
                     </button>
                     <button
                       type="button"
@@ -2123,13 +2161,6 @@ export default function Home() {
                       onClick={resetSpeechSpeedTest}
                     >
                       Test again
-                    </button>
-                    <button
-                      type="button"
-                      className="ovi-btn ovi-btn-ghost"
-                      onClick={copySpeechSpeedResult}
-                    >
-                      Copy my result
                     </button>
                   </>
                 )}
@@ -2846,33 +2877,73 @@ export default function Home() {
                   : "Calibrate before recording"}
               </strong>
             </div>
-            <span>{isCalibrating ? `${calibrationRemaining}s` : "Live match"}</span>
+            <span>
+              {isCalibrating
+                ? `${calibrationRemaining}s`
+                : personalPaceSource === "speech-test"
+                  ? "Tested pace"
+                  : "Live match"}
+            </span>
           </div>
-          <p>
-            Uses the script below. Read naturally and OviCue will move faster
-            or slower with your spoken WPM.
-            {isVoiceMatching ? ` ${voiceMatchStatus}` : ""}
-            {liveSpokenWords > 0 ? ` ${liveSpokenWords} words heard.` : ""}
-          </p>
+          {personalPaceSource === "speech-test" && calibrationInsight ? (
+            <p>
+              This pace came from your Speech Speed Test. OviCue is already set
+              to roll at {calibrationInsight.wpm} wpm, so you can paste your
+              script and start prompting without matching your voice again.
+            </p>
+          ) : (
+            <p>
+              Uses the script below. Read naturally and OviCue will move faster
+              or slower with your spoken WPM.
+              {isVoiceMatching ? ` ${voiceMatchStatus}` : ""}
+              {liveSpokenWords > 0 ? ` ${liveSpokenWords} words heard.` : ""}
+            </p>
+          )}
           <div className="calibration-actions">
-            <button
-              type="button"
-              className="primary-button"
-              onClick={isCalibrating ? finishCalibration : startCalibration}
-            >
-              {isCalibrating ? "Done matching" : "Match my voice"}
-            </button>
-            <button
-              type="button"
-              disabled={!calibrationInsight}
-              onClick={() => {
-                if (!calibrationInsight) return;
-                setSpeed(calibrationInsight.wpm);
-                setScrollMode("wpm");
-              }}
-            >
-              Use my pace
-            </button>
+            {personalPaceSource === "speech-test" && calibrationInsight ? (
+              <>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={() => {
+                    setSpeed(calibrationInsight.wpm);
+                    setCustomSpeedValue(String(calibrationInsight.wpm));
+                    setScrollMode("wpm");
+                    startPrompt();
+                  }}
+                >
+                  Start reading at this pace
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo("speech-speed-test")}
+                >
+                  Retest speed
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={isCalibrating ? finishCalibration : startCalibration}
+                >
+                  {isCalibrating ? "Done matching" : "Match my voice"}
+                </button>
+                <button
+                  type="button"
+                  disabled={!calibrationInsight}
+                  onClick={() => {
+                    if (!calibrationInsight) return;
+                    setSpeed(calibrationInsight.wpm);
+                    setCustomSpeedValue(String(calibrationInsight.wpm));
+                    setScrollMode("wpm");
+                  }}
+                >
+                  Use my pace
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -3109,7 +3180,9 @@ export default function Home() {
               checked={cameraEnabled}
               onChange={(event) =>
                 event.target.checked
-                  ? setMediaConsentIntent("camera")
+                  ? hasVisitMediaConsent()
+                    ? startCamera(false)
+                    : setMediaConsentIntent("camera")
                   : stopCamera()
               }
             />
@@ -3341,44 +3414,67 @@ export default function Home() {
       </section>
       {mediaConsentIntent && (
         <div className="permission-overlay" role="dialog" aria-modal="true">
-          <div className="permission-card">
-            <span className="permission-mark">Use this time</span>
+          <div className="permission-card browser-permission">
+            <button
+              type="button"
+              className="permission-close"
+              onClick={() => {
+                setMediaConsentIntent(null);
+                if (mediaConsentIntent === "camera") setCameraEnabled(false);
+              }}
+              aria-label="Close access request"
+            >
+              x
+            </button>
             <h2>
               {mediaConsentIntent === "microphone"
-                ? "Use microphone for this pace test?"
+                ? `${productName} wants to use your microphone`
                 : mediaConsentIntent === "camera"
-                  ? "Turn camera preview on for this session?"
-                  : "Use camera and microphone for this recording?"}
+                  ? `${productName} wants to use your camera`
+                  : mediaConsentIntent === "speech-auto-stop"
+                    ? `${productName} wants to use your microphone`
+                    : `${productName} wants to use your camera and microphone`}
             </h2>
-            <p>
-              OviCue will ask the browser only after you choose to continue.
-              When you finish the test, turn preview off, or stop recording,
-              the active mic/camera connection is closed.
-            </p>
-            <ul>
-              <li>Your script stays on this device.</li>
-              <li>No recording is uploaded from this version.</li>
-              <li>
-                Browser permission choices are controlled by Safari or Chrome,
-                but OviCue uses the access only for the action you start here.
-              </li>
-            </ul>
-            <div className="permission-actions">
+            <div className="permission-request-line">
+              <span>
+                {mediaConsentIntent === "camera"
+                  ? "camera"
+                  : mediaConsentIntent === "recording"
+                    ? "camera + mic"
+                    : "mic"}
+              </span>
+              <p>
+                {mediaConsentIntent === "camera"
+                  ? "Camera preview only. Turn it off anytime."
+                  : mediaConsentIntent === "recording"
+                    ? "Browser recording only. Nothing is uploaded."
+                    : "Used only for this speaking-speed action. Nothing is recorded or sent."}
+              </p>
+            </div>
+            <div className="permission-actions browser-actions">
+              <button
+                type="button"
+                className="permission-choice"
+                onClick={() => acceptMediaConsent("visit")}
+              >
+                Allow while visiting the site
+              </button>
+              <button
+                type="button"
+                className="permission-choice"
+                onClick={() => acceptMediaConsent("once")}
+              >
+                Allow this time
+              </button>
               <button
                 type="button"
                 onClick={() => {
                   setMediaConsentIntent(null);
                   if (mediaConsentIntent === "camera") setCameraEnabled(false);
                 }}
+                className="permission-choice"
               >
-                Not now
-              </button>
-              <button
-                type="button"
-                className="primary-button"
-                onClick={acceptMediaConsent}
-              >
-                Continue this time
+                Never allow
               </button>
             </div>
           </div>
