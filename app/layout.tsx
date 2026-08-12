@@ -8,25 +8,25 @@ const umamiScriptSrc =
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://promptflow-teleprompter.csumeety.chatgpt.site"),
-  title: "OviCue - Free Online Teleprompter for Indian Creators",
+  title: "OviCue - Pace-Aware Teleprompter for Indian Creators",
   description:
-    "Paste your script and read smoothly on camera. OviCue is a free online teleprompter for Indian creators, teachers, students, and speakers.",
+    "Paste your script, find your speaking speed, and read smoothly on camera. OviCue is a free pace-aware teleprompter for creators, teachers, students, and speakers.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "OviCue - Free Online Teleprompter",
+    title: "OviCue - Pace-Aware Teleprompter",
     description:
-      "A smooth browser teleprompter with pace testing, mirror mode, camera preview, and local scripts.",
+      "A smooth browser teleprompter with speech speed testing, mirror mode, camera preview, recording, and local scripts.",
     url: "/",
     siteName: "OviCue",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OviCue - Free Online Teleprompter",
+    title: "OviCue - Pace-Aware Teleprompter",
     description:
-      "Paste your script, choose a speed, and read smoothly while you record.",
+      "Find your speaking speed, paste your script, and read smoothly while you record.",
   },
   manifest: "/manifest.json",
   icons: {

@@ -6,10 +6,12 @@
   --green-700: oklch(0.33 0.07 155);
   --green-400: oklch(0.68 0.15 145);
   --green-100: oklch(0.92 0.03 150);
+  --green-050: oklch(0.96 0.018 150);
 
   /* Paper */
   --paper-0: oklch(0.99 0.008 90);
   --paper-1: oklch(0.97 0.014 90);
+  --paper-2: oklch(0.94 0.018 90);
   --line: oklch(0.88 0.015 90);
 
   /* Ink */
@@ -46,6 +48,7 @@
   --t-h3: 1.3125rem;
   --t-h2: 2.375rem;
   --t-h1: clamp(2.25rem, 8vw, 4.6rem);
+  --shadow-soft: 0 var(--s5) var(--s8) color-mix(in oklch, var(--green-900), transparent 88%);
 }
 
 * {
@@ -183,9 +186,7 @@ p {
 .ovi-readout,
 .ovi-speed-bank span,
 .toolbar-speed-control span,
-.toolbar-custom-speed span,
-.prompt-cue-line,
-.ovi-cueline::before {
+.toolbar-custom-speed span {
   font-family: var(--font-mono);
   font-size: var(--t-caption);
   font-variant-numeric: tabular-nums;
@@ -196,7 +197,9 @@ p {
 
 .ovi-page {
   min-height: 100vh;
-  background: var(--paper-1);
+  background:
+    radial-gradient(circle at 88% 12%, var(--green-100), transparent 24rem),
+    linear-gradient(var(--paper-1), var(--paper-0) 42rem, var(--paper-1));
 }
 
 .ovi-wrap {
@@ -209,7 +212,7 @@ p {
   top: 0;
   z-index: 20;
   border-bottom: var(--border);
-  background: var(--paper-1);
+  background: color-mix(in oklch, var(--paper-1), transparent 4%);
 }
 
 .ovi-nav .ovi-wrap,
@@ -320,6 +323,11 @@ p {
   color: var(--paper-0);
 }
 
+.ovi-btn-dark,
+.primary-button {
+  box-shadow: var(--shadow-soft);
+}
+
 .ovi-btn-ghost {
   background: transparent;
 }
@@ -330,7 +338,7 @@ p {
 }
 
 .ovi-hero {
-  padding: var(--s8) 0 var(--s7);
+  padding: var(--s9) 0 var(--s7);
 }
 
 .ovi-hero .ovi-wrap {
@@ -350,6 +358,7 @@ p {
 .ovi-hero h1 {
   max-width: 54rem;
   margin-bottom: var(--s5);
+  text-wrap: balance;
 }
 
 .ovi-hero h1 em {
@@ -396,6 +405,10 @@ p {
   display: grid;
   gap: var(--s4);
   margin-bottom: var(--s8);
+  padding: var(--s4);
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklch, var(--paper-0), transparent 18%);
 }
 
 .ovi-glass,
@@ -415,11 +428,12 @@ p {
 
 .ovi-glass {
   overflow: hidden;
+  box-shadow: var(--shadow-soft);
 }
 
 .ovi-stage {
   position: relative;
-  height: min(72vh, 44rem);
+  height: min(72vh, 42rem);
   min-height: 24rem;
   overflow: hidden;
   border-bottom: var(--border);
@@ -436,7 +450,7 @@ p {
   color: var(--paper-0);
   font-size: clamp(1.75rem, 5vw, 3.25rem);
   font-weight: 800;
-  line-height: 1.22;
+  line-height: 1.18;
   outline: 0;
   text-align: center;
   will-change: transform;
@@ -453,41 +467,6 @@ p {
 
 .ovi-track p {
   margin: 0 0 var(--s6);
-}
-
-.ovi-cueline,
-.prompt-cue-line {
-  position: absolute;
-  top: 38%;
-  right: 0;
-  left: 0;
-  z-index: 6;
-  height: calc(var(--s1) / 2);
-  background: var(--live);
-  pointer-events: none;
-}
-
-.ovi-cueline::before,
-.prompt-cue-line span {
-  position: absolute;
-  top: var(--s2);
-  left: calc(var(--s4) + var(--s4));
-  color: var(--ink-400);
-  content: "CUE 38%";
-}
-
-.ovi-cueline::after {
-  position: absolute;
-  top: var(--s2);
-  left: var(--s4);
-  color: var(--live);
-  font-family: var(--font-mono);
-  font-size: var(--t-caption);
-  content: "●";
-}
-
-.prompt-cue-line b {
-  color: var(--live);
 }
 
 .ovi-fade-top,
@@ -638,6 +617,7 @@ p {
 
 .speech-test-panel {
   padding: var(--s5);
+  box-shadow: var(--shadow-soft);
 }
 
 .speech-test-top {
@@ -648,12 +628,17 @@ p {
 }
 
 .speech-test-passage {
-  max-height: 20rem;
+  max-height: 22rem;
   overflow: auto;
   border: var(--border);
   border-radius: var(--radius);
   background: var(--paper-1);
   padding: var(--s4);
+}
+
+.front-speech-test {
+  display: grid;
+  gap: var(--s4);
 }
 
 .speech-test-error {
@@ -697,6 +682,12 @@ p {
   min-height: 16rem;
   padding: var(--s6);
   text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.speech-preview-card b,
+.ovi-mini b {
+  color: var(--green-400);
 }
 
 .ovi-footer {
@@ -803,6 +794,10 @@ p {
   background: var(--paper-1);
 }
 
+.creator-intro {
+  background: var(--green-050);
+}
+
 .intro-tags,
 .toggle-grid {
   display: flex;
@@ -883,6 +878,7 @@ p {
   margin: var(--s5) 0;
   background: var(--green-900);
   color: var(--paper-0);
+  box-shadow: var(--shadow-soft);
 }
 
 .calibration-card p {
@@ -1005,7 +1001,8 @@ input[type="range"] {
   position: relative;
   min-height: 60vh;
   overflow: hidden;
-  background: var(--green-900);
+  background:
+    linear-gradient(color-mix(in oklch, var(--green-900), black 10%), var(--green-900));
 }
 
 .camera-video,
@@ -1037,7 +1034,7 @@ input[type="range"] {
   z-index: 4;
   display: none;
   height: calc(var(--s1) / 2);
-  background: var(--green-400);
+  background: transparent;
 }
 
 .line-list {
@@ -1063,7 +1060,7 @@ input[type="range"] {
 
 .line-list p {
   margin: 0 0 var(--s6);
-  opacity: 0.45;
+  opacity: 0.5;
   transition: opacity 160ms ease;
 }
 

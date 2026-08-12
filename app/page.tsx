@@ -58,21 +58,21 @@ You look down. You lose the eye contact. You record it again.
 
 And a two-minute video quietly takes an hour.
 
-This fixes that moment.
+OviCue fixes that moment.
 
-Paste your script. Pick a speed, or press Find my pace and let it learn how you actually talk.
+Paste your script. Press Start. The words move upward in one clean flow, close enough to the lens that you can keep looking at your audience.
 
-Then the words come up towards you, steady, like film credits, while your eyes stay next to the lens.
+If you do not know your speed, run the speech speed test first. OviCue measures your natural words per minute and sets the prompter to that rhythm.
 
-Use it for lessons. For reels. For a speech you cannot afford to fumble.
+Use it for lessons, reels, interviews, sales videos, speeches, and daily English practice.
 
-For practising English out loud, at a speed that does not run away from you.
+Mirror it for teleprompter glass. Record from the browser. Change text size, alignment, and speed without breaking your flow.
 
-Your script never leaves this device. Mirror it for teleprompter glass, put the camera behind it, record straight from the browser.
+Your script stays on this device in guest mode. Camera and microphone are used only when you switch on preview, recording, or the optional pace tools.
 
-No account. No watermark. No limit on how long you read.
+No account to begin. No watermark. No complicated setup.
 
-If you want your videos to sound prepared instead of rehearsed, this was built for you.
+If you want your videos to sound prepared instead of rehearsed, OviCue was built for you.
 
 Now delete all of this, and paste your own.`;
 
@@ -129,13 +129,15 @@ const lastUpdated = "August 3, 2026";
 
 const landingDemoScript = `This is a real teleprompter, not a picture of one.
 
-The text is moving at one hundred and thirty words a minute -- about the speed of a teacher explaining something.
+The text moves upward in one smooth flow, the way end credits move after a film.
 
-Speed two is calm practice. Speed four is a fast creator read. The number beside it is real words per minute, so it means something.
+Choose speed one for calm practice, speed three for a natural teaching read, or type your exact words per minute.
 
-Turn on mirror mode if you shoot through beam-splitter glass. The reflection flips the text, so we flip it first.
+If you do not know your pace, run the speed test. OviCue measures your speaking rhythm and sets the prompter to match you.
 
-Click the text to edit it. Paste your own script and read it right here, before you sign up for anything. Because you never have to.`;
+Turn on mirror mode if you shoot through beam-splitter glass. The reflection flips the text, so OviCue flips it first.
+
+Click this text to edit it. Paste your own script and read it right here before creating an account.`;
 
 const audienceScripts: Record<AudienceKey, { label: string; text: string }> = {
   creator: {
@@ -399,17 +401,17 @@ const languageSamples: Record<ScriptLanguage, string> = {
 
 OviCue उसी पल को ठीक करता है।
 
-अपना script paste करें। Speed चुनें, या Find my pace दबाएं और OviCue को आपकी असली बोलने की गति सीखने दें।
+अपना script paste करें। Start दबाएं। शब्द एक smooth flow में ऊपर आते हैं, ताकि आपकी आंखें camera के पास रहें।
 
-फिर शब्द आपकी तरफ ऊपर आते हैं, film credits की तरह steady, और आपकी आंखें camera के पास रहती हैं।
+अगर आपको अपनी speed नहीं पता, तो speech speed test चलाएं। OviCue आपकी natural words per minute समझता है और prompter को उसी rhythm पर set करता है।
 
-इसे lessons के लिए इस्तेमाल करें। Reels के लिए। किसी speech के लिए जहां गलती नहीं चाहिए।
+इसे lessons, reels, interviews, sales videos, speeches और daily English practice के लिए इस्तेमाल करें।
 
-English practice के लिए भी, ऐसी speed पर जो आपसे आगे न भागे।
+Teleprompter glass के लिए mirror करें। Browser से record करें। Text size, alignment और speed बिना flow तोड़े बदलें।
 
-आपका script इसी device पर रहता है। Teleprompter glass के लिए mirror करें, camera पीछे लगाएं, और browser से record करें।
+Guest mode में आपका script इसी device पर रहता है। Camera और microphone सिर्फ तभी use होते हैं जब आप preview, recording या pace tools on करते हैं।
 
-No account. No watermark. जितना चाहें उतना पढ़ें।
+Start करने के लिए account नहीं। Watermark नहीं। Complicated setup नहीं।
 
 अगर आप चाहते हैं कि आपके videos rehearsed नहीं, prepared लगें, तो OviCue आपके लिए बना है।
 
@@ -426,17 +428,17 @@ Idea डोक्यात स्पष्ट असतो. Camera तयार 
 
 OviCue तो क्षण ठीक करतो.
 
-तुमचा script paste करा. Speed निवडा, किंवा Find my pace दाबा आणि OviCue ला तुमची खरी बोलण्याची गती शिकू द्या.
+तुमचा script paste करा. Start दाबा. शब्द smooth flow मध्ये वर येतात, त्यामुळे तुमचे डोळे camera जवळ राहतात.
 
-मग शब्द film credits सारखे steady वर येतात, आणि तुमचे डोळे lens जवळ राहतात.
+तुमची speed माहिती नसेल, तर speech speed test चालवा. OviCue तुमची natural words per minute ओळखतो आणि prompter त्याच rhythm वर set करतो.
 
-Lessons साठी वापरा. Reels साठी. अशा speech साठी जिथे चूक परवडत नाही.
+Lessons, reels, interviews, sales videos, speeches आणि daily English practice साठी वापरा.
 
-English practice साठीही, अशा speed वर जी तुमच्यापेक्षा पुढे पळत नाही.
+Teleprompter glass साठी mirror करा. Browser मधून record करा. Text size, alignment आणि speed flow न मोडता बदला.
 
-तुमचा script या device वरच राहतो. Teleprompter glass साठी mirror करा, camera मागे ठेवा, आणि browser मधून record करा.
+Guest mode मध्ये तुमचा script या device वरच राहतो. Camera आणि microphone फक्त preview, recording किंवा pace tools on केल्यावर वापरले जातात.
 
-No account. No watermark. कितीही वेळ वाचा.
+Start करण्यासाठी account नाही. Watermark नाही. Complicated setup नाही.
 
 तुमचे videos rehearsed नाही, prepared वाटावेत असे वाटत असेल, तर OviCue तुमच्यासाठी बनले आहे.
 
@@ -2652,17 +2654,16 @@ export default function Home() {
         <header className="ovi-hero" id="top">
           <div className="ovi-wrap">
             <span className="ovi-pill ovi-mono ovi-reveal">
-              Free · <b>no account required</b> · works offline
+              India-first creator prompter · free to start · pace-aware
             </span>
             <h1 className="ovi-reveal delay-1">
               Paste your script.
               <em>Start reading.</em>
             </h1>
             <p className="ovi-lead ovi-reveal delay-2">
-              The zero-friction teleprompter built for creators, educators, and
-              speakers. Test your speaking pace, mirror for real prompter
-              glass, and record clean videos in your browser with no paywalls
-              or watermarks.
+              OviCue turns written words into camera-ready delivery. Paste a
+              script, test your natural speaking pace, and let the prompter
+              roll upward smoothly while you teach, pitch, practice, or record.
             </p>
             <div className="ovi-cta-row ovi-reveal delay-3">
               <button
@@ -2670,21 +2671,21 @@ export default function Home() {
                 className="ovi-btn ovi-btn-dark"
                 onClick={() => goTo("studio")}
               >
-                Start reading now
+                Start prompting free
               </button>
               <button
                 type="button"
                 className="ovi-btn ovi-btn-ghost"
                 onClick={showFrontSpeedTest}
               >
-                Test your speaking pace
+                Find my speaking speed
               </button>
             </div>
             <div className="ovi-hero-note ovi-reveal delay-4">
-              <span className="ovi-chip ovi-mono">Phone, laptop, tablet</span>
-              <span className="ovi-chip ovi-mono">Built-in speech speed test</span>
-              <span className="ovi-chip ovi-mono">Guest scripts stay local</span>
-              <span className="ovi-chip ovi-mono">Watermark-free recording</span>
+              <span className="ovi-chip ovi-mono">Smooth movie-credit scroll</span>
+              <span className="ovi-chip ovi-mono">Speech speed test</span>
+              <span className="ovi-chip ovi-mono">English · Hindi · Marathi</span>
+              <span className="ovi-chip ovi-mono">Local-first guest mode</span>
             </div>
           </div>
         </header>
@@ -2766,7 +2767,6 @@ export default function Home() {
                       <p key={`${line}-${index}`}>{line}</p>
                     ))}
                   </div>
-                  <div className="ovi-cueline" />
                   <div className="ovi-fade-top" />
                   <div className="ovi-fade-bottom" />
                 </div>
@@ -2835,19 +2835,19 @@ export default function Home() {
                 </div>
               </div>
               <p className="ovi-mono ovi-shortcut">
-                Space = play · ↑ ↓ = speed · click the text to edit
+                Press Play, test the rhythm, or click the text and paste your own.
               </p>
             </>
           ) : (
             <div className="speech-test-panel front-speech-test">
               <div className="speech-test-top">
-                <span className="ovi-mono">Find my pace · {audienceScripts[selectedAudience].label}</span>
+                <span className="ovi-mono">Speech speed test · {audienceScripts[selectedAudience].label}</span>
                 <strong>{formatTime(speechTestElapsed)}</strong>
               </div>
               <p className="speech-test-instruction">
                 {isSpeechTestRunning
-                  ? "Read out loud at your normal speaking voice."
-                  : "Use the same script from the prompter preview. Press Start, read it aloud, then press Done."}
+                  ? "Read out loud naturally. OviCue will calculate your words per minute."
+                  : "Use the same sample script from the preview. Press Start, read it aloud, then use the result inside the prompter."}
               </p>
               <div
                 className="speech-test-passage"
@@ -2883,7 +2883,7 @@ export default function Home() {
                     className="ovi-btn ovi-btn-dark"
                     onClick={() => startSpeechSpeedTest()}
                   >
-                    Start the test
+                    Start speed test
                   </button>
                 )}
                 {isSpeechTestRunning && (
@@ -2902,7 +2902,7 @@ export default function Home() {
                       className="ovi-btn ovi-btn-dark"
                       onClick={() => openPrompterWithWpm(speechTestResult.wpm)}
                     >
-                      Start prompting at {speechTestResult.wpm} wpm
+                      Use this pace in OviCue
                     </button>
                     <button
                       type="button"
@@ -2936,31 +2936,33 @@ export default function Home() {
         <section className="ovi-section" id="how">
           <div className="ovi-wrap">
             <CueDivider label="How it works" />
-            <h2>Three steps to your first read. No account needed to begin.</h2>
+            <h2>One page, two tools: find your pace, then read with it.</h2>
             <div className="ovi-grid">
               <div className="ovi-card">
-                <span className="ovi-mono">Step one</span>
-                <h3>Paste or import your script</h3>
+                <span className="ovi-mono">01</span>
+                <h3>Paste the words</h3>
                 <p>
-                  Type directly, paste plain text, or import a text file. OviCue
-                  measures word count and reading time before you hit record.
+                  Type, paste, or import a text file. OviCue counts the words,
+                  estimates reading time, and prepares clean lines for camera
+                  delivery.
                 </p>
               </div>
               <div className="ovi-card">
-                <span className="ovi-mono">Step two</span>
-                <h3>Calibrate your natural pace</h3>
+                <span className="ovi-mono">02</span>
+                <h3>Find or choose your pace</h3>
                 <p>
-                  Pick speed 1 to 5, type your exact WPM, or use the built-in
-                  speed test so the prompter matches you instead of the other
-                  way around.
+                  Use presets, type exact WPM, or take the free speech speed
+                  test. The prompter should match your voice, not force your
+                  voice to chase the screen.
                 </p>
               </div>
               <div className="ovi-card">
-                <span className="ovi-mono">Step three</span>
-                <h3>Deliver and record on cue</h3>
+                <span className="ovi-mono">03</span>
+                <h3>Read in one smooth flow</h3>
                 <p>
-                  Launch fullscreen, keep the cue line near the camera lens,
-                  and pause anytime with the spacebar.
+                  Start once and let the script roll upward like film credits.
+                  Fullscreen controls, mirror mode, recording, and pause are
+                  always within reach.
                 </p>
               </div>
             </div>
@@ -2970,7 +2972,7 @@ export default function Home() {
         <section className="ovi-section no-top" id="free">
           <div className="ovi-wrap">
             <div className="ovi-free">
-              <h2>Free means free. Here is the ironclad promise.</h2>
+              <h2>The complete guest toolkit stays free.</h2>
               <ul>
                 <li>Unlimited script lengths</li>
                 <li>Infinite prompting runtime</li>
@@ -2985,7 +2987,10 @@ export default function Home() {
                 <li>Works offline once the page has loaded</li>
                 <li>Start without signup</li>
               </ul>
-              <p>Everything listed for guests stays free. Always.</p>
+              <p>
+                Paid features later should add cloud convenience, not remove
+                the core prompter people came here to use.
+              </p>
             </div>
           </div>
         </section>
@@ -2993,20 +2998,20 @@ export default function Home() {
         <section className="ovi-section no-top" id="features">
           <div className="ovi-wrap">
             <FeatureRow
-              title="Dual-axis glass mirroring"
+              title="Real prompter controls, not a demo screen"
               copy="Hardware prompter glass flips text left to right. Some top-mounted rigs flip it top to bottom. OviCue includes independent horizontal and vertical toggles for both setups."
-              visual={<div className="ovi-mini flip">Read me in the glass<div className="ovi-cueline" /></div>}
+              visual={<div className="ovi-mini flip">Mirror, resize, align, rehearse, record.</div>}
             />
             <FeatureRow
               reverse
-              title="On-demand hardware permissions"
+              title="Privacy that feels obvious"
               copy="OviCue only asks for device access when you activate a feature. Camera preview requests the lens only. Recording requests camera and mic. Prompting itself never needs permission."
               visual={<div className="ovi-mini call"><span>Camera only when you switch preview on. Mic only for recording.</span></div>}
             />
             <FeatureRow
-              title="Adaptive pace control"
-              copy="Read your own script out loud once. OviCue works out your natural speed and sets the prompter to it, so the words move with your rhythm."
-              visual={<div className="ovi-mini tracking"><small>YOUR PACE</small><span>132 wpm</span><span>speed set from your read</span><b>▸ READY</b></div>}
+              title="A speech speed test people will come back for"
+              copy="Run a short read anytime you want to know your real speaking pace. Use the result immediately in the prompter, or retest before a different type of video."
+              visual={<div className="ovi-mini tracking"><small>YOUR PACE</small><span>132 wpm</span><span>measured from your read</span><b>READY TO PROMPT</b></div>}
             />
           </div>
         </section>
@@ -3016,9 +3021,8 @@ export default function Home() {
             <h2>Built for anyone who has to say written words out loud.</h2>
             <p className="ovi-lead">
               A YouTube creator, tutor, keynote speaker, trainer, journalist,
-              advisor, and language learner have one thing in common: the words
-              are already written, and they do not want to sound like they are
-              reading them.
+              advisor, and language learner have one thing in common: they
+              want written words to sound spoken, confident, and alive.
             </p>
             <div className="ovi-strip audience-strip">
               {[
@@ -3041,12 +3045,12 @@ export default function Home() {
           <div className="ovi-wrap speech-signpost">
             <div>
               <span className="ovi-mono section-eyebrow">Free tool</span>
-              <h2>How fast do you actually speak?</h2>
+              <h2>The free speed test is the reason people return.</h2>
               <p className="ovi-lead">
-                Most people guess wrong by twenty or thirty words a minute.
-                Read a short passage out loud, press Done, and find out. It
-                needs no microphone by default and works in
-                any browser.
+                Before a class, reel, interview, or speech, users can check
+                their words per minute and then open the prompter at that exact
+                pace. It gives them a useful result even before they paste a
+                script.
               </p>
               <div className="speech-benchmark-list">
                 <span>110-125 WPM: calm and educational</span>
@@ -3059,14 +3063,14 @@ export default function Home() {
                   className="ovi-btn ovi-btn-dark"
                   onClick={showFrontSpeedTest}
                 >
-                  Take the speech speed test
+                  Find my speaking speed
                 </button>
                 <button
                   type="button"
                   className="ovi-btn ovi-btn-ghost"
                   onClick={() => goTo("studio")}
                 >
-                  Skip it, just let me read
+                  Open the prompter
                 </button>
               </div>
             </div>
@@ -3074,7 +3078,7 @@ export default function Home() {
               <span className="ovi-mono">Your pace</span>
               <strong>142</strong>
               <p>words per minute</p>
-              <b>A fast creator read</b>
+              <b>Ready for the prompter</b>
             </div>
           </div>
         </section>
@@ -3326,7 +3330,7 @@ export default function Home() {
       <section className="editor-panel" aria-label="Script editor">
         <div className="brand-row">
           <div>
-            <p className="eyebrow">Cue Room</p>
+            <p className="eyebrow">Prompt Studio</p>
             <h1>{productName}</h1>
           </div>
           <div className="brand-actions">
@@ -3338,9 +3342,13 @@ export default function Home() {
         </div>
 
         <div className="creator-intro">
-          <p>Read naturally, keep eye contact, and record clean videos in English, Hindi, or Marathi. Everything runs in your browser for now.</p>
+          <p>
+            Paste the script, choose the rhythm, and read on camera without
+            losing eye contact. Built for English, Hindi, Marathi, and everyday
+            creator work.
+          </p>
           <div className="intro-tags" aria-label={`${productName} highlights`}>
-            <span>Smooth auto-roll</span>
+            <span>Movie-credit roll</span>
             <span>हिन्दी</span>
             <span>मराठी</span>
             <span>{isVoiceMatching ? "Mic listening" : "Mic off"}</span>
@@ -3351,16 +3359,16 @@ export default function Home() {
 
         <div className="studio-strip" aria-label="Studio highlights">
           <div>
-            <strong>Prompt</strong>
-            <span>Paste or import a script</span>
+            <strong>Script</strong>
+            <span>Paste, import, or edit</span>
           </div>
           <div>
-            <strong>Rehearse</strong>
-            <span>Tune roll speed and size</span>
+            <strong>Pace</strong>
+            <span>Preset, custom, or tested</span>
           </div>
           <div>
             <strong>Record</strong>
-            <span>Download your browser video</span>
+            <span>Preview, speak, export</span>
           </div>
         </div>
 
@@ -3422,13 +3430,13 @@ export default function Home() {
           {personalPaceSource === "speech-test" && calibrationInsight ? (
             <p>
               This pace came from your Speech Speed Test. OviCue is already set
-              to roll at {calibrationInsight.wpm} wpm, so you can paste your
-              script and start prompting without matching your voice again.
+              to roll at {calibrationInsight.wpm} wpm, so you can paste a real
+              script and start without calibrating again.
             </p>
           ) : (
             <p>
-              Uses the script below. Read naturally and OviCue will move faster
-              or slower with your spoken WPM.
+              Run one natural read and OviCue will estimate your words per
+              minute. Use that number as your base pace before recording.
               {isVoiceMatching ? ` ${voiceMatchStatus}` : ""}
               {liveSpokenWords > 0 ? ` ${liveSpokenWords} words heard.` : ""}
             </p>
@@ -3518,7 +3526,7 @@ export default function Home() {
 
         <div className="creator-note">
           <strong>Auto-roll rhythm</strong>
-          <span>Press Start once. The whole script now moves upward like movie credits at the pace or target time you choose.</span>
+          <span>Press Start once. The script moves upward continuously at your chosen WPM or target time.</span>
         </div>
 
         <div className="segmented-control" aria-label="Scroll mode">
@@ -3834,11 +3842,6 @@ export default function Home() {
             <span />
             <span />
           </div>
-          <div className="prompt-cue-line" aria-hidden="true">
-            <span>
-              <b>●</b> CUE 38%
-            </span>
-          </div>
           {cameraError && <div className="camera-error">{cameraError}</div>}
           {countdown > 0 && <div className="countdown">{countdown}</div>}
           {lines.length === 0 ? (
@@ -3922,7 +3925,7 @@ export default function Home() {
               Download video
             </a>
           ) : (
-            <span>Space starts or pauses. Arrow keys move line by line.</span>
+            <span>Space starts or pauses. Arrow keys move line by line. Esc exits fullscreen.</span>
           )}
         </div>
 

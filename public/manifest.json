@@ -1,7 +1,7 @@
 {
-  "name": "OviCue - Free Online Teleprompter",
+  "name": "OviCue - Pace-Aware Teleprompter",
   "short_name": "OviCue",
-  "description": "A free browser teleprompter for Indian creators, teachers, students, and speakers.",
+  "description": "A free pace-aware browser teleprompter for Indian creators, teachers, students, and speakers.",
   "start_url": "/prompt",
   "scope": "/",
   "display": "standalone",
