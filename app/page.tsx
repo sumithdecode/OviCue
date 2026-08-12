@@ -533,6 +533,30 @@ function speechSpeedBandFor(wpm: number) {
   return speechSpeedBands[5];
 }
 
+function StudioIcon({
+  icon,
+  label,
+  description,
+  lang = "en",
+}: {
+  icon: string;
+  label: string;
+  description: string;
+  lang?: string;
+}) {
+  return (
+    <span
+      className="studio-icon"
+      data-tooltip={`${label}: ${description}`}
+      aria-label={`${label}. ${description}`}
+      tabIndex={0}
+      lang={lang}
+    >
+      {icon}
+    </span>
+  );
+}
+
 function CueDivider({ label }: { label: string }) {
   return (
     <div className="ovi-cue">
@@ -1567,38 +1591,51 @@ export default function Home() {
         return;
       }
 
-      if (event.code === "Space") {
+      if (
+        event.code === "Space" ||
+        event.key === "Enter" ||
+        event.key === "MediaPlayPause" ||
+        event.key === "Play" ||
+        event.key === "Pause"
+      ) {
         event.preventDefault();
-        setIsRunning((value) => {
-          if (value) {
-            finishSession();
-            setCountdown(0);
-            return false;
-          } else {
-            startPrompt();
-            return true;
-          }
-        });
+        togglePromptPlayback();
+        return;
       }
 
-      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      if (event.key === "ArrowUp" || event.key === "PageUp") {
+        event.preventDefault();
+        chooseCustomSpeed(String(Math.min(maxCustomWpm, speed + 10)));
+        return;
+      }
+
+      if (event.key === "ArrowDown" || event.key === "PageDown") {
+        event.preventDefault();
+        chooseCustomSpeed(String(Math.max(minCustomWpm, speed - 10)));
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
         event.preventDefault();
         moveByLine(1);
+        return;
       }
 
-      if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      if (event.key === "ArrowLeft") {
         event.preventDefault();
         moveByLine(-1);
+        return;
       }
 
       if (event.key.toLowerCase() === "r") {
+        event.preventDefault();
         resetPrompt();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [experienceMode, lines.length]);
+  }, [experienceMode, isRunning, lines.length, speed]);
 
   function startPrompt() {
     if (lines.length === 0) return;
@@ -1626,6 +1663,17 @@ export default function Home() {
     sessionStartRef.current = performance.now();
     setCountdown(0);
     setIsRunning(true);
+  }
+
+  function togglePromptPlayback() {
+    if (isRunning) {
+      finishSession();
+      setIsRunning(false);
+      setCountdown(0);
+      return;
+    }
+
+    startPrompt();
   }
 
   function resetPrompt() {
@@ -3348,27 +3396,38 @@ export default function Home() {
             creator work.
           </p>
           <div className="intro-tags" aria-label={`${productName} highlights`}>
-            <span>Movie-credit roll</span>
-            <span>हिन्दी</span>
-            <span>मराठी</span>
-            <span>{isVoiceMatching ? "Mic listening" : "Mic off"}</span>
-            <span>{cameraEnabled || isRecording ? "Camera live" : "Camera off"}</span>
-            <span>Local scripts</span>
-          </div>
-        </div>
-
-        <div className="studio-strip" aria-label="Studio highlights">
-          <div>
-            <strong>Script</strong>
-            <span>Paste, import, or edit</span>
-          </div>
-          <div>
-            <strong>Pace</strong>
-            <span>Preset, custom, or tested</span>
-          </div>
-          <div>
-            <strong>Record</strong>
-            <span>Preview, speak, export</span>
+            <StudioIcon
+              icon="↟"
+              label="Smooth roll"
+              description="Script moves upward continuously like film credits."
+            />
+            <StudioIcon
+              icon="हि"
+              label="Hindi sample"
+              description="Tap Hindi below to load a ready sample."
+              lang="hi"
+            />
+            <StudioIcon
+              icon="म"
+              label="Marathi sample"
+              description="Tap Marathi below to load a ready sample."
+              lang="mr"
+            />
+            <StudioIcon
+              icon={isVoiceMatching ? "●" : "μ"}
+              label={isVoiceMatching ? "Mic listening" : "Mic off"}
+              description="Microphone is used only for optional pace tools."
+            />
+            <StudioIcon
+              icon={cameraEnabled || isRecording ? "◉" : "▣"}
+              label={cameraEnabled || isRecording ? "Camera live" : "Camera off"}
+              description="Camera turns on only for preview or recording."
+            />
+            <StudioIcon
+              icon="⌂"
+              label="Local scripts"
+              description="Guest scripts stay in this browser on this device."
+            />
           </div>
         </div>
 
@@ -3508,6 +3567,21 @@ export default function Home() {
           }
           placeholder="Paste the words you want to teach, present, or practice..."
         />
+
+        <div className="studio-strip compact" aria-label="Studio workflow">
+          <div data-tooltip="Script: paste, import, or edit your words.">
+            <strong>✎</strong>
+            <span>Script</span>
+          </div>
+          <div data-tooltip="Pace: choose presets, custom WPM, timed read, or tested pace.">
+            <strong>↯</strong>
+            <span>Pace</span>
+          </div>
+          <div data-tooltip="Record: preview camera, speak naturally, and export the browser video.">
+            <strong>◉</strong>
+            <span>Record</span>
+          </div>
+        </div>
 
         <div className="stats-grid" aria-label="Script statistics">
           <div>
@@ -3825,6 +3899,13 @@ export default function Home() {
           ]
             .filter(Boolean)
             .join(" ")}
+          role="button"
+          tabIndex={0}
+          aria-label={isRunning ? "Pause teleprompter" : "Start teleprompter"}
+          onClick={(event) => {
+            if ((event.target as HTMLElement | null)?.closest("button, a, input, textarea, label")) return;
+            togglePromptPlayback();
+          }}
         >
           <video
             ref={videoRef}
@@ -3925,7 +4006,7 @@ export default function Home() {
               Download video
             </a>
           ) : (
-            <span>Space starts or pauses. Arrow keys move line by line. Esc exits fullscreen.</span>
+            <span>Tap the prompter or press Space/Enter to start and pause. Bluetooth remotes can use Arrow/Page keys for speed and line control.</span>
           )}
         </div>
 

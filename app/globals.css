@@ -805,18 +805,61 @@ p {
   gap: var(--s2);
 }
 
-.intro-tags span {
+.studio-icon {
+  position: relative;
+  display: inline-grid;
+  width: calc(var(--s7) - var(--s1));
+  height: calc(var(--s7) - var(--s1));
+  place-items: center;
   border: var(--border);
   border-radius: var(--radius);
-  padding: var(--s2) var(--s3);
   background: var(--green-100);
   color: var(--green-700);
+  cursor: help;
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
   font-weight: 800;
+  outline: 0;
+}
+
+.studio-icon::after,
+.studio-strip.compact div::after {
+  position: absolute;
+  bottom: calc(100% + var(--s2));
+  left: 50%;
+  z-index: 30;
+  width: min(15rem, 72vw);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--green-900);
+  color: var(--paper-0);
+  content: attr(data-tooltip);
+  font-size: var(--t-label);
+  font-weight: 600;
+  line-height: 1.35;
+  opacity: 0;
+  padding: var(--s3);
+  pointer-events: none;
+  text-align: left;
+  transform: translate(-50%, var(--s2));
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.studio-icon:hover::after,
+.studio-icon:focus-visible::after,
+.studio-strip.compact div:hover::after,
+.studio-strip.compact div:focus-within::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .studio-strip {
   grid-template-columns: repeat(3, 1fr);
   margin: var(--s5) 0;
+}
+
+.studio-strip.compact {
+  margin: var(--s3) 0 var(--s4);
 }
 
 .studio-strip div,
@@ -829,11 +872,31 @@ p {
   background: var(--paper-0);
 }
 
+.studio-strip.compact div {
+  position: relative;
+  display: grid;
+  min-height: var(--s8);
+  place-items: center;
+  text-align: center;
+}
+
 .studio-strip strong,
 .stats-grid span {
   display: block;
   color: var(--green-700);
   font-size: var(--t-h3);
+}
+
+.studio-strip.compact strong {
+  color: var(--green-700);
+  font-size: var(--t-h2);
+  line-height: 1;
+}
+
+.studio-strip.compact span {
+  color: var(--ink-500);
+  font-size: var(--t-label);
+  font-weight: 800;
 }
 
 .script-label,
@@ -1003,6 +1066,12 @@ input[type="range"] {
   overflow: hidden;
   background:
     linear-gradient(color-mix(in oklch, var(--green-900), black 10%), var(--green-900));
+  cursor: pointer;
+}
+
+.prompt-stage:focus-visible {
+  outline: var(--s1) solid var(--green-400);
+  outline-offset: calc(var(--s1) * -1);
 }
 
 .camera-video,
