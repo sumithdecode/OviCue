@@ -940,7 +940,7 @@ export default function Home() {
   const [mirrorHorizontal, setMirrorHorizontal] = useState(false);
   const [mirrorVertical, setMirrorVertical] = useState(false);
   const [dimPast, setDimPast] = useState(true);
-  const [textPosition, setTextPosition] = useState(48);
+  const [textPosition, setTextPosition] = useState(38);
   const [scriptLanguage, setScriptLanguage] =
     useState<ScriptLanguage>("english");
   const [cameraEnabled, setCameraEnabled] = useState(false);
@@ -2460,7 +2460,7 @@ export default function Home() {
                   : "Pick the kind of speaking you want to measure."}
               </p>
 
-              <div className="speech-test-passage" aria-label="Speech test passage">
+              <div className="speech-test-passage" aria-label="Speech test passage" lang="en">
                 {activePassage.text.split(/\n+/).map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
@@ -2656,7 +2656,7 @@ export default function Home() {
             </span>
             <h1 className="ovi-reveal delay-1">
               Paste your script.
-              <em>Speak natural.</em>
+              <em>Start reading.</em>
             </h1>
             <p className="ovi-lead ovi-reveal delay-2">
               The zero-friction teleprompter built for creators, educators, and
@@ -2683,7 +2683,7 @@ export default function Home() {
             <div className="ovi-hero-note ovi-reveal delay-4">
               <span className="ovi-chip ovi-mono">Phone, laptop, tablet</span>
               <span className="ovi-chip ovi-mono">Built-in speech speed test</span>
-              <span className="ovi-chip ovi-mono">Scripts never leave your device</span>
+              <span className="ovi-chip ovi-mono">Guest scripts stay local</span>
               <span className="ovi-chip ovi-mono">Watermark-free recording</span>
             </div>
           </div>
@@ -2700,6 +2700,13 @@ export default function Home() {
                 key={audience}
                 type="button"
                 className={selectedAudience === audience ? "selected" : ""}
+                lang={
+                  audience === "hindi"
+                    ? "hi"
+                    : audience === "marathi"
+                      ? "mr"
+                      : "en"
+                }
                 onClick={() => chooseAudience(audience)}
               >
                 {audienceScripts[audience].label}
@@ -2731,6 +2738,13 @@ export default function Home() {
                   <div
                     ref={demoTrackRef}
                     className="ovi-track"
+                    lang={
+                      selectedAudience === "hindi"
+                        ? "hi"
+                        : selectedAudience === "marathi"
+                          ? "mr"
+                          : "en"
+                    }
                     contentEditable={demoEditing}
                     suppressContentEditableWarning
                     tabIndex={0}
@@ -2835,7 +2849,17 @@ export default function Home() {
                   ? "Read out loud at your normal speaking voice."
                   : "Use the same script from the prompter preview. Press Start, read it aloud, then press Done."}
               </p>
-              <div className="speech-test-passage" aria-label="Speech test passage">
+              <div
+                className="speech-test-passage"
+                aria-label="Speech test passage"
+                lang={
+                  selectedAudience === "hindi"
+                    ? "hi"
+                    : selectedAudience === "marathi"
+                      ? "mr"
+                      : "en"
+                }
+              >
                 {demoText.split(/\n+/).filter(Boolean).map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
@@ -2912,7 +2936,7 @@ export default function Home() {
         <section className="ovi-section" id="how">
           <div className="ovi-wrap">
             <CueDivider label="How it works" />
-            <h2>From raw draft to clean delivery in three steps.</h2>
+            <h2>Three steps to your first read. No account needed to begin.</h2>
             <div className="ovi-grid">
               <div className="ovi-card">
                 <span className="ovi-mono">Step one</span>
@@ -2959,9 +2983,9 @@ export default function Home() {
                 <li>Local browser recording export</li>
                 <li>Zero watermarks on any recording or script view</li>
                 <li>Works offline once the page has loaded</li>
-                <li>No account or credit card prompts</li>
+                <li>Start without signup</li>
               </ul>
-              <p>Nothing on that list will move behind a paywall later.</p>
+              <p>Everything listed for guests stays free. Always.</p>
             </div>
           </div>
         </section>
@@ -3068,7 +3092,7 @@ export default function Home() {
                   "Everything in the list above",
                   "Saved in this browser",
                   "Five-minute recordings",
-                  "No signup",
+                  "Start without signup",
                 ]}
                 action="Start prompting"
                 onClick={() => goTo("studio")}
@@ -3246,7 +3270,7 @@ export default function Home() {
               <span>Built in Pune</span>
               <span>No cookies</span>
               <span>No ads</span>
-              <span>Your scripts never leave your device</span>
+              <span>Guest scripts stay local; account sync comes later</span>
             </div>
           </div>
         </footer>
@@ -3269,7 +3293,7 @@ export default function Home() {
         </button>
         <nav className="workspace-nav horizontal" aria-label="Workspace sections">
           <button type="button" className="selected">
-            <span>Prompt studio</span>
+            <span>Cue Room</span>
           </button>
           <button type="button" onClick={() => setStudioPanel("scripts")}>
             <span>My scripts</span>
@@ -3302,7 +3326,7 @@ export default function Home() {
       <section className="editor-panel" aria-label="Script editor">
         <div className="brand-row">
           <div>
-            <p className="eyebrow">India-first creator prompter</p>
+            <p className="eyebrow">Cue Room</p>
             <h1>{productName}</h1>
           </div>
           <div className="brand-actions">
@@ -3362,6 +3386,13 @@ export default function Home() {
                 key={language}
                 type="button"
                 className={scriptLanguage === language ? "selected" : ""}
+                lang={
+                  language === "hindi"
+                    ? "hi"
+                    : language === "marathi"
+                      ? "mr"
+                      : "en"
+                }
                 onClick={() => applyLanguageSample(language)}
               >
                 {languageLabels[language]}
@@ -3803,6 +3834,11 @@ export default function Home() {
             <span />
             <span />
           </div>
+          <div className="prompt-cue-line" aria-hidden="true">
+            <span>
+              <b>●</b> CUE 38%
+            </span>
+          </div>
           {cameraError && <div className="camera-error">{cameraError}</div>}
           {countdown > 0 && <div className="countdown">{countdown}</div>}
           {lines.length === 0 ? (
@@ -3819,6 +3855,13 @@ export default function Home() {
               <div
                 ref={rollContentRef}
                 className="roll-content"
+                lang={
+                  scriptLanguage === "hindi"
+                    ? "hi"
+                    : scriptLanguage === "marathi"
+                      ? "mr"
+                      : "en"
+                }
                 style={{
                   fontStyle: textItalic ? "italic" : "normal",
                   fontWeight: textWeight,

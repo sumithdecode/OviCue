@@ -5,8 +5,8 @@
   "start_url": "/prompt",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f2f8dc",
-  "theme_color": "#0a5f45",
+  "background_color": "white",
+  "theme_color": "black",
   "icons": [
     {
       "src": "/favicon.svg",
