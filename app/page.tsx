@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  type FormEvent,
   type ReactNode,
   useEffect,
   useMemo,
@@ -96,7 +95,7 @@ type MediaConsentIntent =
   | "recording"
   | "speech-auto-stop";
 type PaceSource = "voice-match" | "speech-test" | null;
-type StudioPanel = "scripts" | "pace" | "profile" | "feedback" | "help" | "account";
+type StudioPanel = "scripts" | "pace" | "profile" | "help" | "account";
 type SpeechTestKind = "conversational" | "presentation" | "news";
 type SessionInsight = {
   durationSeconds: number;
@@ -108,7 +107,6 @@ type SpeechTestResult = {
   seconds: number;
   wpm: number;
 };
-type FeedbackType = "bug" | "feature" | "hardware" | "other";
 type AudienceKey =
   | "creator"
   | "teacher"
@@ -124,7 +122,6 @@ const demoSpeedPresets = [90, 110, 130, 150, 170];
 const studioSpeedPresets = [90, 110, 130, 150, 170];
 const minCustomWpm = 30;
 const maxCustomWpm = 1400;
-const upiQrPath = "/upi-qr.jpeg";
 const lastUpdated = "August 3, 2026";
 
 const landingDemoScript = `This is a real teleprompter, not a picture of one.
@@ -533,30 +530,6 @@ function speechSpeedBandFor(wpm: number) {
   return speechSpeedBands[5];
 }
 
-function StudioIcon({
-  icon,
-  label,
-  description,
-  lang = "en",
-}: {
-  icon: string;
-  label: string;
-  description: string;
-  lang?: string;
-}) {
-  return (
-    <span
-      className="studio-icon"
-      data-tooltip={`${label}: ${description}`}
-      aria-label={`${label}. ${description}`}
-      tabIndex={0}
-      lang={lang}
-    >
-      {icon}
-    </span>
-  );
-}
-
 function CueDivider({ label }: { label: string }) {
   return (
     <div className="ovi-cue">
@@ -691,24 +664,21 @@ function StaticPage({
         <span className="ovi-mono">Contact</span>
         <h1>Get in touch.</h1>
         <p className="ovi-lead">
-          One person reads everything here. Send broken flows, missing features,
-          confusing screens, or anything that would make OviCue better.
+          OviCue is being shaped into a practical creator tool. For now, keep
+          the site simple: use the prompter, test the pace, and refine your
+          script before recording.
         </p>
         <div className="ovi-info-grid">
-          <InfoCard title="Something is broken">
-            <p>Tell us the device, browser, what you clicked, and what happened.</p>
+          <InfoCard title="For creators">
+            <p>Use the free prompter for lessons, reels, speeches, and practice reads.</p>
           </InfoCard>
-          <InfoCard title="Something is missing">
-            <p>Suggest the feature that would save you time while recording.</p>
+          <InfoCard title="For teams">
+            <p>Saved scripts, shared folders, and account sync are planned for a later phase.</p>
           </InfoCard>
-        <InfoCard title="Anything else">
-            <p>Use the feedback form on the home page. It is local-only until a real inbox is connected.</p>
+          <InfoCard title="For now">
+            <p>No support inbox or payment collection is active on the public site.</p>
           </InfoCard>
         </div>
-        <p className="ovi-muted">
-          Please do not send private scripts or sensitive personal information
-          through feedback.
-        </p>
       </>
     ),
     privacy: (
@@ -754,15 +724,13 @@ function StaticPage({
             OviCue may collect minimal anonymous telemetry such as page views,
             feature clicks, and browser errors to improve reliability. Script
             text, personal identity, and sensitive information are not included.
-            Voluntary UPI support is handled by the UPI app you choose; OviCue
-            does not process bank details.
           </p>
         </InfoCard>
         <InfoCard title="Contact">
           <p>
-            Questions about privacy can be sent through the feedback section.
-            Please do not include private scripts or sensitive personal data in
-            feedback.
+            OviCue does not provide a public message inbox in this version.
+            Please do not enter private scripts unless you are comfortable
+            keeping them in your own browser storage.
           </p>
         </InfoCard>
       </>
@@ -788,13 +756,6 @@ function StaticPage({
             app for personal, educational, and commercial speaking or video
             production. Do not misuse the service or attempt to interfere with
             its operation.
-          </p>
-        </InfoCard>
-        <InfoCard title="Voluntary support">
-          <p>
-            UPI contributions are optional support for hosting and development.
-            They do not create ownership, equity, guaranteed custom work, or a
-            refundable purchase.
           </p>
         </InfoCard>
         <InfoCard title="No guarantees">
@@ -830,8 +791,8 @@ function StaticPage({
         </InfoCard>
         <InfoCard title="What needs work">
           <p>
-            More screen-reader testing, better captions around recording
-            downloads, and a dedicated feedback form for accessibility issues.
+            More screen-reader testing and better captions around recording
+            downloads.
           </p>
         </InfoCard>
       </>
@@ -872,14 +833,14 @@ function StaticPage({
         <InfoCard title="August 3, 2026">
           <p>
             Added continuous credit-style scrolling, pace testing, Hindi and
-            Marathi samples, UPI support, camera permission primer, fullscreen
+            Marathi samples, camera permission primer, fullscreen
             controls, and a public website structure.
           </p>
         </InfoCard>
         <InfoCard title="Next">
           <p>
-            Feedback inbox, saved scripts, real account login, custom domain,
-            and optional paid syncing.
+            Saved scripts, real account login, custom domain, and optional paid
+            syncing.
           </p>
         </InfoCard>
       </>
@@ -1010,10 +971,6 @@ export default function Home() {
     useState(false);
   const [proEmail, setProEmail] = useState("");
   const [proWaitlistMessage, setProWaitlistMessage] = useState("");
-  const [feedbackType, setFeedbackType] = useState<FeedbackType>("bug");
-  const [feedbackDevice, setFeedbackDevice] = useState("");
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [feedbackNotice, setFeedbackNotice] = useState("");
   const lineRefs = useRef<Array<HTMLParagraphElement | null>>([]);
   const lineListRef = useRef<HTMLDivElement | null>(null);
   const rollContentRef = useRef<HTMLDivElement | null>(null);
@@ -2290,60 +2247,6 @@ export default function Home() {
     trackEvent("script_pasted");
   }
 
-  function handleFeedbackClick() {
-    trackEvent("feedback_clicked");
-  }
-
-  function showFeedbackSection() {
-    handleFeedbackClick();
-    setExperienceMode("welcome");
-    if (typeof window === "undefined") return;
-    if (window.location.pathname !== "/") {
-      window.history.pushState(null, "", "/");
-    }
-    window.setTimeout(() => {
-      document.getElementById("feedback")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 0);
-  }
-
-  function saveFeedback(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const message = feedbackMessage.trim();
-    if (!message) {
-      setFeedbackNotice("Add a short message first.");
-      return;
-    }
-    const entry = {
-      type: feedbackType,
-      device: feedbackDevice.trim(),
-      message,
-      createdAt: new Date().toISOString(),
-      page: typeof window === "undefined" ? "/" : window.location.pathname,
-      userAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
-    };
-    let existing: Array<typeof entry> = [];
-    try {
-      const saved = window.localStorage.getItem("ovicue.feedback");
-      existing = saved ? (JSON.parse(saved) as Array<typeof entry>) : [];
-    } catch {
-      existing = [];
-    }
-    window.localStorage.setItem(
-      "ovicue.feedback",
-      JSON.stringify([entry, ...existing].slice(0, 25)),
-    );
-    setFeedbackMessage("");
-    setFeedbackDevice("");
-    setFeedbackType("bug");
-    setFeedbackNotice(
-      "Saved on this device. A real feedback inbox can be connected next.",
-    );
-    trackEvent("feedback_saved_locally", { type: entry.type });
-  }
-
   function chooseAudience(audience: AudienceKey) {
     setSelectedAudience(audience);
     setDemoPlaying(false);
@@ -3217,69 +3120,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="ovi-section no-top" id="feedback">
-          <div className="ovi-wrap ovi-feedback-block">
-            <h2>Found a bug, or want something added?</h2>
-            <p>
-              Tell me what broke, what device you used, and what would make
-              OviCue better. This version saves feedback locally until a real
-              inbox is connected.
-            </p>
-            <form className="ovi-feedback-form" onSubmit={saveFeedback}>
-              <label>
-                <span>Feedback category</span>
-                <select
-                  value={feedbackType}
-                  onChange={(event) =>
-                    setFeedbackType(event.target.value as FeedbackType)
-                  }
-                >
-                  <option value="bug">Report a bug</option>
-                  <option value="feature">Request a feature</option>
-                  <option value="hardware">Prompter hardware issue</option>
-                  <option value="other">General feedback</option>
-                </select>
-              </label>
-              <label>
-                <span>Device and browser, optional</span>
-                <input
-                  type="text"
-                  value={feedbackDevice}
-                  onChange={(event) => setFeedbackDevice(event.target.value)}
-                  placeholder="MacBook Air / Safari, Android / Chrome"
-                />
-              </label>
-              <label>
-                <span>Your message</span>
-                <textarea
-                  required
-                  rows={4}
-                  value={feedbackMessage}
-                  onChange={(event) => setFeedbackMessage(event.target.value)}
-                  placeholder="What happened? What did you expect? What should we improve?"
-                />
-              </label>
-              <button type="submit" className="ovi-btn ovi-btn-dark">
-                Save feedback
-              </button>
-            </form>
-            {feedbackNotice && <p className="feedback-notice">{feedbackNotice}</p>}
-          </div>
-        </section>
-
-        <section className="ovi-tip-strip" id="support" aria-label="Support OviCue">
-          <div className="ovi-wrap">
-            <div>
-              <p>
-                OviCue is free and stays free. If it saved you a reshoot, you can
-                support it with UPI.
-              </p>
-              <span>Scan the QR with PhonePe, GPay, Paytm, or any UPI app.</span>
-            </div>
-            <img src={upiQrPath} alt="UPI QR code for supporting OviCue" />
-          </div>
-        </section>
-
         <footer className="ovi-footer">
           <div className="ovi-wrap ovi-foot">
             <div>
@@ -3303,7 +3143,6 @@ export default function Home() {
               <strong>Support</strong>
               <button type="button" onClick={() => goTo("help")}>Help center</button>
               <button type="button" onClick={() => goTo("about")}>About OviCue</button>
-              <button type="button" onClick={showFeedbackSection}>Report a bug</button>
               <button type="button" onClick={() => goTo("changelog")}>Changelog</button>
             </div>
             <div>
@@ -3315,7 +3154,6 @@ export default function Home() {
             <div>
               <strong>Company</strong>
               <button type="button" onClick={() => goTo("contact")}>Contact</button>
-              <a href="#support">Support via UPI</a>
             </div>
             <div className="ovi-footer-bottom">
               <span>© {new Date().getFullYear()} OviCue</span>
@@ -3358,9 +3196,6 @@ export default function Home() {
           <button type="button" onClick={() => setStudioPanel("profile")}>
             <span>Profile</span>
           </button>
-          <button type="button" onClick={() => setStudioPanel("feedback")}>
-            <span>Feedback</span>
-          </button>
           <button type="button" onClick={() => setStudioPanel("help")}>
             <span>Help guides</span>
           </button>
@@ -3386,48 +3221,6 @@ export default function Home() {
               {mediaStatus}
             </div>
             <div className="status-pill">{lines.length} lines</div>
-          </div>
-        </div>
-
-        <div className="creator-intro">
-          <p>
-            Paste the script, choose the rhythm, and read on camera without
-            losing eye contact. Built for English, Hindi, Marathi, and everyday
-            creator work.
-          </p>
-          <div className="intro-tags" aria-label={`${productName} highlights`}>
-            <StudioIcon
-              icon="↟"
-              label="Smooth roll"
-              description="Script moves upward continuously like film credits."
-            />
-            <StudioIcon
-              icon="हि"
-              label="Hindi sample"
-              description="Tap Hindi below to load a ready sample."
-              lang="hi"
-            />
-            <StudioIcon
-              icon="म"
-              label="Marathi sample"
-              description="Tap Marathi below to load a ready sample."
-              lang="mr"
-            />
-            <StudioIcon
-              icon={isVoiceMatching ? "●" : "μ"}
-              label={isVoiceMatching ? "Mic listening" : "Mic off"}
-              description="Microphone is used only for optional pace tools."
-            />
-            <StudioIcon
-              icon={cameraEnabled || isRecording ? "◉" : "▣"}
-              label={cameraEnabled || isRecording ? "Camera live" : "Camera off"}
-              description="Camera turns on only for preview or recording."
-            />
-            <StudioIcon
-              icon="⌂"
-              label="Local scripts"
-              description="Guest scripts stay in this browser on this device."
-            />
           </div>
         </div>
 
@@ -4134,11 +3927,9 @@ export default function Home() {
                     ? "Pace insights"
                     : studioPanel === "profile"
                       ? "Profile"
-                      : studioPanel === "feedback"
-                        ? "Feedback"
-                        : studioPanel === "help"
-                          ? "Help guides"
-                          : "Account preview"}
+                      : studioPanel === "help"
+                        ? "Help guides"
+                        : "Account preview"}
               </span>
               <button
                 type="button"
@@ -4166,50 +3957,6 @@ export default function Home() {
                     <p>Prompting needs no permission. Camera and mic are requested only for preview, recording, or optional voice features.</p>
                   </InfoCard>
                 </div>
-              </>
-            )}
-
-            {studioPanel === "feedback" && (
-              <>
-                <h2>Send a note from here.</h2>
-                <p>Saved locally for now. When the feedback inbox is connected, this same panel can send reports directly.</p>
-                <form className="ovi-feedback-form compact" onSubmit={saveFeedback}>
-                  <label>
-                    <span>Category</span>
-                    <select
-                      value={feedbackType}
-                      onChange={(event) =>
-                        setFeedbackType(event.target.value as FeedbackType)
-                      }
-                    >
-                      <option value="bug">Report a bug</option>
-                      <option value="feature">Request a feature</option>
-                      <option value="hardware">Prompter hardware issue</option>
-                      <option value="other">General feedback</option>
-                    </select>
-                  </label>
-                  <label>
-                    <span>Device and browser</span>
-                    <input
-                      type="text"
-                      value={feedbackDevice}
-                      onChange={(event) => setFeedbackDevice(event.target.value)}
-                      placeholder="MacBook / Safari"
-                    />
-                  </label>
-                  <label>
-                    <span>Message</span>
-                    <textarea
-                      required
-                      rows={4}
-                      value={feedbackMessage}
-                      onChange={(event) => setFeedbackMessage(event.target.value)}
-                      placeholder="What happened?"
-                    />
-                  </label>
-                  <button type="submit" className="ovi-btn ovi-btn-dark">Save feedback</button>
-                </form>
-                {feedbackNotice && <p className="feedback-notice">{feedbackNotice}</p>}
               </>
             )}
 
@@ -4259,7 +4006,6 @@ export default function Home() {
                   <ul>
                     <li>Saved scripts across phone and laptop</li>
                     <li>Reading history and pace reports</li>
-                    <li>Feedback inbox and issue tracking</li>
                     <li>Optional premium plan access</li>
                   </ul>
                 </div>

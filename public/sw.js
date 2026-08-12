@@ -9,8 +9,7 @@ const APP_SHELL = [
   "/contact",
   "/accessibility",
   "/changelog",
-  "/favicon.svg",
-  "/upi-qr.jpeg"
+  "/favicon.svg"
 ];
 
 self.addEventListener("install", (event) => {

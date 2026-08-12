@@ -294,7 +294,6 @@ p {
 .workspace-nav button.selected,
 .workspace-nav button:hover,
 .audience-switcher button.selected,
-.front-tool-switch button.selected,
 .language-buttons button.selected,
 .segmented-control button.selected,
 .promptr-controls button.selected,
@@ -303,6 +302,12 @@ p {
 .custom-speed-field.selected {
   background: var(--green-100);
   color: var(--green-700);
+}
+
+.front-tool-switch button.selected {
+  border-color: var(--green-700);
+  background: var(--green-700);
+  color: var(--paper-0);
 }
 
 .ovi-btn,
@@ -418,7 +423,6 @@ p {
 .ovi-mini,
 .speech-preview-card,
 .ovi-plan,
-.ovi-feedback-form,
 .studio-drawer,
 .ovi-info-card {
   border: var(--border);
@@ -663,8 +667,7 @@ p {
 
 .speech-auto-stop,
 .toggle-grid label,
-.control-stack label,
-.ovi-feedback-form label {
+.control-stack label {
   display: grid;
   gap: var(--s2);
 }
@@ -783,7 +786,6 @@ p {
   color: var(--green-700);
 }
 
-.creator-intro,
 .calibration-card,
 .creator-note,
 .language-panel,
@@ -794,35 +796,12 @@ p {
   background: var(--paper-1);
 }
 
-.creator-intro {
-  background: var(--green-050);
-}
-
-.intro-tags,
 .toggle-grid {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s2);
 }
 
-.studio-icon {
-  position: relative;
-  display: inline-grid;
-  width: calc(var(--s7) - var(--s1));
-  height: calc(var(--s7) - var(--s1));
-  place-items: center;
-  border: var(--border);
-  border-radius: var(--radius);
-  background: var(--green-100);
-  color: var(--green-700);
-  cursor: help;
-  font-family: var(--font-display);
-  font-size: var(--t-h3);
-  font-weight: 800;
-  outline: 0;
-}
-
-.studio-icon::after,
 .studio-strip.compact div::after {
   position: absolute;
   bottom: calc(100% + var(--s2));
@@ -845,8 +824,6 @@ p {
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.studio-icon:hover::after,
-.studio-icon:focus-visible::after,
 .studio-strip.compact div:hover::after,
 .studio-strip.compact div:focus-within::after {
   opacity: 1;
@@ -1248,11 +1225,6 @@ input[type="range"] {
 
 .signin-options {
   margin: var(--s4) 0;
-}
-
-.feedback-notice {
-  color: var(--green-700);
-  font-weight: 800;
 }
 
 .ovi-static-page {
